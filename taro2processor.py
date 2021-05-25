@@ -2323,3 +2323,4 @@ for dirpath, dirnames, filenames in os.walk(process):
             w.write(filedata)
         w.close()
 print("all done!")
+#TODO continue testing against real files
