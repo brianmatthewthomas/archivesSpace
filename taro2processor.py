@@ -3,6 +3,7 @@ import os
 import daterangeparser
 import datetime
 import lxml.etree as ET
+import re
 catalyst = ET.XML('''
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ead="urn:isbn:1-931666-22-9" xmlns:xlink="http://www.w3.org/1999/xlink" exclude-result-prefixes="xs" version="1.0">
 
@@ -2233,6 +2234,16 @@ for dirpath, dirnames, filenames in os.walk(process):
                 dateify = "2021"
             dateify = dateify.replace("bulk", "").replace("(not inclusive)","").replace("and undated","").replace("undated","").replace("about","")
             dateify = dateify.replace("and","-").replace("primarily","").replace(" or ","-").replace("(?),","").replace("(?)","")
+            dateify = dateify.replace('19th-20th century','1800-1999').replace('20th century','1900-1999').replace('19th century','1800-1899')
+            dateify = dateify.replace('before 1984','2021')
+            donkeykong = re.search(r'\d{2}-\d{2},', dateify)
+            if donkeykong:
+                donkeykong = str(donkeykong[0])
+                donkeykong = ", " + donkeykong
+                dateify = dateify.replace(donkeykong,donkeykong[-4:])
+            donkeykong = re.search(r'\w \d-\w \d, \d{4}', dateify)
+            print(donkeykong)
+            dateify.strip()
             while dateify.endswith(", "):
                 dateify = dateify[:-2]
             while dateify.endswith(" "):
