@@ -2230,6 +2230,7 @@ for dirpath, dirnames, filenames in os.walk(process):
         unitid = dom2.xpath("//ead:unitid", namespaces=nsmap)
         unitid[0].text = pairing[unitid_text]
         dates = dom2.xpath("//ead:unitdate", namespaces=nsmap)
+        screwballs = []
         for date in dates:
             dateify = date.text
             if dateify == "undated" or dateify == "undated," or dateify == "undated, ":
@@ -2309,6 +2310,7 @@ for dirpath, dirnames, filenames in os.walk(process):
                                 date_normal += start + "/" + start + "/"
                                 print(start + "/" + start)
                         except:
+                            screwballs.append(dateify)
                             print(item)
                             newDate = input("manually enter date normal attribute above using YYYY-MM-DD/YYYY-MM-DD: ")
                             if not newDate.endswith("/"):
@@ -2352,5 +2354,11 @@ for dirpath, dirnames, filenames in os.walk(process):
         with open(output_file, "w") as w:
             w.write(filedata)
         w.close()
+        print("check",filename,"for straggling date normal issues, the most likely candidates are:")
+        for item in screwballs:
+            print(item)
+        switch = "no"
+        while switch != "yes":
+            switch = input("did you verify the ead file is okay?: ")
 print("all done!")
 #TODO continue testing against real files
