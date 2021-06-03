@@ -2194,9 +2194,9 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = r.read()
             if "xmlns:ead" not in filedata:
                 filedata = filedata.replace('xmlns="','xmlns:ead="urn:isbn:1-931666-22-9" xmlns="')
-                with open(ead_file, "w") as w:
-                    w.write(filedata)
-                w.close()
+            with open(ead_file, "w") as w:
+                w.write(filedata)
+            w.close()
         dom = ET.parse(ead_file)
         newdom = transform(dom)
         newdom.write(output_file, pretty_print=True)
@@ -2211,6 +2211,8 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace(' xlink:show="new"','')
             filedata = filedata.replace(' xlink:href',' href')
             filedata = filedata.replace(' xlink:type="simple"','')
+            filedata = filedata.replace(' href=""','')
+            filedata = filedata.replace('<ead:unitdate era="ce" calendar="gregorian"/>','')
             filedata = filedata.replace('xmlns=""','')
             filedata = filedata.replace("\t",'')
             filedata = filedata.replace("\n"," ")
@@ -2232,10 +2234,9 @@ for dirpath, dirnames, filenames in os.walk(process):
             dateify = date.text
             if dateify == "undated" or dateify == "undated," or dateify == "undated, ":
                 dateify = "2021"
-            dateify = dateify.replace("bulk", "").replace("(not inclusive)","").replace("and undated","").replace("undated","").replace("about","")
-            dateify = dateify.replace("and","-").replace("primarily","").replace(" or ","-").replace("(?),","").replace("(?)","")
-            dateify = dateify.replace('19th-20th century','1800-1999').replace('20th century','1900-1999').replace('19th century','1800-1899')
-            dateify = dateify.replace('before 1984','2021')
+            dateify = dateify.replace("bulk", "").replace("(not inclusive)","").replace("and undated","").replace("undated","")
+            dateify = dateify.replace("about","").replace("\n",'').replace("[",'').replace("]",'').replace("ca.",'').replace('week of','')
+            dateify = dateify.replace("and","-").replace("primarily","").replace(" or ","-").replace("(?),","").replace("(?)","").replace("(",'').replace(")",'')
             donkeykong = re.search(r'\d{2}-\d{2},', dateify)
             if donkeykong:
                 donkeykong = str(donkeykong[0])
@@ -2265,8 +2266,12 @@ for dirpath, dirnames, filenames in os.walk(process):
                 else:
                     start,end = daterangeparser.parse(dateify)
                     start = start.strftime("%Y-%m-%d")
-                    print(start)
-                    date_normal += start + "/" + start + "/"
+                    end = end.strftime("%Y-%m-%d")
+                    print(start + "/" + end)
+                    if end != None:
+                        date_normal += start + "/" + end + "/"
+                    else:
+                        date_normal += start + "/" + start + "/"
                 #print(dateify)
             except:
                 listy = dateify.split(",")
@@ -2293,21 +2298,35 @@ for dirpath, dirnames, filenames in os.walk(process):
                         item = item[:-2] + "9"
                     item = item.replace("s-"," -")
                     if item != '':
-                        start,end = daterangeparser.parse(item)
-                        start = start.strftime("%Y-%m-%d")
-                        if end != None:
-                            end = end.strftime("%Y-%m-%d")
-                            print(start + "/" + end)
-                            date_normal += start + "/" + end + "/"
-                        else:
-                            date_normal += start + "/" + start + "/"
-                            print(start + "/" + start)
+                        try:
+                            start,end = daterangeparser.parse(item)
+                            start = start.strftime("%Y-%m-%d")
+                            if end != None:
+                                end = end.strftime("%Y-%m-%d")
+                                print(start + "/" + end)
+                                date_normal += start + "/" + end + "/"
+                            else:
+                                date_normal += start + "/" + start + "/"
+                                print(start + "/" + start)
+                        except:
+                            print(item)
+                            newDate = input("manually enter date normal attribute above using YYYY-MM-DD/YYYY-MM-DD: ")
+                            if not newDate.endswith("/"):
+                                newDate += "/"
+                            date_normal += newDate
             date_normal = date_normal[:-1]
             if date_normal.startswith("/"):
                 date_normal = date_normal[1:]
             date_normal = date_normal.split("/")
             date_normal.sort()
             date_normal = date_normal[0] + "/" + date_normal[-1]
+            if "-01-01/2021" in date_normal:
+                date_normal = date_normal.replace("-01-01/2021","")
+                date_normal = date_normal + "/" + date_normal
+            if date_normal == "/":
+                date_normal = "0000/0000"
+            if date_normal == "2021-01-01/2021-12-31" or date_normal == "2021-12-31/2021-12-31":
+                date_normal = "0000/0000"
             date.attrib['normal'] = date_normal
         dom2.write(output_file, pretty_print=True)
         with open(output_file, "r") as r:
