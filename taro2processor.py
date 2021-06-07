@@ -8,7 +8,7 @@ import re
 def timeturner (dateify):
     if dateify == "undated" or dateify == "undated," or dateify == "undated, ":
         dateify = "2021"
-    dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated","")
+    dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated","").replace(":","")
     dateify = dateify.replace("about", "").replace("\n", '').replace("[", '').replace("]", '').replace("ca.",'').replace('week of','')
     dateify = dateify.replace("and", "-").replace("primarily", "").replace(" or ", "-").replace("(?),", "").replace("(?)", "").replace("(", '').replace(")",'')
     donkeykong = re.search(r'\d{2}-\d{2},', dateify)
@@ -186,17 +186,27 @@ catalyst = ET.XML('''
 		<xsl:for-each select="ead:corpname">
 			<xsl:element name="ead:corpname">
 				<xsl:attribute name="encodinganalog">110</xsl:attribute>
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
+				<xsl:choose>
+				    <xsl:when test="@source">
+                        <xsl:choose>
+                            <xsl:when test="@source='Library of Congress Subject Headings'">
+                                <xsl:attribute name="source">lcsh</xsl:attribute>
+                            </xsl:when>
+                            <xsl:when test="@source='naf'">
+                                <xsl:attribute name="source">lcnaf</xsl:attribute>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:when>
+                    <xsl:if test="@role">
+                        <xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
+                    </xsl:if>
+                    <xsl:otherwise>
+                        <xsl:attribute name="source">local</xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
 				<xsl:if test="@authfilenumber">
 					<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 				</xsl:if>
@@ -208,16 +218,26 @@ catalyst = ET.XML('''
 			<xsl:element name="ead:persname">
 				<xsl:attribute name="encodinganalog">100</xsl:attribute>
 				<xsl:choose>
-					<xsl:when test="@source='Library of Congress Subject Headings'">
-						<xsl:attribute name="source">lcsh</xsl:attribute>
-					</xsl:when>
-					<xsl:when test="@source='naf'">
-						<xsl:attribute name="source">lcnaf</xsl:attribute>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-					</xsl:otherwise>
-				</xsl:choose>
+				    <xsl:when test="@source">
+                        <xsl:choose>
+                            <xsl:when test="@source='Library of Congress Subject Headings'">
+                                <xsl:attribute name="source">lcsh</xsl:attribute>
+                            </xsl:when>
+                            <xsl:when test="@source='naf'">
+                                <xsl:attribute name="source">lcnaf</xsl:attribute>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="source">local</xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
+                <xsl:if test="@role">
+                    <xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
+                </xsl:if>
 				<xsl:if test="@authfilenumber">
 					<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 				</xsl:if>
@@ -229,16 +249,26 @@ catalyst = ET.XML('''
 			<xsl:element name="ead:famname">
 				<xsl:attribute name="encodinganalog">100 3</xsl:attribute>
 				<xsl:choose>
-					<xsl:when test="@source='Library of Congress Subject Headings'">
-						<xsl:attribute name="source">lcsh</xsl:attribute>
-					</xsl:when>
-					<xsl:when test="@source='naf'">
-						<xsl:attribute name="source">lcnaf</xsl:attribute>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-					</xsl:otherwise>
-				</xsl:choose>
+				    <xsl:when test="@source">
+                        <xsl:choose>
+                            <xsl:when test="@source='Library of Congress Subject Headings'">
+                                <xsl:attribute name="source">lcsh</xsl:attribute>
+                            </xsl:when>
+                            <xsl:when test="@source='naf'">
+                                <xsl:attribute name="source">lcnaf</xsl:attribute>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="source">local</xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
+                <xsl:if test="@role">
+                    <xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
+                </xsl:if>
 				<xsl:if test="@authfilenumber">
 					<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 				</xsl:if>
@@ -614,17 +644,30 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				<xsl:for-each select="//ead:origination/ead:famname">
 					<xsl:element name="ead:famname">
 						<xsl:attribute name="encodinganalog">700</xsl:attribute>
-						<xsl:choose>
-							<xsl:when test="@source='Library of Congress Subject Headings'">
-								<xsl:attribute name="source">lcsh</xsl:attribute>
-							</xsl:when>
-							<xsl:when test="@source='naf'">
-								<xsl:attribute name="source">lcnaf</xsl:attribute>
-							</xsl:when>
-							<xsl:otherwise>
-								<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-							</xsl:otherwise>
-						</xsl:choose>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        <xsl:if test="@role">
+    						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
+    					</xsl:if>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
@@ -635,20 +678,33 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				<xsl:for-each select="//ead:controlaccess/ead:famname[@encodinganalog='700']">
 					<xsl:element name="ead:famname">
 						<xsl:attribute name="encodinganalog">700</xsl:attribute>
-						<xsl:choose>
-							<xsl:when test="@source='Library of Congress Subject Headings'">
-								<xsl:attribute name="source">lcsh</xsl:attribute>
-							</xsl:when>
-							<xsl:when test="@source='naf'">
-								<xsl:attribute name="source">lcnaf</xsl:attribute>
-							</xsl:when>
-							<xsl:otherwise>
-								<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-							</xsl:otherwise>
-						</xsl:choose>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
+                        <xsl:if test="@role">
+    						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
+    					</xsl:if>
 						<xsl:value-of select="."/>
 						<xsl:text>.</xsl:text>
 					</xsl:element>
@@ -661,20 +717,33 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				<xsl:for-each select="//ead:origination/ead:persname[@role]">
 					<xsl:element name="ead:persname">
 						<xsl:attribute name="encodinganalog">700</xsl:attribute>
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
+                        <xsl:if test="@role">
+    						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
+    					</xsl:if>
 						<xsl:value-of select="."/>
 						<xsl:text>.</xsl:text>
 					</xsl:element>
@@ -682,20 +751,33 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				<xsl:for-each select="//ead:controlaccess/ead:persname[@encodinganalog='700']">
 					<xsl:element name="ead:persname">
 						<xsl:attribute name="encodinganalog">700</xsl:attribute>
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
+                        <xsl:if test="@role">
+    						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
+    					</xsl:if>
 						<xsl:value-of select="."/>
 						<xsl:text>.</xsl:text>
 					</xsl:element>
@@ -708,18 +790,30 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				<xsl:for-each select="//ead:origination/ead:corpname[@role]">
 					<xsl:element name="ead:corpname">
 						<xsl:attribute name="encodinganalog">710</xsl:attribute>
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
-						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        <xsl:if test="@role">
+    						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
+    					</xsl:if>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
@@ -730,18 +824,30 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				<xsl:for-each select="//ead:controlaccess/ead:corpname[@encodinganalog='710']">
 					<xsl:element name="ead:corpname">
 						<xsl:attribute name="encodinganalog">710</xsl:attribute>
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
-						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        <xsl:if test="@role">
+    						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
+    					</xsl:if>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
@@ -757,17 +863,27 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				<ead:head>Subjects (Persons):</ead:head>
 				<xsl:for-each select="ead:persname">
 					<xsl:element name="ead:persname">
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
@@ -778,17 +894,27 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				</xsl:for-each>
 				<xsl:for-each select="//ead:controlaccess/ead:persname[@encodinganalog='600']">
 					<xsl:element name="ead:persname">
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
@@ -804,17 +930,27 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				<ead:head>Subjects (Families):</ead:head>
 				<xsl:for-each select="ead:famname">
 					<xsl:element name="ead:famname">
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
@@ -825,17 +961,27 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				</xsl:for-each>
 				<xsl:for-each select="//ead:controlaccess/ead:persname[@encodinganalog='600']">
 					<xsl:element name="ead:famname">
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
@@ -851,17 +997,27 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				<ead:head>Subjects (Organizations):</ead:head>
 				<xsl:for-each select="ead:corpname">
 					<xsl:element name="ead:corpname">
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
@@ -872,17 +1028,27 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				</xsl:for-each>
 				<xsl:for-each select="//ead:controlaccess/ead:corpname[@encodinganalog='610']">
 					<xsl:element name="ead:corpname">
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
@@ -2367,6 +2533,54 @@ for dirpath, dirnames, filenames in os.walk(process):
             #TODO something
             if "normal" not in date.attrib:
                 date.attrib['normal'] = timeturner(dateify)
+        subjects = dom2.xpath("//ead:subject", namespaces=nsmap)
+        for subject in subjects:
+            subjective = subject.text
+            while subjective.startswith(" "):
+                subjective = subjective[1:]
+            while subjective.endswith(" "):
+                subjective = subjective[:-1]
+            subject.text = subjective
+        forms = dom2.xpath("//ead:genreform", namespaces=nsmap)
+        for form in forms:
+            formative = form.text
+            while formative.startswith(" "):
+                formative = formative[1:]
+            while formative.endswith(" "):
+                formative = formative[:-1]
+            form.text = formative
+        funs = dom2.xpath("//ead:function", namespaces=nsmap)
+        for fun in funs:
+            funny = fun.text
+            while funny.startswith(" "):
+                funny = funny[1:]
+            while funny.endswith(" "):
+                funny = funny[:-1]
+            fun.text = funny
+        persons = dom2.xpath("//ead:persname", namespaces=nsmap)
+        for person in persons:
+            personal = person.text
+            while personal.startswith(" "):
+                personal = personal[1:]
+            while personal.endswith(" "):
+                personal = personal[:-1]
+            person.text = personal
+        persons = dom2.xpath("//ead:famname", namespaces=nsmap)
+        for person in persons:
+            personal = person.text
+            while personal.startswith(" "):
+                personal = personal[1:]
+            while personal.endswith(" "):
+                personal = personal[:-1]
+            person.text = personal
+        persons = dom2.xpath("//ead:corpname", namespaces=nsmap)
+        for person in persons:
+            personal = person.text
+            while personal.startswith(" "):
+                personal = personal[1:]
+            while personal.endswith(" "):
+                personal = personal[:-1]
+            person.text = personal
         dom2.write(output_file, pretty_print=True)
         with open(output_file, "r") as r:
             filedata = r.read()
@@ -2381,18 +2595,21 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace('label="Dates"','label="Dates:"')
             filedata = filedata.replace('label="Abstract"','label="Abstract:"')
             filedata = filedata.replace(", , <",", <")
-            filedata = filedata.replace("..",".")
+            filedata = filedata.replace("..",".").replace(". .",".")
             filedata = filedata.replace("\n<ead:descgrp>","")
             filedata = filedata.replace("\n</ead:descgrp>","")
             filedata = filedata.replace("ead:","")
             filedata = filedata.replace('\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive.</emph>\n</p>','')
+            filedata = filedata.replace('\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive. </emph>\n</p>','')
             filedata = filedata.replace("\n</relatedmaterial>\n</relatedmaterial>\n</relatedmaterial>","\n</relatedmaterial>\n</relatedmaterial>")
             filedata = filedata.replace('\n<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>','')
+            if "852$a" not in filedata:
+                filedata = filedata.replace("</abstract>",'</abstract>\n<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.state.tx.us/arc/index.html">Texas State Archives</extref>\n</repository>')
         with open(output_file, "w") as w:
             w.write(filedata)
         w.close()
         switch = "no"
         while switch != "yes":
-            switch = input("did you verify the ead file is okay?: ")
+            switch = input(f"did you verify the ead file is okay with {unitid_text}?: ")
 print("all done!")
 #TODO continue testing against real files
