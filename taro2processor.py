@@ -4,6 +4,99 @@ import daterangeparser
 import datetime
 import lxml.etree as ET
 import re
+
+def timeturner (dateify):
+    if dateify == "undated" or dateify == "undated," or dateify == "undated, ":
+        dateify = "2021"
+    dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated","")
+    dateify = dateify.replace("about", "").replace("\n", '').replace("[", '').replace("]", '').replace("ca.",'').replace('week of','')
+    dateify = dateify.replace("and", "-").replace("primarily", "").replace(" or ", "-").replace("(?),", "").replace("(?)", "").replace("(", '').replace(")",'')
+    donkeykong = re.search(r'\d{2}-\d{2},', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        donkeykong = ", " + donkeykong
+        dateify = dateify.replace(donkeykong, donkeykong[-4:])
+    donkeykong = re.search(r'\w \d-\w \d, \d{4}', dateify)
+    dateify.strip()
+    while dateify.endswith(", "):
+        dateify = dateify[:-2]
+    while dateify.endswith(" "):
+        dateify = dateify[:-1]
+    while dateify.endswith(","):
+        dateify = dateify[:-1]
+    while dateify.startswith(" "):
+        dateify = dateify[1:]
+    date_normal = ""
+    try:
+        temp_value = daterangeparser.parse(dateify)
+        if "-" in dateify:
+            start, end = daterangeparser.parse(dateify)
+            start = start.strftime("%Y-%m-%d")
+            end = end.strftime("%Y-%m-%d")
+            date_normal += start + "/" + end + "/"
+        else:
+            start, end = daterangeparser.parse(dateify)
+            start = start.strftime("%Y-%m-%d")
+            end = end.strftime("%Y-%m-%d")
+            if end != None:
+                date_normal += start + "/" + end + "/"
+            else:
+                date_normal += start + "/" + start + "/"
+        # print(dateify)
+    except:
+        listy = dateify.split(",")
+        for item in listy:
+            while item.startswith(" "):
+                item = item[1:]
+            if "-early" in item and item.endswith("s"):
+                item = item.replace("early", "")
+                item = item[:-2] + "4"
+            item = item.replace("early", "")
+            if item.startswith("late") or item.startswith(" late"):
+                silly = item.split("-")
+                temp1 = silly[0].replace(" ", "").replace("late", "")
+                if "s" in temp1:
+                    temp1 = temp1[:-2] + "5"
+                item = temp1 + "-" + silly[1]
+            if item.endswith("0s"):
+                if item.startswith("mid-late "):
+                    item = item.replace("mid-late ", "")
+                    tempy = item[-5:-1]
+                    tempy = tempy[:-1] + "5-"
+                    item = tempy + item
+                item = item[:-2] + "9"
+            item = item.replace("s-", " -")
+            if item != '':
+                try:
+                    start, end = daterangeparser.parse(item)
+                    start = start.strftime("%Y-%m-%d")
+                    if end != None:
+                        end = end.strftime("%Y-%m-%d")
+                        date_normal += start + "/" + end + "/"
+                    else:
+                        date_normal += start + "/" + start + "/"
+                except:
+                    print(listy)
+                    print(item)
+                    newDate = input("manually enter date normal attribute above using YYYY-MM-DD/YYYY-MM-DD: ")
+                    if not newDate.endswith("/"):
+                        newDate += "/"
+                    date_normal += newDate
+    date_normal = date_normal[:-1]
+    if date_normal.startswith("/"):
+        date_normal = date_normal[1:]
+    date_normal = date_normal.split("/")
+    date_normal.sort()
+    date_normal = date_normal[0] + "/" + date_normal[-1]
+    if "-01-01/2021" in date_normal:
+        date_normal = date_normal.replace("-01-01/2021", "")
+        date_normal = date_normal + "/" + date_normal
+    if date_normal == "/":
+        date_normal = "0000/0000"
+    if date_normal == "2021-01-01/2021-12-31" or date_normal == "2021-12-31/2021-12-31":
+        date_normal = "0000/0000"
+    return date_normal
+
 catalyst = ET.XML('''
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ead="urn:isbn:1-931666-22-9" xmlns:xlink="http://www.w3.org/1999/xlink" exclude-result-prefixes="xs" version="1.0">
 
@@ -25,7 +118,6 @@ catalyst = ET.XML('''
 <xsl:template match="@id"/>
 <xsl:template match="ead:ead/ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper/ead:num"/>
 <xsl:template match="ead:ead/ead:eadheader/ead:filedesc/ead:publicationstmt/ead:address"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:langmaterial[1]"/>
 <xsl:template match="ead:ead/ead:archdesc/ead:dsc/ead:c01/ead:did/ead:unitid"/>
 <xsl:template match="ead:relatedmaterial/ead:head"/>
 <xsl:template match="ead:extent[@altrender='carrier']"/>
@@ -43,7 +135,7 @@ catalyst = ET.XML('''
 	</xsl:element>
 </xsl:template>
 <xsl:template match="ead:eadid">
-	<xsl:element name="ead:header">
+	<xsl:element name="ead:eadid">
 		<xsl:attribute name="countrycode">US</xsl:attribute>
 		<xsl:attribute name="mainagencycode">US-tx</xsl:attribute>
 		<xsl:value-of select="."/>
@@ -166,9 +258,7 @@ catalyst = ET.XML('''
 			<xsl:when test="@normal">
 				<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
 			</xsl:when>
-			<xsl:otherwise>
-				<xsl:attribute name="normal"><xsl:text>0000/0000</xsl:text></xsl:attribute>
-			</xsl:otherwise>
+			<xsl:otherwise/>
 		</xsl:choose>
 		<xsl:attribute name="label">Dates:</xsl:attribute>
 		<xsl:choose>
@@ -198,14 +288,14 @@ catalyst = ET.XML('''
 		<xsl:apply-templates select="@*|node()"/>
 	</ead:physdesc>
 </xsl:template>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:langmaterial[2]">
+<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:langmaterial">
 	<xsl:element name="ead:langmaterial">
 		<xsl:attribute name="label">Language:</xsl:attribute>
 		<xsl:attribute name="encodinganalog">546$a</xsl:attribute>
 		<xsl:if test="@audience">
 			<xsl:attribute name="audience"><xsl:value-of select="@audience"/></xsl:attribute>
 		</xsl:if>
-		<xsl:apply-templates/>
+		<xsl:apply-templates select="@*|node()"/>
 	</xsl:element>
 </xsl:template>
 <!-- update repository to include the encodinganalog and correct links for tslac -->
@@ -355,7 +445,7 @@ insert proper attributes in the date and keep just the date and not the whole UT
 	        </xsl:when>
 	        <xsl:otherwise/>
 	    </xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
+		<xsl:apply-templates />
 	</xsl:element>
 </xsl:template>
 <!-- add correct encodinganalog to accruals -->
@@ -803,22 +893,32 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				</xsl:for-each>
 			</ead:controlaccess>
 		</xsl:if>
-		<xsl:if test="ead:subject[1]|ead:controlaccess/ead:subject[@encodinganalog='650']">
+		<xsl:if test="ead:subject[1]|ead:controlaccess/ead:subject">
 			<ead:controlaccess>
 				<ead:head>Subjects:</ead:head>
 				<xsl:for-each select="ead:subject">
 					<xsl:element name="ead:subject">
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
@@ -826,24 +926,34 @@ insert proper attributes in the date and keep just the date and not the whole UT
 						<xsl:value-of select="."/>
 					</xsl:element>
 				</xsl:for-each>
-				<xsl:for-each select="//ead:controlaccess/ead:subject[@encodinganalog='650']">
+				<xsl:for-each select="//ead:controlaccess/ead:subject">
 					<xsl:element name="ead:subject">
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:attribute name="encodinganalog">650</xsl:attribute>
-						<xsl:value-of select="."/>
+                        <xsl:choose>
+                            <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                        <xsl:when test="@source=''">
+                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                        </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="source">local</xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        <xsl:if test="@authfilenumber">
+                            <xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
+                        </xsl:if>
+                        <xsl:attribute name="encodinganalog">650</xsl:attribute>
+                        <xsl:value-of select="."/>
 					</xsl:element>
 				</xsl:for-each>
 			</ead:controlaccess>
@@ -893,22 +1003,32 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				</xsl:for-each>
 			</ead:controlaccess>
 		</xsl:if>
-		<xsl:if test="ead:genreform[1]|ead:controlaccess/ead:genreform[@encodinganalog='655']">
+		<xsl:if test="ead:genreform[1]|ead:controlaccess/ead:genreform">
 			<ead:controlaccess>
 				<ead:head>Document Types:</ead:head>
 				<xsl:for-each select="ead:genreform">
 					<xsl:element name="ead:genreform">
-						<xsl:choose>
-							<xsl:when test="@source='Library of Congress Subject Headings'">
-								<xsl:attribute name="source">lcsh</xsl:attribute>
-							</xsl:when>
-							<xsl:when test="@source='naf'">
-								<xsl:attribute name="source">lcnaf</xsl:attribute>
-							</xsl:when>
-							<xsl:otherwise>
-								<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-							</xsl:otherwise>
-						</xsl:choose>
+					    <xsl:choose>
+					        <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source=''">
+                                        <xsl:attribute name="source">aat</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+					        <xsl:otherwise>
+					            <xsl:attribute name="source">aat</xsl:attribute>
+					        </xsl:otherwise>
+					    </xsl:choose>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
@@ -916,19 +1036,29 @@ insert proper attributes in the date and keep just the date and not the whole UT
 						<xsl:value-of select="."/>
 					</xsl:element>
 				</xsl:for-each>
-				<xsl:for-each select="//ead:controlaccess/ead:genreform[@encodinganalog='655']">
+				<xsl:for-each select="//ead:controlaccess/ead:genreform">
 					<xsl:element name="ead:genreform">
-						<xsl:choose>
-							<xsl:when test="@source='Library of Congress Subject Headings'">
-								<xsl:attribute name="source">lcsh</xsl:attribute>
-							</xsl:when>
-							<xsl:when test="@source='naf'">
-								<xsl:attribute name="source">lcnaf</xsl:attribute>
-							</xsl:when>
-							<xsl:otherwise>
-								<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-							</xsl:otherwise>
-						</xsl:choose>
+					    <xsl:choose>
+					        <xsl:when test="@source">
+                                <xsl:choose>
+                                    <xsl:when test="@source='Library of Congress Subject Headings'">
+                                        <xsl:attribute name="source">lcsh</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source='naf'">
+                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="@source=''">
+                                        <xsl:attribute name="source">aat</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+					        <xsl:otherwise>
+					            <xsl:attribute name="source">aat</xsl:attribute>
+					        </xsl:otherwise>
+					    </xsl:choose>
 						<xsl:if test="@authfilenumber">
 							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 						</xsl:if>
@@ -2211,6 +2341,7 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace(' xlink:show="new"','')
             filedata = filedata.replace(' xlink:href',' href')
             filedata = filedata.replace(' xlink:type="simple"','')
+            filedata = filedata.replace(' xlink:role=""','')
             filedata = filedata.replace(' href=""','')
             filedata = filedata.replace('<ead:unitdate era="ce" calendar="gregorian"/>','')
             filedata = filedata.replace('xmlns=""','')
@@ -2233,103 +2364,9 @@ for dirpath, dirnames, filenames in os.walk(process):
         screwballs = []
         for date in dates:
             dateify = date.text
-            if dateify == "undated" or dateify == "undated," or dateify == "undated, ":
-                dateify = "2021"
-            dateify = dateify.replace("bulk", "").replace("(not inclusive)","").replace("and undated","").replace("undated","")
-            dateify = dateify.replace("about","").replace("\n",'').replace("[",'').replace("]",'').replace("ca.",'').replace('week of','')
-            dateify = dateify.replace("and","-").replace("primarily","").replace(" or ","-").replace("(?),","").replace("(?)","").replace("(",'').replace(")",'')
-            donkeykong = re.search(r'\d{2}-\d{2},', dateify)
-            if donkeykong:
-                donkeykong = str(donkeykong[0])
-                donkeykong = ", " + donkeykong
-                dateify = dateify.replace(donkeykong,donkeykong[-4:])
-            donkeykong = re.search(r'\w \d-\w \d, \d{4}', dateify)
-            print(donkeykong)
-            dateify.strip()
-            while dateify.endswith(", "):
-                dateify = dateify[:-2]
-            while dateify.endswith(" "):
-                dateify = dateify[:-1]
-            while dateify.endswith(","):
-                dateify = dateify[:-1]
-            while dateify.startswith(" "):
-                dateify = dateify[1:]
-            print(dateify)
-            date_normal = ""
-            try:
-                temp_value = daterangeparser.parse(dateify)
-                if "-" in dateify:
-                    start, end = daterangeparser.parse(dateify)
-                    start = start.strftime("%Y-%m-%d")
-                    end = end.strftime("%Y-%m-%d")
-                    print(start + "/" + end)
-                    date_normal += start + "/" + end + "/"
-                else:
-                    start,end = daterangeparser.parse(dateify)
-                    start = start.strftime("%Y-%m-%d")
-                    end = end.strftime("%Y-%m-%d")
-                    print(start + "/" + end)
-                    if end != None:
-                        date_normal += start + "/" + end + "/"
-                    else:
-                        date_normal += start + "/" + start + "/"
-                #print(dateify)
-            except:
-                listy = dateify.split(",")
-                print(listy)
-                for item in listy:
-                    while item.startswith(" "):
-                        item = item[1:]
-                    if "-early" in item and item.endswith("s"):
-                        item = item.replace("early","")
-                        item = item[:-2] + "4"
-                    item = item.replace("early","")
-                    if item.startswith("late") or item.startswith(" late"):
-                        silly = item.split("-")
-                        temp1 = silly[0].replace(" ","").replace("late","")
-                        if "s" in temp1:
-                            temp1 = temp1[:-2] + "5"
-                        item = temp1 + "-" + silly[1]
-                    if item.endswith("0s"):
-                        if item.startswith("mid-late "):
-                            item = item.replace("mid-late ","")
-                            tempy = item[-5:-1]
-                            tempy = tempy[:-1] + "5-"
-                            item = tempy + item
-                        item = item[:-2] + "9"
-                    item = item.replace("s-"," -")
-                    if item != '':
-                        try:
-                            start,end = daterangeparser.parse(item)
-                            start = start.strftime("%Y-%m-%d")
-                            if end != None:
-                                end = end.strftime("%Y-%m-%d")
-                                print(start + "/" + end)
-                                date_normal += start + "/" + end + "/"
-                            else:
-                                date_normal += start + "/" + start + "/"
-                                print(start + "/" + start)
-                        except:
-                            screwballs.append(dateify)
-                            print(item)
-                            newDate = input("manually enter date normal attribute above using YYYY-MM-DD/YYYY-MM-DD: ")
-                            if not newDate.endswith("/"):
-                                newDate += "/"
-                            date_normal += newDate
-            date_normal = date_normal[:-1]
-            if date_normal.startswith("/"):
-                date_normal = date_normal[1:]
-            date_normal = date_normal.split("/")
-            date_normal.sort()
-            date_normal = date_normal[0] + "/" + date_normal[-1]
-            if "-01-01/2021" in date_normal:
-                date_normal = date_normal.replace("-01-01/2021","")
-                date_normal = date_normal + "/" + date_normal
-            if date_normal == "/":
-                date_normal = "0000/0000"
-            if date_normal == "2021-01-01/2021-12-31" or date_normal == "2021-12-31/2021-12-31":
-                date_normal = "0000/0000"
-            date.attrib['normal'] = date_normal
+            #TODO something
+            if "normal" not in date.attrib:
+                date.attrib['normal'] = timeturner(dateify)
         dom2.write(output_file, pretty_print=True)
         with open(output_file, "r") as r:
             filedata = r.read()
@@ -2354,9 +2391,6 @@ for dirpath, dirnames, filenames in os.walk(process):
         with open(output_file, "w") as w:
             w.write(filedata)
         w.close()
-        print("check",filename,"for straggling date normal issues, the most likely candidates are:")
-        for item in screwballs:
-            print(item)
         switch = "no"
         while switch != "yes":
             switch = input("did you verify the ead file is okay?: ")
