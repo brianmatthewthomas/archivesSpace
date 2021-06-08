@@ -1,9 +1,16 @@
-import sys
 import os
+import shutil
 import daterangeparser
 import datetime
 import lxml.etree as ET
 import re
+
+def subjectspace (subject):
+    while subject.startswith(" "):
+        subject = subject[1:]
+    while subject.endswith(" "):
+        subject = subject[:-1]
+    return subject
 
 def timeturner (dateify):
     if dateify == "undated" or dateify == "undated," or dateify == "undated, ":
@@ -11,6 +18,32 @@ def timeturner (dateify):
     dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated","").replace(":","")
     dateify = dateify.replace("about", "").replace("\n", '').replace("[", '').replace("]", '').replace("ca.",'').replace('week of','')
     dateify = dateify.replace("and", "-").replace("primarily", "").replace(" or ", "-").replace("(?),", "").replace("(?)", "").replace("(", '').replace(")",'')
+    # process comma-separate months of the same year
+    A = "January"
+    B = "February"
+    C = "March"
+    D = "April"
+    E = "May"
+    F = "June"
+    G = "July"
+    H = "August"
+    I = "September"
+    J = "October"
+    K = "November"
+    L = "December"
+    dateify = dateify.replace(A+", "+B,A+"-"+B).replace(A+", "+C,A+"-"+C).replace(A+", "+D,A+"-"+D).replace(A+", "+E,A+"-"+E).replace(A+", "+F,A+"-"+F).replace(A+", "+G,A+"-"+G).replace(A+", "+H,A+"-"+H).replace(A+", "+I,A+"-"+I).replace(A+", "+J,A+"-"+J).replace(A+", "+K,A+"-"+K).replace(A+", "+L,A+"-"+L)
+    dateify = dateify.replace(B+", "+C,B+"-"+C).replace(B+", "+D,B+"-"+D).replace(B+", "+E,B+"-"+E).replace(B+", "+F,B+"-"+F).replace(B+", "+G,B+"-"+G).replace(B+", "+H,B+"-"+H).replace(B+", "+I,B+"-"+I).replace(B+", "+J,B+"-"+J).replace(B+", "+K,B+"-"+K).replace(B+", "+L,B+"-"+L)
+    dateify = dateify.replace(C+", "+D,B+"-"+D).replace(C+", "+E,B+"-"+E).replace(C+", "+F,B+"-"+F).replace(C+", "+G,B+"-"+G).replace(C+", "+H,B+"-"+H).replace(C+", "+I,B+"-"+I).replace(C+", "+J,B+"-"+J).replace(C+", "+K,B+"-"+K).replace(C+", "+L,B+"-"+L)
+    dateify = dateify.replace(D+", "+E,D+"-"+E).replace(D+", "+F,D+"-"+F).replace(D+", "+G,D+"-"+G).replace(D+", "+H,D+"-"+H).replace(D+", "+I,D+"-"+I).replace(D+", "+J,D+"-"+J).replace(D+", "+K,D+"-"+K).replace(D+", "+L,D+"-"+L)
+    dateify = dateify.replace(E+", "+F,E+"-"+F).replace(E+", "+G,E+"-"+G).replace(E+", "+H,E+"-"+H).replace(E+", "+I,E+"-"+I).replace(E+", "+J,E+"-"+J).replace(E+", "+K,E+"-"+K).replace(E+", "+L,E+"-"+L)
+    dateify = dateify.replace(F+", "+G,F+"-"+G).replace(F+", "+H,F+"-"+H).replace(F+", "+I,F+"-"+I).replace(F+", "+J,F+"-"+J).replace(F+", "+K,F+"-"+K).replace(F+", "+L,F+"-"+L)
+    dateify = dateify.replace(G+", "+H,G+"-"+H).replace(G+", "+I,G+"-"+I).replace(G+", "+J,G+"-"+J).replace(G+", "+K,G+"-"+K).replace(G+", "+L,G+"-"+L)
+    dateify = dateify.replace(H+", "+I,H+"-"+I).replace(H+", "+J,H+"-"+J).replace(H+", "+K,H+"-"+K).replace(H+", "+L,H+"-"+L)
+    dateify = dateify.replace(I+", "+J,I+"-"+J).replace(I+", "+K,I+"-"+K).replace(I+", "+L,I+"-"+L)
+    dateify = dateify.replace(J+", "+K,J+"-"+K).replace(J+", "+L,J+"-"+L)
+    dateify = dateify.replace(K+", "+L,K+"-"+L)
+    dateify = dateify.replace("-"+A+"-","-").replace("-"+B+"-","-").replace("-"+C+"-","-").replace("-"+D+"-","-").replace("-"+E+"-","-").replace("-"+F+"-","-").replace("-"+G+"-","-").replace("-"+H+"-","-").replace("-"+I+"-","-").replace("-"+J+"-","-").replace("-"+K+"-","-")
+    # next steps
     donkeykong = re.search(r'\d{2}-\d{2},', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
@@ -200,13 +233,13 @@ catalyst = ET.XML('''
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:when>
-                    <xsl:if test="@role">
-                        <xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
-                    </xsl:if>
                     <xsl:otherwise>
                         <xsl:attribute name="source">local</xsl:attribute>
                     </xsl:otherwise>
                 </xsl:choose>
+                <xsl:if test="@role">
+                    <xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
+                </xsl:if>
 				<xsl:if test="@authfilenumber">
 					<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
 				</xsl:if>
@@ -578,15 +611,13 @@ insert proper attributes in the date and keep just the date and not the whole UT
 <!-- add correct encodinganalog to scopecontent -->
 <xsl:template match="ead:scopecontent">
 	<ead:scopecontent>
-		<xsl:choose>
-			<xsl:when test="parent::ead:archdesc">
-				<xsl:attribute name="encodinganalog">520$b</xsl:attribute>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:attribute name="encodinganalog">520</xsl:attribute>
-			</xsl:otherwise>
-		</xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
+		<xsl:if test="parent::ead:archdesc">
+			<xsl:attribute name="encodinganalog">520$b</xsl:attribute>
+		</xsl:if>
+		<xsl:if test="@id">
+		    <xsl:attribute name="id"><xsl:value-of select="@id"/></xsl:attribute>
+		</xsl:if>
+		<xsl:apply-templates />
 	</ead:scopecontent>
 </xsl:template>
 <!-- add correct encodinganalog to arrangement -->
@@ -1092,7 +1123,7 @@ insert proper attributes in the date and keep just the date and not the whole UT
 						<xsl:value-of select="."/>
 					</xsl:element>
 				</xsl:for-each>
-				<xsl:for-each select="//ead:controlaccess/ead:subject">
+				<xsl:for-each select="ead:controlaccess/ead:subject">
 					<xsl:element name="ead:subject">
                         <xsl:choose>
                             <xsl:when test="@source">
@@ -1147,7 +1178,7 @@ insert proper attributes in the date and keep just the date and not the whole UT
 						<xsl:value-of select="."/>
 					</xsl:element>
 				</xsl:for-each>
-				<xsl:for-each select="//ead:controlaccess/ead:geogname[@encodinganalog='651']">
+				<xsl:for-each select="ead:controlaccess/ead:geogname[@encodinganalog='651']">
 					<xsl:element name="ead:geogname">
 					<xsl:choose>
 						<xsl:when test="@source='Library of Congress Subject Headings'">
@@ -1202,7 +1233,7 @@ insert proper attributes in the date and keep just the date and not the whole UT
 						<xsl:value-of select="."/>
 					</xsl:element>
 				</xsl:for-each>
-				<xsl:for-each select="//ead:controlaccess/ead:genreform">
+				<xsl:for-each select="ead:controlaccess/ead:genreform">
 					<xsl:element name="ead:genreform">
 					    <xsl:choose>
 					        <xsl:when test="@source">
@@ -1245,7 +1276,7 @@ insert proper attributes in the date and keep just the date and not the whole UT
 						<xsl:value-of select="."/>
 					</xsl:element>
 				</xsl:for-each>
-				<xsl:for-each select="//ead:controlaccess/ead:title[@encodinganalog='630']">
+				<xsl:for-each select="ead:controlaccess/ead:title[@encodinganalog='630']">
 					<xsl:element name="ead:title">
 						<xsl:attribute name="render">italic</xsl:attribute>
 						<xsl:attribute name="encodinganalog">630</xsl:attribute>
@@ -1281,7 +1312,7 @@ insert proper attributes in the date and keep just the date and not the whole UT
 						<xsl:value-of select="."/>
 					</xsl:element>
 				</xsl:for-each>
-				<xsl:for-each select="//ead:controlaccess/ead:function[@encodinganalog='657']">
+				<xsl:for-each select="ead:controlaccess/ead:function[@encodinganalog='657']">
 					<xsl:element name="ead:function">
 						<xsl:choose>
 							<xsl:when test="@source='Library of Congress Subject Headings'">
@@ -2460,6 +2491,7 @@ insert proper attributes in the date and keep just the date and not the whole UT
 <xsl:template match="ead:ead/ead:archdesc/ead:altformavail"/>
 <xsl:template match="ead:ead/ead:archdesc/ead:originalsloc"/>
 <xsl:template match="ead:ead/ead:archdesc/ead:odd"/>
+<xsl:template match="//ead:c01/ead:controlaccess"/>
 <xsl:template match="//ead:c01/ead:scopecontent/ead:head|//ead:c02/ead:scopecontent/ead:head|//ead:c03/ead:scopecontent/ead:head|//ead:c04/ead:scopecontent/ead:head|//ead:c05/ead:scopecontent/ead:head|//ead:c06/ead:scopecontent/ead:head|//ead:c07/ead:scopecontent/ead:head|//ead:c07/ead:scopecontent/ead:head|//ead:c08/ead:scopecontent/ead:head|//ead:c09/ead:scopecontent/ead:head"/>
 </xsl:stylesheet>''')
 nsmap = {'xmlns': 'urn:isbn:1-931666-22-9',
@@ -2474,6 +2506,7 @@ tx_number = "txNumbers.csv"  #input("csv file with the tx_number: ")
 sourceDir = input("source directory as relative or absolute filepath: ")
 process = sourceDir + "/" + process
 output = sourceDir + "/processed"
+exception = sourceDir + "/problems"
 tx_number = sourceDir + "/" + tx_number
 pairing = {}
 with open(tx_number, "r") as r:
@@ -2486,6 +2519,7 @@ for dirpath, dirnames, filenames in os.walk(process):
     for filename in filenames:
         ead_file = os.path.join(dirpath, filename)
         output_file = os.path.join(output,filename)
+        exception_file = os.path.join(exception,filename)
         with open(ead_file, "r") as r:
             filedata = r.read()
             if "xmlns:ead" not in filedata:
@@ -2528,59 +2562,87 @@ for dirpath, dirnames, filenames in os.walk(process):
         unitid[0].text = pairing[unitid_text]
         dates = dom2.xpath("//ead:unitdate", namespaces=nsmap)
         screwballs = []
+        flag = 0
         for date in dates:
             dateify = date.text
             #TODO something
             if "normal" not in date.attrib:
                 date.attrib['normal'] = timeturner(dateify)
         subjects = dom2.xpath("//ead:subject", namespaces=nsmap)
+        subjectlist = []
         for subject in subjects:
             subjective = subject.text
-            while subjective.startswith(" "):
-                subjective = subjective[1:]
-            while subjective.endswith(" "):
-                subjective = subjective[:-1]
-            subject.text = subjective
-        forms = dom2.xpath("//ead:genreform", namespaces=nsmap)
-        for form in forms:
-            formative = form.text
-            while formative.startswith(" "):
-                formative = formative[1:]
-            while formative.endswith(" "):
-                formative = formative[:-1]
-            form.text = formative
-        funs = dom2.xpath("//ead:function", namespaces=nsmap)
-        for fun in funs:
-            funny = fun.text
-            while funny.startswith(" "):
-                funny = funny[1:]
-            while funny.endswith(" "):
-                funny = funny[:-1]
-            fun.text = funny
-        persons = dom2.xpath("//ead:persname", namespaces=nsmap)
-        for person in persons:
-            personal = person.text
-            while personal.startswith(" "):
-                personal = personal[1:]
-            while personal.endswith(" "):
-                personal = personal[:-1]
-            person.text = personal
-        persons = dom2.xpath("//ead:famname", namespaces=nsmap)
-        for person in persons:
-            personal = person.text
-            while personal.startswith(" "):
-                personal = personal[1:]
-            while personal.endswith(" "):
-                personal = personal[:-1]
-            person.text = personal
-        persons = dom2.xpath("//ead:corpname", namespaces=nsmap)
-        for person in persons:
-            personal = person.text
-            while personal.startswith(" "):
-                personal = personal[1:]
-            while personal.endswith(" "):
-                personal = personal[:-1]
-            person.text = personal
+            subject.text = subjectspace(subjective)
+            if subject.text in subjectlist:
+                subject.getparent().remove(subject)
+            else:
+                subjectlist.append(subject.text)
+            if subject.attrib['source'] == "local":
+                flag += 1
+        subjects = dom2.xpath("//ead:controlaccess/ead:genreform", namespaces=nsmap)
+        for subject in subjects:
+            subjective = subject.text
+            subject.text = subjectspace(subjective)
+            if subject.text in subjectlist:
+                subject.getparent().remove(subject)
+            else:
+                subjectlist.append(subject.text)
+            if subject.attrib['source'] == "local":
+                flag += 1
+        subjects = dom2.xpath("//ead:function", namespaces=nsmap)
+        subjectlist = []
+        for subject in subjects:
+            subjective = subject.text
+            subject.text = subjectspace(subjective)
+            if subject.text in subjectlist:
+                subject.getparent().remove(subject)
+            else:
+                subjectlist.append(subject.text)
+        subjects = dom2.xpath("//ead:persname", namespaces=nsmap)
+        subjectlist = []
+        for subject in subjects:
+            subjective = subject.text
+            subject.text = subjectspace(subjective)
+            if subject.text in subjectlist:
+                subject.getparent().remove(subject)
+            else:
+                subjectlist.append(subject.text)
+            if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
+                flag += 1
+        subjects = dom2.xpath("//ead:famname", namespaces=nsmap)
+        subjectlist = []
+        for subject in subjects:
+            subjective = subject.text
+            subject.text = subjectspace(subjective)
+            if subject.text in subjectlist:
+                subject.getparent().remove(subject)
+            else:
+                subjectlist.append(subject.text)
+            if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
+                flag += 1
+        subjects = dom2.xpath("//ead:corpname", namespaces=nsmap)
+        subjectlist = []
+        for subject in subjects:
+            subjective = subject.text
+            subject.text = subjectspace(subjective)
+            if subject.text in subjectlist:
+                subject.getparent().remove(subject)
+            else:
+                subjectlist.append(subject.text)
+            if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
+                flag += 1
+        # sorts subjects, but causes head to sort into the middle so adding a preceding space to get it sort on top, then removing afterwards
+        subjects = dom2.xpath("//ead:head", namespaces=nsmap)
+        for subject in subjects:
+            subject.text = " " + subject.text
+        for node in dom2.xpath("//ead:controlaccess/ead:controlaccess", namespaces=nsmap):
+            if node.tag == "head":
+                node.text = " " + node.text
+            node[:] = sorted(node, key=lambda ch: ch.text)
+        subjects = dom2.xpath("//ead:head", namespaces=nsmap)
+        for subject in subjects:
+            subjective = subject.text
+            subject.text = subjectspace(subjective)
         dom2.write(output_file, pretty_print=True)
         with open(output_file, "r") as r:
             filedata = r.read()
@@ -2608,6 +2670,17 @@ for dirpath, dirnames, filenames in os.walk(process):
         with open(output_file, "w") as w:
             w.write(filedata)
         w.close()
+        switch = True
+        if flag > 0:
+            print("potential subject term issue in",unitid_text,"moving to problem area for checking")
+            shutil.move(output_file,exception_file)
+            switch = False
+        if switch is True:
+            try:
+                dom3 = ET.parse(output_file)
+            except:
+                print(unitid_text, "has a xml tag problem, moving to special handling area")
+                shutil.move(output_file,exception_file)
         switch = "no"
         while switch != "yes":
             switch = input(f"did you verify the ead file is okay with {unitid_text}?: ")
