@@ -2568,6 +2568,14 @@ for dirpath, dirnames, filenames in os.walk(process):
             #TODO something
             if "normal" not in date.attrib:
                 date.attrib['normal'] = timeturner(dateify)
+            if "type" not in date.attrib:
+                if "bulk" not in dateify:
+                    date.attrib['type'] = "inclusive"
+                else:
+                    date.attrib['type'] = ""
+            if date.attrib['type'] == "":
+                print(dateify)
+                date.attrib['type'] = input("date type missing, inclusive or bulk: ")
         subjects = dom2.xpath("//ead:subject", namespaces=nsmap)
         subjectlist = []
         for subject in subjects:
@@ -2668,7 +2676,7 @@ for dirpath, dirnames, filenames in os.walk(process):
             if "852$a" not in filedata:
                 filedata = filedata.replace("</abstract>",'</abstract>\n<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.state.tx.us/arc/index.html">Texas State Archives</extref>\n</repository>')
         with open(output_file, "w") as w:
-            w.write(filedata)
+            w.write('<?xml version="1.0" encoding="UTF-8"?>\n' + filedata)
         w.close()
         switch = True
         if flag > 0:
