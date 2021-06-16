@@ -2,6 +2,7 @@ import os
 import shutil
 import daterangeparser
 import datetime
+import locale
 import lxml.etree as ET
 import re
 
@@ -13,11 +14,11 @@ def subjectspace (subject):
     return subject
 
 def timeturner (dateify):
-    if dateify == "undated" or dateify == "undated," or dateify == "undated, ":
+    if dateify == "undated" or dateify == "undated," or dateify == "undated, " or dateify == 'n.d.':
         dateify = "2021"
     dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated","").replace(":","")
-    dateify = dateify.replace("about", "").replace("\n", '').replace("[", '').replace("]", '').replace("ca.",'').replace('week of','')
-    dateify = dateify.replace("and", "-").replace("primarily", "").replace(" or ", "-").replace("(?),", "").replace("(?)", "").replace("(", '').replace(")",'')
+    dateify = dateify.replace("about", "").replace("\n", '').replace("[", '').replace("]", '').replace("ca.",'').replace('week of','').replace(";",'')
+    dateify = dateify.replace("and", "-").replace("primarily", "").replace(" or ", "-").replace("(?),", "").replace("(?)", "").replace("(", '').replace(")",'').replace("?","")
     # process comma-separate months of the same year
     A = "January"
     B = "February"
@@ -43,14 +44,69 @@ def timeturner (dateify):
     dateify = dateify.replace(J+", "+K,J+"-"+K).replace(J+", "+L,J+"-"+L)
     dateify = dateify.replace(K+", "+L,K+"-"+L)
     dateify = dateify.replace("-"+A+"-","-").replace("-"+B+"-","-").replace("-"+C+"-","-").replace("-"+D+"-","-").replace("-"+E+"-","-").replace("-"+F+"-","-").replace("-"+G+"-","-").replace("-"+H+"-","-").replace("-"+I+"-","-").replace("-"+J+"-","-").replace("-"+K+"-","-")
+
     # next steps
     donkeykong = re.search(r'\d{2}-\d{2},', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         donkeykong = ", " + donkeykong
         dateify = dateify.replace(donkeykong, donkeykong[-4:])
-    donkeykong = re.search(r'\w \d-\w \d, \d{4}', dateify)
+    donkeykong = re.search(r'\d{2}/\d{2}/\d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = datetime.datetime.strptime(donkeykong, "%m/%d/%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{1}/\d{2}/\d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = "0" + donkeykong
+        dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{2}/\d{2}/\d{2}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = donkeykong[:-2] + "19" + donkeykong[-2:]
+        dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{1}/\d{2}/\d{2}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = "0" + donkeykong[:-2] + "19" + donkeykong[-2:]
+        dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{1}/\d{1}/\d{2}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = "0" + donkeykong[:2] + "0" + donkeykong[2:-2] + "19" + donkeykong[-2:]
+        dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'FY \d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = int(donkeykong[-4:]) - 1
+        dittykong = 'September 1, ' + str(dittykong) + " - August 31, " + donkeykong[-4:]
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{4}-\d{2}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        if dateify.startswith(donkeykong + ",") or dateify.startswith(donkeykong + " ") or dateify.endswith(donkeykong):
+            dittykong = donkeykong[:5] + donkeykong[:2] + donkeykong[-2:]
+            print(dittykong)
+            dateify = dateify.replace(donkeykong,dittykong)
     dateify.strip()
+    while dateify.endswith(".") or dateify.endswith(". "):
+        dateify = dateify[:-1]
     while dateify.endswith(", "):
         dateify = dateify[:-2]
     while dateify.endswith(" "):
@@ -90,7 +146,10 @@ def timeturner (dateify):
                 temp1 = silly[0].replace(" ", "").replace("late", "")
                 if "s" in temp1:
                     temp1 = temp1[:-2] + "5"
-                item = temp1 + "-" + silly[1]
+                try:
+                    item = temp1 + "-" + silly[1]
+                except:
+                    item = temp1
             if item.endswith("0s"):
                 if item.startswith("mid-late "):
                     item = item.replace("mid-late ", "")
