@@ -2,7 +2,6 @@ import os
 import shutil
 import daterangeparser
 import datetime
-import locale
 import lxml.etree as ET
 import re
 
@@ -14,11 +13,15 @@ def subjectspace (subject):
     return subject
 
 def timeturner (dateify):
-    if dateify == "undated" or dateify == "undated," or dateify == "undated, " or dateify == 'n.d.':
+    if dateify == "undated" or dateify == "undated," or dateify == "undated, " or dateify == 'n.d.' or dateify == "Undated":
         dateify = "2021"
     dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated","").replace(":","")
     dateify = dateify.replace("about", "").replace("\n", '').replace("[", '').replace("]", '').replace("ca.",'').replace('week of','').replace(";",'')
     dateify = dateify.replace("and", "-").replace("primarily", "").replace(" or ", "-").replace("(?),", "").replace("(?)", "").replace("(", '').replace(")",'').replace("?","")
+    if dateify.endswith(" - 1944"):
+        dateify = dateify.replace(" - 1944", "1944")
+    if dateify.endswith(" '46") or dateify.endswith(" '44"):
+        dateify = dateify[:-3] + "19" + dateify[-2:]
     # process comma-separate months of the same year
     A = "January"
     B = "February"
@@ -58,11 +61,58 @@ def timeturner (dateify):
         dittykong = dittykong.strftime("%B %d, %Y")
         print(dittykong)
         dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{2}-\d{2}-\d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = datetime.datetime.strptime(donkeykong, "%m-%d-%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{2}/\d{1}/\d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = donkeykong[:3] + "0" + donkeykong[3:-5] + donkeykong[-5:]
+        dittykong = datetime.datetime.strptime(donkeykong, "%m/%d/%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{2}-\d{1}-\d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = donkeykong[:3] + "0" + donkeykong[3:-5] + donkeykong[-5:]
+        dittykong = datetime.datetime.strptime(donkeykong, "%m-%d-%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{1}-\d{2}-\d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = "0" + donkeykong
+        dittykong = datetime.datetime.strptime(donkeykong, "%m-%d-%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'\d{1}/\d{2}/\d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = "0" + donkeykong
         dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{1}/\d{1}/\d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = "0" + donkeykong[:2] + "0" + donkeykong[2:-5] + donkeykong[-5:]
+        dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{1}-\d{1}-\d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = "0" + donkeykong[:2] + "0" + donkeykong[2:-5] + donkeykong[-5:]
+        dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
         dittykong = dittykong.strftime("%B %d, %Y")
         print(dittykong)
         dateify = dateify.replace(donkeykong,dittykong)
@@ -74,6 +124,14 @@ def timeturner (dateify):
         dittykong = dittykong.strftime("%B %d, %Y")
         print(dittykong)
         dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{2}-\d{2}-\d{2}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = donkeykong[:-2] + "19" + donkeykong[-2:]
+        dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'\d{1}/\d{2}/\d{2}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
@@ -82,11 +140,35 @@ def timeturner (dateify):
         dittykong = dittykong.strftime("%B %d, %Y")
         print(dittykong)
         dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{1}-\d{2}-\d{2}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = "0" + donkeykong[:-2] + "19" + donkeykong[-2:]
+        dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{2}-\d{1}-\d{2}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = donkeykong[:3] + "0" + donkeykong[3:-2] + "19" + donkeykong[-2:]
+        dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'\d{1}/\d{1}/\d{2}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = "0" + donkeykong[:2] + "0" + donkeykong[2:-2] + "19" + donkeykong[-2:]
         dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{1}-\d{1}-\d{2}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = "0" + donkeykong[:2] + "0" + donkeykong[2:-2] + "19" + donkeykong[-2:]
+        dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
         dittykong = dittykong.strftime("%B %d, %Y")
         print(dittykong)
         dateify = dateify.replace(donkeykong,dittykong)
@@ -2592,7 +2674,10 @@ for dirpath, dirnames, filenames in os.walk(process):
         with open(output_file, "r") as r:
             filedata = r.read()
             if "unitid>" not in filedata:
-                filedata = filedata.replace("abstract>","abstract>\n<ead:unitid label='TSLAC Control No.:' countrycode='US' repositorycode='US-tx' encodinganalog='099'></ead:unitid>")
+                if "abstract>" in filedata:
+                    filedata = filedata.replace("abstract>","abstract>\n<ead:unitid label='TSLAC Control No.:' countrycode='US' repositorycode='US-tx' encodinganalog='099'></ead:unitid>")
+                else:
+                    filedata = filedata.replace('origination>',"origination>\n<ead:unitid label='TSLAC Control No.:' countrycode='US' repositorycode='US-tx' encodinganalog='099'></ead:unitid>")
             filedata = filedata.replace(' xmlns:xlink="http://www.w3.org/1999/xlink"',"")
             filedata = filedata.replace(' xlink:actuate="onLoad"',"")
             filedata = filedata.replace(' xlink:actuate="onRequest"',"")
@@ -2635,6 +2720,14 @@ for dirpath, dirnames, filenames in os.walk(process):
             if date.attrib['type'] == "":
                 print(dateify)
                 date.attrib['type'] = input("date type missing, inclusive or bulk: ")
+            if 'era' not in date.attrib:
+                date.attrib['era'] = 'ce'
+            if date.attrib['era'] == "":
+                date.attrib['era'] = 'ce'
+            if 'calendar' not in date.attrib:
+                date.attrib['calendar'] = 'gregorian'
+            if date.attrib['calendar'] == "":
+                date.attrib['calendar'] = 'gregorian'
         subjects = dom2.xpath("//ead:subject", namespaces=nsmap)
         subjectlist = []
         for subject in subjects:
@@ -2710,6 +2803,32 @@ for dirpath, dirnames, filenames in os.walk(process):
         for subject in subjects:
             subjective = subject.text
             subject.text = subjectspace(subjective)
+        header = dom2.xpath("//ead:eadheader", namespaces=nsmap)
+        for item in header:
+            item.attrib['langencoding'] = "iso639-2b"
+            item.attrib['audience'] = "internal"
+            item.attrib['findaidstatus'] = "edited-full-draft"
+            item.attrib['repositoryencoding'] = "iso15511"
+            item.attrib['scriptencoding'] = "iso15924"
+            item.attrib['dateencoding'] = "iso8601"
+            item.attrib['countryencoding'] = "iso3166-1"
+            if 'id' in item.attrib:
+                item.attrib = item.attrib.pop('id')
+        header = dom2.xpath("//ead:eadid", namespaces=nsmap)
+        for item in header:
+            if 'encodinganalog' in item.attrib:
+                item.attrib = item.attrib.pop('encodinganalog')
+            if 'publicid' in item.attrib:
+                item.attrib = item.attrib.pop('publicid')
+            item.attrib['countrycode'] = 'US'
+            item.attrib['mainagencycode'] = 'US-tx'
+        header = dom2.xpath("//ead:ead", namespaces=nsmap)
+        for item in header:
+            if 'xmlns:ead' in item.attrib:
+                item.attrib = item.attrib.pop('xmlns:ead')
+            if 'xmlns' not in item.attrib:
+                item.attrib['xmlns'] = "urn:isbn:1-931666-22-9"
+            item.attrib['relatedencoding'] = "MARC21"
         dom2.write(output_file, pretty_print=True)
         with open(output_file, "r") as r:
             filedata = r.read()
@@ -2734,8 +2853,29 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace('\n<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>','')
             if "852$a" not in filedata:
                 filedata = filedata.replace("</abstract>",'</abstract>\n<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.state.tx.us/arc/index.html">Texas State Archives</extref>\n</repository>')
+            filedata = filedata.replace('<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.state.tx.us/arc/index.html">Texas State Archives</extref>\n</repository>\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>\n','')
+            filedata = filedata.replace('\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>','')
+            filedata = filedata.replace('<controlaccess>\n<head>Personal Names:</head>\n</controlaccess>\n','')
+            filedata = filedata.replace('<controlaccess>\n<head>Family Names:</head>\n</controlaccess>\n','')
+            filedata = filedata.replace('<controlaccess>\n<head>Corporate Names:</head>\n</controlaccess>\n','')
+            filedata = filedata.replace('<controlaccess>\n<head>Subjects (Persons):</head>\n</controlaccess>\n','')
+            filedata = filedata.replace('<controlaccess>\n<head>Subjects (Families):</head>\n</controlaccess>\n','')
+            filedata = filedata.replace('<controlaccess>\n<head>Subjects (Organizations):</head>\n</controlaccess>\n','')
+            filedata = filedata.replace('<controlaccess>\n<head>Subjects:</head>\n</controlaccess>\n','')
+            filedata = filedata.replace('<controlaccess>\n<head>Places:</head>\n</controlaccess>\n','')
+            filedata = filedata.replace('<controlaccess>\n<head>Document Types:</head>\n</controlaccess>\n','')
+            filedata = filedata.replace('<controlaccess>\n<head>Titles:</head>\n</controlaccess>\n','')
+            filedata = filedata.replace('<controlaccess>\n<head>Functions:</head>\n</controlaccess>\n','')
+            filedata = filedata.replace('<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>','')
+            filedata = filedata.replace('<controlaccess>\n</controlaccess>\n','')
+            if 'xmlns="urn:isbn:1-931666-22-9" xsi:' in filedata and 'relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">' in filedata:
+                filedata = filedata.replace('relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">','>')
+            donkeykong = re.findall(r'\n*.*<\?*.*xml-stylesheet*.*\?>*.*', filedata)
+            if donkeykong:
+                for item in donkeykong:
+                    filedata = filedata.replace(item,"")
         with open(output_file, "w") as w:
-            w.write('<?xml version="1.0" encoding="UTF-8"?>\n' + filedata)
+            w.write('<?xml version="1.0" encoding="UTF-8"?>\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->\n<!-- <?xml-stylesheet type="text/xsl" href="ead.xsl"?> <?xml-stylesheet type="text/css" href="ead.css"?> -->\n' + filedata)
         w.close()
         switch = True
         if flag > 0:
