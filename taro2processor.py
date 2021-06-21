@@ -13,7 +13,7 @@ def subjectspace (subject):
     return subject
 
 def timeturner (dateify):
-    if dateify == "undated" or dateify == "undated," or dateify == "undated, " or dateify == 'n.d.' or dateify == "Undated":
+    if dateify == "undated" or dateify == "undated," or dateify == "undated, " or dateify == 'n.d.' or dateify == "Undated" or dateify == 'date unknown':
         dateify = "2021"
     dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated","").replace(":","")
     dateify = dateify.replace("about", "").replace("\n", '').replace("[", '').replace("]", '').replace("ca.",'').replace('week of','').replace(";",'')
@@ -148,6 +148,14 @@ def timeturner (dateify):
         dittykong = dittykong.strftime("%B %d, %Y")
         print(dittykong)
         dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{2}/\d{1}/\d{2}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = donkeykong[:3] + "0" + donkeykong[3:-2] + "19" + donkeykong[-2:]
+        dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'\d{2}-\d{1}-\d{2}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
@@ -172,11 +180,50 @@ def timeturner (dateify):
         dittykong = dittykong.strftime("%B %d, %Y")
         print(dittykong)
         dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'FY \d{4}-\d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        placeholder = donkeykong.split("-")
+        year1 = int(placeholder[0][-4:]) - 1
+        year2 = placeholder[1][-4:]
+        dittykong = 'September 1, ' + str(year1) + " - August 31, " + year2
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'FY \d{4} - FY \d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        placeholder = donkeykong.split(" - ")
+        year1 = int(placeholder[0][-4:]) - 1
+        year2 = placeholder[1][-4:]
+        dittykong = 'September 1, ' + str(year1) + " - August 31, " + year2
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'FY \d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = int(donkeykong[-4:]) - 1
         dittykong = 'September 1, ' + str(dittykong) + " - August 31, " + donkeykong[-4:]
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'FY\d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = int(donkeykong[-4:]) - 1
+        dittykong = 'September 1, ' + str(dittykong) + " - August 31, " + donkeykong[-4:]
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'FY \d{2}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = int(donkeykong[-2:]) + 1899
+        dittykong = 'September 1, ' + str(dittykong) + " - August 31, 19" + donkeykong[-2:]
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'FY\d{2}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = int(donkeykong[-2:]) + 1899
+        dittykong = 'September 1, ' + str(dittykong) + " - August 31, 19" + donkeykong[-2:]
         print(dittykong)
         dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'\d{4}-\d{2}', dateify)
@@ -186,6 +233,47 @@ def timeturner (dateify):
             dittykong = donkeykong[:5] + donkeykong[:2] + donkeykong[-2:]
             print(dittykong)
             dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'd{2}/\d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = donkeykong
+        dittykong = datetime.datetime.strptime(dittykong, "%m/%Y")
+        dittykong = dittykong.strftime("%B, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'd{1}/\d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = "0" + donkeykong
+        dittykong = datetime.datetime.strptime(dittykong, "%m/%Y")
+        dittykong = dittykong.strftime("%B, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    dateify = dateify.replace("Summer, ","Summer ").replace("Spring, ","Spring ").replace("Fall, ","Fall ").replace("Winter, ","Winter ")
+    donkeykong = re.search(r'Spring \d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = "March 1, " + donkeykong[-4:] + " to May 31, " + donkeykong[-4:]
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'Summer \d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = "June 1, " + donkeykong[-4:] + " to August 31, " + donkeykong[-4:]
+        print(dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
+    donkeykong = re.search(r'Fall \d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = "September 1, " + donkeykong[-4:] + " to October 31, " + donkeykong[-4:]
+        print(dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
+    donkeykong = re.search(r'Winter \d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = "November 1, " + donkeykong[-4:] + " to December 31, " + donkeykong[-4:]
+        print(dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
     dateify.strip()
     while dateify.endswith(".") or dateify.endswith(". "):
         dateify = dateify[:-1]
@@ -570,7 +658,7 @@ catalyst = ET.XML('''
 	</xsl:element>
 </xsl:template>
 <!-- modify creation to reword the output, pull the archivists name, 
-insert proper attributes in the date and keep just the date and not the whole UTC code -->
+insert proper attributes in the date and keep just the date and not the whole UTC code 
 <xsl:template match="ead:ead/ead:eadheader/ead:profiledesc/ead:creation">
 	<xsl:element name="ead:creation">
 		<xsl:text>Finding aid created in ArchivesSpace by </xsl:text>
@@ -583,7 +671,7 @@ insert proper attributes in the date and keep just the date and not the whole UT
 		</xsl:element>
 		<xsl:text>.</xsl:text>
 	</xsl:element>
-</xsl:template>
+</xsl:template> -->
 <!-- change descrules tag content to match our standards -->
 <xsl:template match="ead:ead/ead:eadheader/ead:profiledesc/ead:descrules">
 	<xsl:element name="ead:descrules">Description based on 
@@ -2704,6 +2792,31 @@ for dirpath, dirnames, filenames in os.walk(process):
         dom2 = ET.parse(output_file)
         unitid = dom2.xpath("//ead:unitid", namespaces=nsmap)
         unitid[0].text = pairing[unitid_text]
+        dates = dom2.xpath("//ead:unitdate/ead:emph", namespaces=nsmap)
+        screwballs = []
+        flag = 0
+        for date in dates:
+            dateify = date.text
+            date = date.getparent()
+            #TODO something
+            if "normal" not in date.attrib:
+                date.attrib['normal'] = timeturner(dateify)
+            if "type" not in date.attrib:
+                if "bulk" not in dateify:
+                    date.attrib['type'] = "inclusive"
+                else:
+                    date.attrib['type'] = ""
+            if date.attrib['type'] == "":
+                print(dateify)
+                date.attrib['type'] = input("date type missing, inclusive or bulk: ")
+            if 'era' not in date.attrib:
+                date.attrib['era'] = 'ce'
+            if date.attrib['era'] == "":
+                date.attrib['era'] = 'ce'
+            if 'calendar' not in date.attrib:
+                date.attrib['calendar'] = 'gregorian'
+            if date.attrib['calendar'] == "":
+                date.attrib['calendar'] = 'gregorian'
         dates = dom2.xpath("//ead:unitdate", namespaces=nsmap)
         screwballs = []
         flag = 0
@@ -2845,6 +2958,7 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace(", , <",", <")
             filedata = filedata.replace("..",".").replace(". .",".")
             filedata = filedata.replace("\n<ead:descgrp>","")
+            filedata = filedata.replace('\n<ead:descgrp type="admininfo">','')
             filedata = filedata.replace("\n</ead:descgrp>","")
             filedata = filedata.replace("ead:","")
             filedata = filedata.replace('\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive.</emph>\n</p>','')
