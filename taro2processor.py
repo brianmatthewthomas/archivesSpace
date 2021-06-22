@@ -16,7 +16,7 @@ def timeturner (dateify):
     if dateify == "undated" or dateify == "undated," or dateify == "undated, " or dateify == 'n.d.' or dateify == "Undated" or dateify == 'date unknown':
         dateify = "2021"
     dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated","").replace(":","")
-    dateify = dateify.replace("about", "").replace("\n", '').replace("[", '').replace("]", '').replace("ca.",'').replace('week of','').replace(";",'')
+    dateify = dateify.replace("about", "").replace("\n", '').replace("[", '').replace("]", '').replace("ca.",'').replace('week of','').replace(";",'').replace("thru","-")
     dateify = dateify.replace("and", "-").replace("primarily", "").replace(" or ", "-").replace("(?),", "").replace("(?)", "").replace("(", '').replace(")",'').replace("?","")
     if dateify.endswith(" - 1944"):
         dateify = dateify.replace(" - 1944", "1944")
@@ -274,6 +274,13 @@ def timeturner (dateify):
         dittykong = "November 1, " + donkeykong[-4:] + " to December 31, " + donkeykong[-4:]
         print(dittykong)
         dateify = dateify.replace(donkeykong, dittykong)
+    donkeykong = re.search(r'before \d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = int(donkeykong[-4:]) - 1
+        dittykong = "January 1, 0000 - December 31, " + str(dittykong)
+        print(dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
     dateify.strip()
     while dateify.endswith(".") or dateify.endswith(". "):
         dateify = dateify[:-1]
@@ -357,6 +364,10 @@ def timeturner (dateify):
         date_normal = "0000/0000"
     if date_normal == "2021-01-01/2021-12-31" or date_normal == "2021-12-31/2021-12-31":
         date_normal = "0000/0000"
+    if "January 1, 0000" in dateify:
+        donkeykong = re.search(r'\d{4}-\d{2}-\d{2}/', date_normal)
+        donkeykong = str(donkeykong[0])
+        date_normal = date_normal.replace(donkeykong,"0000/")
     return date_normal
 
 catalyst = ET.XML('''
@@ -2981,7 +2992,7 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace('<controlaccess>\n<head>Titles:</head>\n</controlaccess>\n','')
             filedata = filedata.replace('<controlaccess>\n<head>Functions:</head>\n</controlaccess>\n','')
             filedata = filedata.replace('<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>','')
-            filedata = filedata.replace('<controlaccess>\n</controlaccess>\n','')
+            filedata = filedata.replace('<controlaccess>\n</controlaccess>\n','').replace(" , ",", ")
             if 'xmlns="urn:isbn:1-931666-22-9" xsi:' in filedata and 'relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">' in filedata:
                 filedata = filedata.replace('relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">','>')
             donkeykong = re.findall(r'\n*.*<\?*.*xml-stylesheet*.*\?>*.*', filedata)
