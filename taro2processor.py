@@ -15,7 +15,7 @@ def subjectspace (subject):
 def timeturner (dateify):
     if dateify == "undated" or dateify == "undated," or dateify == "undated, " or dateify == 'n.d.' or dateify == "Undated" or dateify == 'date unknown':
         dateify = "2021"
-    dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated","").replace(":","")
+    dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated","").replace(":","").replace(" part II", "").replace(" part I","")
     dateify = dateify.replace("about", "").replace("\n", '').replace("[", '').replace("]", '').replace("ca.",'').replace('week of','').replace(";",'').replace("thru","-")
     dateify = dateify.replace("and", "-").replace("primarily", "").replace(" or ", "-").replace("(?),", "").replace("(?)", "").replace("(", '').replace(")",'').replace("?","")
     if dateify.endswith(" - 1944"):
@@ -250,25 +250,25 @@ def timeturner (dateify):
         print(dittykong)
         dateify = dateify.replace(donkeykong,dittykong)
     dateify = dateify.replace("Summer, ","Summer ").replace("Spring, ","Spring ").replace("Fall, ","Fall ").replace("Winter, ","Winter ")
-    donkeykong = re.search(r'Spring \d{4}', dateify)
+    donkeykong = re.search(r'Spring \d{4}', dateify, re.IGNORECASE)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = "March 1, " + donkeykong[-4:] + " to May 31, " + donkeykong[-4:]
         print(dittykong)
         dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'Summer \d{4}', dateify)
+    donkeykong = re.search(r'Summer \d{4}', dateify, re.IGNORECASE)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = "June 1, " + donkeykong[-4:] + " to August 31, " + donkeykong[-4:]
         print(dittykong)
         dateify = dateify.replace(donkeykong, dittykong)
-    donkeykong = re.search(r'Fall \d{4}', dateify)
+    donkeykong = re.search(r'Fall \d{4}', dateify, re.IGNORECASE)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = "September 1, " + donkeykong[-4:] + " to October 31, " + donkeykong[-4:]
         print(dittykong)
         dateify = dateify.replace(donkeykong, dittykong)
-    donkeykong = re.search(r'Winter \d{4}', dateify)
+    donkeykong = re.search(r'Winter \d{4}', dateify, re.IGNORECASE)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = "November 1, " + donkeykong[-4:] + " to December 31, " + donkeykong[-4:]
