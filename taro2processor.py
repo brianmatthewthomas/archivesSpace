@@ -2809,7 +2809,6 @@ for dirpath, dirnames, filenames in os.walk(process):
         for date in dates:
             dateify = date.text
             date = date.getparent()
-            #TODO something
             if "normal" not in date.attrib:
                 date.attrib['normal'] = timeturner(dateify)
             if "type" not in date.attrib:
@@ -2833,7 +2832,6 @@ for dirpath, dirnames, filenames in os.walk(process):
         flag = 0
         for date in dates:
             dateify = date.text
-            #TODO something
             if "normal" not in date.attrib:
                 date.attrib['normal'] = timeturner(dateify)
             if "type" not in date.attrib:
@@ -2843,7 +2841,10 @@ for dirpath, dirnames, filenames in os.walk(process):
                     date.attrib['type'] = ""
             if date.attrib['type'] == "":
                 print(dateify)
-                date.attrib['type'] = input("date type missing, inclusive or bulk: ")
+                placeholder = ""
+                while placeholder != "inclusive" and placeholder != "bulk":
+                    placeholder = input("date type missing, inclusive or bulk: ")
+                    date.attrib['type'] = placeholder
             if 'era' not in date.attrib:
                 date.attrib['era'] = 'ce'
             if date.attrib['era'] == "":
@@ -2992,9 +2993,14 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace('<controlaccess>\n<head>Titles:</head>\n</controlaccess>\n','')
             filedata = filedata.replace('<controlaccess>\n<head>Functions:</head>\n</controlaccess>\n','')
             filedata = filedata.replace('<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>','')
-            filedata = filedata.replace('<controlaccess>\n</controlaccess>\n','').replace(" , ",", ")
+            filedata = filedata.replace('<controlaccess>\n</controlaccess>\n','').replace(" , ",", ").replace(", </unitdate>, ","</unitdate>, ").replace(",</unitdate>, ","</unitdate>, ").replace(", </emph>, ", "</emph>, ").replace(",</emph>, ","</emph>, ").replace(" </unitdate>, ","</unitdate>, ")
+            filedata = filedata.replace("</unitdate>, </unittitle>\n<physdesc>",", </unitdate></unittitle>\n<physdesc>")
             if 'xmlns="urn:isbn:1-931666-22-9" xsi:' in filedata and 'relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">' in filedata:
                 filedata = filedata.replace('relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">','>')
+            filedata = filedata.replace("[[","[").replace("]]","]").replace("[ [", "[").replace("] ]","]").replace(",</emph>\n, </unitdate>","</emph>, </unitdate>")
+            filedata = filedata.replace("\n<?xm-replace_text (be sure level attribute is correct)?>","")
+            filedata = filedata.replace('\n<change>\n<date era="ce" calendar="gregorian">\n<?xm-replace_text {date}?>\n</date>\n<item>\n<?xm-replace_text {item}?>\n</item>\n</change>','')
+            filedata = filedata.replace('<unitdate era="ce" calendar="gregorian" normal="0000/0000" type="inclusive">\n<?xm-replace_text {date}?>\n</unitdate>\n','')
             donkeykong = re.findall(r'\n*.*<\?*.*xml-stylesheet*.*\?>*.*', filedata)
             if donkeykong:
                 for item in donkeykong:
@@ -3017,5 +3023,3 @@ for dirpath, dirnames, filenames in os.walk(process):
         while switch != "yes":
             switch = input(f"did you verify the ead file is okay with {unitid_text}?: ")
 print("all done!")
-
-#TODO continue testing against real files
