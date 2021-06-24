@@ -54,6 +54,37 @@ def timeturner (dateify):
         donkeykong = str(donkeykong[0])
         donkeykong = ", " + donkeykong
         dateify = dateify.replace(donkeykong, donkeykong[-4:])
+    donkeykong = re.search(r'\d{4}-\d{2}-\d{2}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = datetime.datetime.strptime(donkeykong, "%Y-%m-%d")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{4}-\d{2}-\d{1}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = donkeykong[:-1] + "0" + donkeykong[-1:]
+        dittykong = datetime.datetime.strptime(donkeykong, "%Y-%m-%d")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{4}-\d{1}-\d{2}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = donkeykong[:5] + "0" + donkeykong[5:]
+        dittykong = datetime.datetime.strptime(donkeykong, "%Y-%m-%d")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{4}-\d{1}-\d{1}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = donkeykong[:5] + "0" + donkeykong[5:7] + "0" + donkeykong[-1:]
+        dittykong = datetime.datetime.strptime(donkeykong, "%Y-%m-%d")
+        dittykong = dittykong.strftime("%B %d, %Y")
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'\d{2}/\d{2}/\d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
@@ -127,11 +158,12 @@ def timeturner (dateify):
     donkeykong = re.search(r'\d{2}-\d{2}-\d{2}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
-        dittykong = donkeykong[:-2] + "19" + donkeykong[-2:]
-        dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
+        if dateify.startswith(donkeykong):
+            dittykong = donkeykong[:-2] + "19" + donkeykong[-2:]
+            dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'\d{1}/\d{2}/\d{2}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
@@ -2768,6 +2800,11 @@ for dirpath, dirnames, filenames in os.walk(process):
                 w.write(filedata)
             w.close()
         dom = ET.parse(ead_file)
+        myDates = dom.xpath(".//ead:unittitle/ead:unitdate", namespaces=nsmap)
+        for item in myDates:
+            boss = item.getparent()
+            boss = boss.getparent()
+            boss.append(item)
         newdom = transform(dom)
         newdom.write(output_file, pretty_print=True)
         with open(output_file, "r") as r:
@@ -3001,6 +3038,13 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace("\n<?xm-replace_text (be sure level attribute is correct)?>","")
             filedata = filedata.replace('\n<change>\n<date era="ce" calendar="gregorian">\n<?xm-replace_text {date}?>\n</date>\n<item>\n<?xm-replace_text {item}?>\n</item>\n</change>','')
             filedata = filedata.replace('<unitdate era="ce" calendar="gregorian" normal="0000/0000" type="inclusive">\n<?xm-replace_text {date}?>\n</unitdate>\n','')
+            filedata = filedata.replace("\n<unittitle>, </unittitle>","")
+            donkeykong = re.findall(']</physdesc>\n<unitdate *.*, </unitdate>\n</did>', filedata)
+            if donkeykong:
+                for item in donkeykong:
+                    item = str(item)
+                    dittykong = item.replace(", </unitdate>"," </unitdate>")
+                    filedata = filedata.replace(item,dittykong)
             donkeykong = re.findall(r'\n*.*<\?*.*xml-stylesheet*.*\?>*.*', filedata)
             if donkeykong:
                 for item in donkeykong:
