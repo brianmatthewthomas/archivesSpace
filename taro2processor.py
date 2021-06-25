@@ -54,164 +54,184 @@ def timeturner (dateify):
         donkeykong = str(donkeykong[0])
         donkeykong = ", " + donkeykong
         dateify = dateify.replace(donkeykong, donkeykong[-4:])
-    donkeykong = re.search(r'\d{4}-\d{2}-\d{2}', dateify)
+    donkeykong = re.findall(r'\d{4}-\d{2}-\d{2}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = datetime.datetime.strptime(donkeykong, "%Y-%m-%d")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{4}-\d{2}-\d{1}', dateify)
+        for item in donkeykong:
+            item = str(item)
+            dittykong = datetime.datetime.strptime(item, "%Y-%m-%d")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{4}-\d{2}-\d{1}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = donkeykong[:-1] + "0" + donkeykong[-1:]
-        dittykong = datetime.datetime.strptime(donkeykong, "%Y-%m-%d")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{4}-\d{1}-\d{2}', dateify)
+        for item in donkeykong:
+            item = str(item)
+            dittykong = item[:-1] + "0" + item[-1:]
+            dittykong = datetime.datetime.strptime(dittykong, "%Y-%m-%d")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{4}-\d{1}-\d{2}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = donkeykong[:5] + "0" + donkeykong[5:]
-        dittykong = datetime.datetime.strptime(donkeykong, "%Y-%m-%d")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{4}-\d{1}-\d{1}', dateify)
+        for item in donkeykong:
+            item = str(item)
+            dittykong = item[:5] + "0" + item[5:]
+            dittykong = datetime.datetime.strptime(dittykong, "%Y-%m-%d")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{4}-\d{1}-\d{1}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = donkeykong[:5] + "0" + donkeykong[5:7] + "0" + donkeykong[-1:]
-        dittykong = datetime.datetime.strptime(donkeykong, "%Y-%m-%d")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{2}/\d{2}/\d{4}', dateify)
+        for item in donkeykong:
+            item = str(item)
+            dittykong = item[:5] + "0" + item[5:7] + "0" + item[-1:]
+            dittykong = datetime.datetime.strptime(dittykong, "%Y-%m-%d")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{2}/\d{2}/\d{4}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = datetime.datetime.strptime(donkeykong, "%m/%d/%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{2}-\d{2}-\d{4}', dateify)
+        for item in donkeykong:
+            item = str(item)
+            dittykong = datetime.datetime.strptime(item, "%m/%d/%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{2}-\d{2}-\d{4}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = datetime.datetime.strptime(donkeykong, "%m-%d-%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{2}/\d{1}/\d{4}', dateify)
+        for item in donkeykong:
+            item = str(item)
+            dittykong = datetime.datetime.strptime(item, "%m-%d-%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{2}/\d{1}/\d{4}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = donkeykong[:3] + "0" + donkeykong[3:-5] + donkeykong[-5:]
-        dittykong = datetime.datetime.strptime(donkeykong, "%m/%d/%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{2}-\d{1}-\d{4}', dateify)
+        for item in donkeykong:
+            item = str(item)
+            dittykong = item[:3] + "0" + item[3:-5] + item[-5:]
+            dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{2}-\d{1}-\d{4}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = donkeykong[:3] + "0" + donkeykong[3:-5] + donkeykong[-5:]
-        dittykong = datetime.datetime.strptime(donkeykong, "%m-%d-%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{1}-\d{2}-\d{4}', dateify)
-    if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = "0" + donkeykong
-        dittykong = datetime.datetime.strptime(donkeykong, "%m-%d-%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{1}/\d{2}/\d{4}', dateify)
-    if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = "0" + donkeykong
-        dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{1}/\d{1}/\d{4}', dateify)
-    if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = "0" + donkeykong[:2] + "0" + donkeykong[2:-5] + donkeykong[-5:]
-        dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{1}-\d{1}-\d{4}', dateify)
-    if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = "0" + donkeykong[:2] + "0" + donkeykong[2:-5] + donkeykong[-5:]
-        dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{2}/\d{2}/\d{2}', dateify)
-    if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = donkeykong[:-2] + "19" + donkeykong[-2:]
-        dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{2}-\d{2}-\d{2}', dateify)
-    if donkeykong:
-        donkeykong = str(donkeykong[0])
-        if dateify.startswith(donkeykong):
-            dittykong = donkeykong[:-2] + "19" + donkeykong[-2:]
+        for item in donkeykong:
+            item = str(item)
+            dittykong = item[:3] + "0" + item[3:-5] + item[-5:]
             dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             print(dittykong)
-            dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{1}/\d{2}/\d{2}', dateify)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{1}-\d{2}-\d{4}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = "0" + donkeykong[:-2] + "19" + donkeykong[-2:]
-        dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{1}-\d{2}-\d{2}', dateify)
+        for item in donkeykong:
+            item = str(item)
+            dittykong = "0" + item
+            dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{1}/\d{2}/\d{4}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = "0" + donkeykong[:-2] + "19" + donkeykong[-2:]
-        dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{2}/\d{1}/\d{2}', dateify)
+        for item in donkeykong:
+            item = str(item)
+            dittykong = "0" + item
+            dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{1}/\d{1}/\d{4}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = donkeykong[:3] + "0" + donkeykong[3:-2] + "19" + donkeykong[-2:]
-        dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{2}-\d{1}-\d{2}', dateify)
+        for item in donkeykong:
+            item = str(item)
+            dittykong = "0" + item[:2] + "0" + item[2:-5] + item[-5:]
+            dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{1}-\d{1}-\d{4}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = donkeykong[:3] + "0" + donkeykong[3:-2] + "19" + donkeykong[-2:]
-        dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{1}/\d{1}/\d{2}', dateify)
+        for item in donkeykong:
+            item = str(item)
+            dittykong = "0" + item[:2] + "0" + item[2:-5] + item[-5:]
+            dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{2}/\d{2}/\d{2}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = "0" + donkeykong[:2] + "0" + donkeykong[2:-2] + "19" + donkeykong[-2:]
-        dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
-    donkeykong = re.search(r'\d{1}-\d{1}-\d{2}', dateify)
+        for item in donkeykong:
+            item = str(item)
+            dittykong = item[:-2] + "19" + item[-2:]
+            dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{2}-\d{2}-\d{2}', dateify)
     if donkeykong:
-        donkeykong = str(donkeykong[0])
-        dittykong = "0" + donkeykong[:2] + "0" + donkeykong[2:-2] + "19" + donkeykong[-2:]
-        dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
-        dittykong = dittykong.strftime("%B %d, %Y")
-        print(dittykong)
-        dateify = dateify.replace(donkeykong,dittykong)
+        for item in donkeykong:
+            item = str(item)
+            if dateify.startswith(item):
+                dittykong = item[:-2] + "19" + item[-2:]
+                dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
+                dittykong = dittykong.strftime("%B %d, %Y")
+                print(dittykong)
+                dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{1}/\d{2}/\d{2}', dateify)
+    if donkeykong:
+        for item in donkeykong:
+            item = str(item)
+            dittykong = "0" + item[:-2] + "19" + item[-2:]
+            dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{1}-\d{2}-\d{2}', dateify)
+    if donkeykong:
+        for item in donkeykong:
+            item = str(item)
+            dittykong = "0" + item[:-2] + "19" + item[-2:]
+            dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{2}/\d{1}/\d{2}', dateify)
+    if donkeykong:
+        for item in donkeykong:
+            item = str(item)
+            dittykong = item[:3] + "0" + item[3:-2] + "19" + item[-2:]
+            dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{2}-\d{1}-\d{2}', dateify)
+    if donkeykong:
+        for item in donkeykong:
+            item = str(item)
+            dittykong = item[:3] + "0" + item[3:-2] + "19" + item[-2:]
+            dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{1}/\d{1}/\d{2}', dateify)
+    if donkeykong:
+        for item in donkeykong:
+            item = str(item)
+            dittykong = "0" + item[:2] + "0" + item[2:-2] + "19" + item[-2:]
+            dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
+    donkeykong = re.findall(r'\d{1}-\d{1}-\d{2}', dateify)
+    if donkeykong:
+        for item in donkeykong:
+            item = str(item)
+            dittykong = "0" + item[:2] + "0" + item[2:-2] + "19" + item[-2:]
+            dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
+            dittykong = dittykong.strftime("%B %d, %Y")
+            print(dittykong)
+            dateify = dateify.replace(item,dittykong)
     donkeykong = re.search(r'FY \d{4}-\d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
@@ -3039,6 +3059,8 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace('\n<change>\n<date era="ce" calendar="gregorian">\n<?xm-replace_text {date}?>\n</date>\n<item>\n<?xm-replace_text {item}?>\n</item>\n</change>','')
             filedata = filedata.replace('<unitdate era="ce" calendar="gregorian" normal="0000/0000" type="inclusive">\n<?xm-replace_text {date}?>\n</unitdate>\n','')
             filedata = filedata.replace("\n<unittitle>, </unittitle>","")
+            filedata = filedata.replace('\n<note>\n<p>\n<emph render="italic">\n<?xm-replace_text {Notes, if desired}?>\n</emph>\n</p>\n</note>','')
+            filedata = filedata.replace('\n<unittitle>\n<?xm-replace_text {title}?>, </unittitle>','')
             donkeykong = re.findall(']</physdesc>\n<unitdate *.*, </unitdate>\n</did>', filedata)
             if donkeykong:
                 for item in donkeykong:
