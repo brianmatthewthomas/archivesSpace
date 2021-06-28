@@ -13,6 +13,7 @@ def subjectspace (subject):
     return subject
 
 def timeturner (dateify):
+    dateify2 = dateify
     if dateify == "undated" or dateify == "undated," or dateify == "undated, " or dateify == 'n.d.' or dateify == "Undated" or dateify == 'date unknown':
         dateify = "2021"
     dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated","").replace(":","").replace(" part II", "").replace(" part I","")
@@ -333,6 +334,18 @@ def timeturner (dateify):
         dittykong = "January 1, 0000 - December 31, " + str(dittykong)
         print(dittykong)
         dateify = dateify.replace(donkeykong, dittykong)
+    donkeykong = re.search(r'after \d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = donkeykong[-4:] + "-" + donkeykong[-4:-2] + "99"
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
+    donkeykong = re.search(r'\d{4} \d{4}', dateify)
+    if donkeykong:
+        donkeykong = str(donkeykong[0])
+        dittykong = donkeykong[:4] + "-" + donkeykong[-4:]
+        print(dittykong)
+        dateify = dateify.replace(donkeykong,dittykong)
     dateify.strip()
     while dateify.endswith(".") or dateify.endswith(". "):
         dateify = dateify[:-1]
@@ -397,7 +410,7 @@ def timeturner (dateify):
                     else:
                         date_normal += start + "/" + start + "/"
                 except:
-                    print(listy)
+                    print(dateify2)
                     print(item)
                     newDate = input("manually enter date normal attribute above using YYYY-MM-DD/YYYY-MM-DD: ")
                     if not newDate.endswith("/"):
