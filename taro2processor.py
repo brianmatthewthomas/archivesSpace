@@ -18,7 +18,7 @@ def timeturner (dateify):
         dateify = "2021"
     dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated","").replace(":","").replace(" part II", "").replace(" part I","")
     dateify = dateify.replace("about", "").replace("\n", '').replace("[", '').replace("]", '').replace("ca.",'').replace('week of','').replace(";",'').replace("thru","-")
-    dateify = dateify.replace("and", "-").replace("primarily", "").replace(" or ", "-").replace("(?),", "").replace("(?)", "").replace("(", '').replace(")",'').replace("?","")
+    dateify = dateify.replace("and", "-").replace("primarily", "").replace(" or ", "-").replace("(?),", "").replace("(?)", "").replace("(", '').replace(")",'').replace("?","").replace("filmed on ",'')
     if dateify.endswith(" - 1944"):
         dateify = dateify.replace(" - 1944", "1944")
     if dateify.endswith(" '46") or dateify.endswith(" '44"):
@@ -2856,7 +2856,7 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace(' xlink:type="simple"','')
             filedata = filedata.replace(' xlink:role=""','')
             filedata = filedata.replace(' href=""','')
-            filedata = filedata.replace('<ead:unitdate era="ce" calendar="gregorian"/>','')
+            filedata = filedata.replace('<ead:unitdate era="ce" calendar="gregorian"/>','').replace("<unitdate/>",'').replace('<unitdate><?xm-replace_text {date}?></unitdate>','')
             filedata = filedata.replace('xmlns=""','')
             filedata = filedata.replace("\t",'')
             filedata = filedata.replace("\n"," ")
@@ -3074,6 +3074,7 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace("\n<unittitle>, </unittitle>","")
             filedata = filedata.replace('\n<note>\n<p>\n<emph render="italic">\n<?xm-replace_text {Notes, if desired}?>\n</emph>\n</p>\n</note>','')
             filedata = filedata.replace('\n<unittitle>\n<?xm-replace_text {title}?>, </unittitle>','')
+            filedata = filedata.replace('\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->','')
             donkeykong = re.findall(']</physdesc>\n<unitdate *.*, </unitdate>\n</did>', filedata)
             if donkeykong:
                 for item in donkeykong:
@@ -3084,6 +3085,8 @@ for dirpath, dirnames, filenames in os.walk(process):
             if donkeykong:
                 for item in donkeykong:
                     filedata = filedata.replace(item,"")
+            if ' xmlns:ead="urn:isbn:1-931666-22-9" ' in filedata and ' xmlns:ead="urn:isbn:1-931666-22-9">' in filedata:
+                filedata = filedata.replace('xmlns:ead="urn:isbn:1-931666-22-9">','>')
         with open(output_file, "w") as w:
             w.write('<?xml version="1.0" encoding="UTF-8"?>\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->\n<!-- <?xml-stylesheet type="text/xsl" href="ead.xsl"?> <?xml-stylesheet type="text/css" href="ead.css"?> -->\n' + filedata)
         w.close()
