@@ -2812,6 +2812,7 @@ sourceDir = input("source directory as relative or absolute filepath: ")
 process = sourceDir + "/" + process
 output = sourceDir + "/processed"
 exception = sourceDir + "/problems"
+validation_exception = sourceDir + "/xml_validation"
 tx_number = sourceDir + "/" + tx_number
 pairing = {}
 with open(tx_number, "r") as r:
@@ -2825,10 +2826,12 @@ for dirpath, dirnames, filenames in os.walk(process):
         ead_file = os.path.join(dirpath, filename)
         output_file = os.path.join(output,filename)
         exception_file = os.path.join(exception,filename)
+        validation_exception_file = os.path.join(validation_exception,filename)
         with open(ead_file, "r") as r:
             filedata = r.read()
             if "xmlns:ead" not in filedata:
                 filedata = filedata.replace('xmlns="','xmlns:ead="urn:isbn:1-931666-22-9" xmlns="')
+            #filedata = filedata.replace("ead:","ead:")
             with open(ead_file, "w") as w:
                 w.write(filedata)
             w.close()
@@ -2869,7 +2872,7 @@ for dirpath, dirnames, filenames in os.walk(process):
             w.write(filedata)
         w.close()
         unitid_text = filename.split(".")[0]
-        print(pairing[unitid_text])
+        #print(pairing[unitid_text])
         dom2 = ET.parse(output_file)
         unitid = dom2.xpath("//ead:unitid", namespaces=nsmap)
         unitid[0].text = pairing[unitid_text]
@@ -3085,23 +3088,30 @@ for dirpath, dirnames, filenames in os.walk(process):
             if donkeykong:
                 for item in donkeykong:
                     filedata = filedata.replace(item,"")
-            if ' xmlns:ead="urn:isbn:1-931666-22-9" ' in filedata and ' xmlns:ead="urn:isbn:1-931666-22-9">' in filedata:
-                filedata = filedata.replace('xmlns:ead="urn:isbn:1-931666-22-9">','>')
+            donkeykong = re.findall(r'\n*.*Remove the ead*.*xsl and ead*.*.css statements*.*>\n',filedata)
+            if donkeykong:
+                for item in donkeykong:
+                    item = str(item)
+                    filedata = filedata.replace(item,"")
+            if ' xmlns="urn:isbn:1-931666-22-9" ' in filedata and ' xmlns="urn:isbn:1-931666-22-9">' in filedata:
+                filedata = filedata.replace('xmlns="urn:isbn:1-931666-22-9">','>')
+            filedata = filedata.replace('xsi:schemaLocation="urn:isbn:1-931666-22-9 ead.xsd" xmlns="urn:isbn:1-931666-22-9"','xsi:schemaLocation="urn:isbn:1-931666-22-9 ead.xsd"')
         with open(output_file, "w") as w:
             w.write('<?xml version="1.0" encoding="UTF-8"?>\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->\n<!-- <?xml-stylesheet type="text/xsl" href="ead.xsl"?> <?xml-stylesheet type="text/css" href="ead.css"?> -->\n' + filedata)
         w.close()
         switch = True
-        if flag > 0:
-            print("potential subject term issue in",unitid_text,"moving to problem area for checking")
-            shutil.move(output_file,exception_file)
-            switch = False
         if switch is True:
             try:
                 dom3 = ET.parse(output_file)
             except:
                 print(unitid_text, "has a xml tag problem, moving to special handling area")
-                shutil.move(output_file,exception_file)
-        switch = "no"
-        while switch != "yes":
-            switch = input(f"did you verify the ead file is okay with {unitid_text}?: ")
+                shutil.move(output_file,validation_exception_file)
+        if flag > 0:
+            print("potential subject term issue in",unitid_text,"moving to problem area for checking")
+            shutil.move(output_file,exception_file)
+            switch = False
+        print(f'{unitid_text} finished')
+        #switch = "no"
+        #while switch != "yes":
+        #    switch = input(f"did you verify the ead file is okay with {unitid_text}?: ")
 print("all done!")
