@@ -3111,7 +3111,7 @@ for dirpath, dirnames, filenames in os.walk(process):
             shutil.move(output_file,exception_file)
             switch = False
         print(f'{unitid_text} finished')
-        #switch = "no"
-        #while switch != "yes":
-        #    switch = input(f"did you verify the ead file is okay with {unitid_text}?: ")
+        switch = "no"
+        while switch != "yes":
+            switch = input(f"did you verify the ead file is okay with {unitid_text}?: ")
 print("all done!")

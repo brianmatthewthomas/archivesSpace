@@ -35,22 +35,13 @@ for dirpath, dirnames, filenames in os.walk(directory):
             myRelatives = dom.xpath(".//ead:relatedmaterial/ead:relatedmaterial", namespaces=nsmap)
             for item in myRelatives:
                 boss = item.getparent()
-                boss = boss.getparent()
                 turkey.addnext(item)
+            if boss != None:
+                boss.getparent().remove(boss)
             mySubjects = dom.xpath(".//ead:controlaccess/ead:controlaccess", namespaces=nsmap)
             for item in mySubjects:
                 boss = item.getparent()
-                boss = boss.getparent()
                 turkey.addnext(item)
-            trashRemoval = dom.xpath(".//ead:controlaccess/ead:head", namespaces=nsmap)
-            for item in trashRemoval:
-                if "Index Terms" in item.text:
-                    myBoss = item.getparent()
-                    myBoss.getparent().remove(myBoss)
-            trashRemoval = dom.xpath(".//ead:relatedmaterial/ead:p/ead:emph", namespaces=nsmap)
-            for item in trashRemoval:
-                if "possible sources" in item.text:
-                    myBoss = item.getparent()
-                    myBoss = myBoss.getparent()
-                    myBoss.getparent().remove(myBoss)
+            if boss != None:
+                boss.getparent().remove(boss)
             dom.write(filename, pretty_print=True)
