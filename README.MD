@@ -62,7 +62,7 @@ Note that the point here is to know what you have and standardize it before impo
 ### normalizeExtent_tocsv_oneCSV.py
 For before ArchivesSpace ead import. Same as above but spits out to a single spreadsheet so everything can be done by one person. The fromcsv script pairs based on filename so it should work fine. I *highly* recommend using this over the individual spreadsheets for standardized approach reasons. For either, you can delete a line from the spreadsheet if it is fine. Just don't change the ead file until you are done.
 
-#taro2processor.py
+### taro2processor.py
 For pre-*TARO 2.0* upload prep. Also for before ArchivesSpace import if applicable but it can handle ArchivesSpace export just fine.
 
 This tool uses a combination of embedded xsl and python processing (including text replacement) to prepare a file either exported from ArchivesSpace or handmade to be uploaded to TARO for its 2.0 iteration.
