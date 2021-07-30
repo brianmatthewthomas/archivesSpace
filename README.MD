@@ -82,6 +82,14 @@ This tool will do the following:
 
 ***Note*** that after a file has been processed it will ask for confirmation that you have checked the ead file for accuracy/completeness before moving on to prevent forgetting what to check on.
 
+***Note*** that the revisiondesc may be affected by the processor so you will need to check it after for possible re-insertion of the data.
+
+***Note*** also that there may be a superfluous "." added in origination for unknown reasons, check that as well.
+
+***Note*** archref has a specific process for modifying the native output without a xlink: prefix to have that prefix in the attributes. worth verifying that the process applied because variance in ***your*** data practices can affect whether it worked.
+
+***Note*** if your containers have 'box' or 'folder', they will be capitalized.
+
 #### ***Note about date normal attribute:*** 
 This will most likely the most time consuming part of this tool. If you are missing the type attribute it will insert and only ask for input if it is unclear whether it is a bulk vs. inclusive date. It uses daterangeparser to guess at the date to generate the normal attribute and will prompt for input when it can't figure it out. It will ouput the following:
 * The full text of the unitdate tag
