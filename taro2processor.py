@@ -919,9 +919,11 @@ insert proper attributes in the date and keep just the date and not the whole UT
 		<xsl:if test="parent::ead:archdesc">
 			<xsl:attribute name="encodinganalog">520$b</xsl:attribute>
 		</xsl:if>
+		<!--
 		<xsl:if test="@id">
 		    <xsl:attribute name="id"><xsl:value-of select="@id"/></xsl:attribute>
 		</xsl:if>
+		-->
 		<xsl:apply-templates />
 	</ead:scopecontent>
 </xsl:template>
