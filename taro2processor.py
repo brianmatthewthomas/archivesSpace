@@ -10,7 +10,22 @@ def subjectspace (subject):
         subject = subject[1:]
     while subject.endswith(" "):
         subject = subject[:-1]
+    if subject.endswith("."):
+        subject = subject[:-1]
     return subject
+
+def subarea (subject):
+    placeholder = subject.split(". ")
+    placeholder2 = placeholder[0]
+    if len(placeholder) != 1:
+        placeholder2 = placeholder2 + ". "
+        for item in placeholder[1:]:
+            while item.startswith(" "):
+                item = item[1:]
+            placeholder2 = placeholder2 + "<subarea>" + item + ".</subarea> "
+        placeholder2 = placeholder2[:-12] + "</subarea>"
+    placeholder2 = placeholder2.replace("..",".")
+    return placeholder2
 
 def timeturner (dateify):
     dateify2 = dateify
@@ -2985,6 +3000,12 @@ for dirpath, dirnames, filenames in os.walk(process):
         for subject in subjects:
             subjective = subject.text
             subject.text = subjectspace(subjective)
+            if subject.attrib['encodinganalog'] == "710":
+                subject.text = subarea(subject.text)
+            if subject.attrib['encodinganalog'] == "110":
+                subject.text = subarea(subject.text)
+            if subject.attrib['encodinganalog'] == "610":
+                subject.text = subarea(subject.text)
             if subject.text in subjectlist:
                 subject.getparent().remove(subject)
             else:
@@ -3077,7 +3098,7 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace("[[","[").replace("]]","]").replace("[ [", "[").replace("] ]","]").replace(",</emph>\n, </unitdate>","</emph>, </unitdate>")
             filedata = filedata.replace("\n<unittitle>, </unittitle>","")
             filedata = filedata.replace('<container type="box">','<container type="Box">')
-            filedata = filedata.replace('<container type="folder">','<container type="Folder">')
+            filedata = filedata.replace('<container type="folder">','<container type="Folder">').replace("&lt;","<").replace("&gt;",">")
             # removed a few blank items i think, appears to create a problem so removing for now
             #filedata = filedata.replace("\n<?xm-replace_text (be sure level attribute is correct)?>","")
             #filedata = filedata.replace('\n<change>\n<date era="ce" calendar="gregorian">\n<?xm-replace_text {date}?>\n</date>\n<item>\n<?xm-replace_text {item}?>\n</item>\n</change>','')
