@@ -104,3 +104,6 @@ Depending on the source data the output might be a bit scrambled, so after the f
 FY is interpretted as state of Texas fiscal year of Sept previous year number-Aug listed year number.
 
 Some dates that have to get extra reconfiguration for daterangeparser to work will be printed on screen to show what was done.
+
+### taro2processor-generic.py ###
+A genericized version of the `taro2processor.py` for other archives that want to go through roughly the same process. Users will need to know their repo code. Experimental and may not work perfect so check your output.
