@@ -36,12 +36,12 @@ for dirpath, dirnames, filenames in os.walk(directory):
             for item in myRelatives:
                 boss = item.getparent()
                 turkey.addnext(item)
-            if boss != None:
-                boss.getparent().remove(boss)
-            mySubjects = dom.xpath(".//ead:controlaccess/ead:controlaccess", namespaces=nsmap)
-            for item in mySubjects:
-                boss = item.getparent()
-                turkey.addnext(item)
-            if boss != None:
-                boss.getparent().remove(boss)
+                if boss != None:
+                    boss.getparent().remove(boss)
+                mySubjects = dom.xpath(".//ead:controlaccess/ead:controlaccess", namespaces=nsmap)
+                for item in mySubjects:
+                    boss = item.getparent()
+                    turkey.addnext(item)
+                if boss != None:
+                    boss.getparent().remove(boss)
             dom.write(filename, pretty_print=True)
