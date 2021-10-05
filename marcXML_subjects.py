@@ -22,9 +22,11 @@ subjectList = []
 subjects = dom.xpath("//marc:datafield", namespaces=nsmap)
 for subject in subjects:
     thisTag = subject.attrib['tag']
-    if thisTag == '650' or thisTag == '651' or thisTag == '655':
+    if thisTag == '650' or thisTag == '651':
         subjective = subject.text
         subject.text = subjectspace(subjective)
+        if subject.attrib['tag'] == "650" and subject.attrib['ind2'] == "1":
+            subject.attrib['ind2'] = "0"
         if subject in subjectList:
             subject.getparent().remove(subject)
         else:
