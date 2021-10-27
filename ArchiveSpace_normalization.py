@@ -2,7 +2,7 @@ import lxml.etree as ET
 import sys, os, re
 
 def spaceinator (content):
-    print(content)
+    #print(content)
     if content != None:
         while content.startswith(" "):
             content = content[1:]
@@ -46,17 +46,22 @@ def aspace_processor (file_name):
             title.text = titleText
     turkey = dom.find(".//ead:archdesc/ead:arrangement", namespaces=nsmap)
     myRelatives = dom.xpath(".//ead:relatedmaterial/ead:relatedmaterial", namespaces=nsmap)
-    for item in myRelatives:
+    if myRelatives != None:
+        for item in myRelatives:
+            boss = item.getparent()
+            turkey.addnext(item)
+            if boss != None:
+                bossy = boss.getparent()
+                if bossy != None:
+                    boss.getparent().remove(boss)
+    mySubjects = dom.xpath(".//ead:controlaccess/ead:controlaccess", namespaces=nsmap)
+    for item in mySubjects:
         boss = item.getparent()
         turkey.addnext(item)
         if boss != None:
-            boss.getparent().remove(boss)
-        mySubjects = dom.xpath(".//ead:controlaccess/ead:controlaccess", namespaces=nsmap)
-        for item in mySubjects:
-            boss = item.getparent()
-            turkey.addnext(item)
-        if boss != None:
-            boss.getparent().remove(boss)
+            bossy = boss.getparent()
+            if bossy != None:
+                boss.getparent().remove(boss)
     containers = dom.xpath(".//ead:container", namespaces=nsmap)
     for container in containers:
         type = container.attrib['type']
@@ -64,6 +69,50 @@ def aspace_processor (file_name):
             container.attrib['type'] = "Box"
         if type == 'folder':
             container.attrib['type'] = "Folder"
+    headings = dom.xpath(".//ead:c01[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
+    if headings != None:
+        for heading in headings:
+            heading.getparent().remove(heading)
+    headings = dom.xpath(".//ead:c02[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
+    if headings != None:
+        for heading in headings:
+            print(heading.text)
+            heading.getparent().remove(heading)
+    headings = dom.xpath(".//ead:c03[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
+    if headings != None:
+        for heading in headings:
+            print(heading.text)
+            heading.getparent().remove(heading)
+    headings = dom.xpath(".//ead:c04[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
+    if headings != None:
+        for heading in headings:
+            print(heading.text)
+            heading.getparent().remove(heading)
+    headings = dom.xpath(".//ead:c05[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
+    if headings != None:
+        for heading in headings:
+            print(heading.text)
+            heading.getparent().remove(heading)
+    headings = dom.xpath(".//ead:c06[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
+    if headings != None:
+        for heading in headings:
+            print(heading.text)
+            heading.getparent().remove(heading)
+    headings = dom.xpath(".//ead:c07[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
+    if headings != None:
+        for heading in headings:
+            print(heading.text)
+            heading.getparent().remove(heading)
+    headings = dom.xpath(".//ead:c08[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
+    if headings != None:
+        for heading in headings:
+            print(heading.text)
+            heading.getparent().remove(heading)
+    headings = dom.xpath(".//ead:c09[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
+    if headings != None:
+        for heading in headings:
+            print(heading.text)
+            heading.getparent().remove(heading)
     dom.write(filename, pretty_print=True)
     with open(filename, "r") as r:
         filedata = r.read()
@@ -72,7 +121,8 @@ def aspace_processor (file_name):
         filedata = filedata.replace(", </unittitle>", "</unittitle>")
         filedata = filedata.replace('"</emph>,', ',"</emph>')
         filedata = filedata.replace("http://legacy.lib.utexas.edu/taro","https://legacy.lib.utexas.edu/taro")
-        donkeykong = re.findall(r'https://\.*lib.utexas.edu/taro/\.*/\.*/\.*.html', filedata)
+        filedata = filedata.replace("http://www.lib.utexas.edu/taro","https://legacy.lib.utexas.edu/taro")
+        donkeykong = re.findall(r'https://.*lib.utexas.edu/taro/.*\/.*\/.*.html', filedata)
         if donkeykong:
             for item in donkeykong:
                 item = str(item)
@@ -83,6 +133,7 @@ def aspace_processor (file_name):
         with open(filename, "w") as w:
             w.write(filedata)
         w.close()
+        print(filename,"finished")
 
 print("run against a directory to get broadscale changes in place for files before they get imported into the system")
 print("or run against a discreet file")
