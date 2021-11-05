@@ -17,6 +17,7 @@ nsmap = {'ead': "urn:isbn:1-931666-22-9"}
 def aspace_processor (file_name):
     filename = file_name
     ead_name = file_name.split("/")[-1].split(".")[0]
+    filename2 = filename[:-4] + "-01.xml"
     dom = ET.parse(filename)
     print(f"fixing dates in {ead_name}")
     dates = dom.xpath(".//ead:unitdate", namespaces=nsmap)
@@ -113,8 +114,8 @@ def aspace_processor (file_name):
         for heading in headings:
             print(heading.text)
             heading.getparent().remove(heading)
-    dom.write(filename, pretty_print=True)
-    with open(filename, "r") as r:
+    dom.write(filename2, pretty_print=True)
+    with open(filename2, "r") as r:
         filedata = r.read()
         filedata = filedata.replace("LadyGaga</emph>", "</emph>, ")
         filedata = filedata.replace(",  ", ", ")
@@ -130,7 +131,7 @@ def aspace_processor (file_name):
                 temp2 = item.split("/")[-2]
                 new_url = f'https://www.txarchives.org/{temp1}/finding_aids/{temp2}.xml'
                 filedata = filedata.replace(item,new_url)
-        with open(filename, "w") as w:
+        with open(filename2, "w") as w:
             w.write(filedata)
         w.close()
         print(filename,"finished")
