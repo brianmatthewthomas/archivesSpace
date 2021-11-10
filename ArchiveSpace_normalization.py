@@ -66,10 +66,7 @@ def aspace_processor (file_name):
     containers = dom.xpath(".//ead:container", namespaces=nsmap)
     for container in containers:
         type = container.attrib['type']
-        if type == "box":
-            container.attrib['type'] = "Box"
-        if type == 'folder':
-            container.attrib['type'] = "Folder"
+        container.attrib['type'] = type.capitalize()
     headings = dom.xpath(".//ead:c01[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
     if headings != None:
         for heading in headings:

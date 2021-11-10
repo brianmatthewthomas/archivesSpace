@@ -3050,6 +3050,10 @@ for dirpath, dirnames, filenames in os.walk(process):
             if 'xmlns' not in item.attrib:
                 item.attrib['xmlns'] = "urn:isbn:1-931666-22-9"
             item.attrib['relatedencoding'] = "MARC21"
+        containers = dom2.xpath(".//ead:container", namespaces=nsmap)
+        for container in containers:
+            type = container.attrib['type']
+            container.attrib['type'] = type.capitalize()
         dom2.write(output_file, pretty_print=True)
         with open(output_file, "r") as r:
             filedata = r.read()
