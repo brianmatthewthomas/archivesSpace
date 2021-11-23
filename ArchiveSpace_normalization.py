@@ -111,6 +111,16 @@ def aspace_processor (file_name):
         for heading in headings:
             print(heading.text)
             heading.getparent().remove(heading)
+    scripts = dom.xpath(".//ead:language", namespaces=nsmap)
+    if scripts != None:
+        for script in scripts:
+            print(script.text)
+            if script.attrib['langcode'] == "eng":
+                script.attrib['scriptcode="Latn']
+    idents = dom.xpath(".//ead:unitid", namespaces=nsmap)
+    for ident in idents:
+        turkey = ident.getparent().getparent()
+        print(turkey.tag)
     dom.write(filename2, pretty_print=True)
     with open(filename2, "r") as r:
         filedata = r.read()
