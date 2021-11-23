@@ -115,12 +115,28 @@ def aspace_processor (file_name):
     if scripts != None:
         for script in scripts:
             print(script.text)
+            if 'langcode' not in script.attrib:
+                if "English" in script.text:
+                    script.attrib['langcode'] = "eng"
             if script.attrib['langcode'] == "eng":
-                script.attrib['scriptcode="Latn']
+                script.attrib['scriptcode'] = "Latn"
     idents = dom.xpath(".//ead:unitid", namespaces=nsmap)
     for ident in idents:
         turkey = ident.getparent().getparent()
-        print(turkey.tag)
+        if turkey.tag != "{urn:isbn:1-931666-22-9}archdesc":
+            ident.attrib.pop('label')
+            ident.attrib.pop('repositorycode')
+            ident.attrib.pop('encodinganalog')
+            ident.attrib.pop('countrycode')
+    maps = dom.xpath(".//ead:did/ead:container[1]", namespaces=nsmap)
+    for map in maps:
+        #if map.attrib['type'] == "Map":
+        print(map.text)
+        turkey = ET.Element("container")
+        turkey.text = "placeholder"
+        turkey.attrib['type'] = "Map-Folder"
+        map.addprevious(turkey)
+
     dom.write(filename2, pretty_print=True)
     with open(filename2, "r") as r:
         filedata = r.read()
