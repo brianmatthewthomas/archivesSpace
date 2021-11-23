@@ -1,6 +1,12 @@
 import lxml.etree as ET
 import sys, os, re
 
+pairing = {}
+with open("/media/sf_G_DRIVE/working_electronicRecords/ASpace/TARO 2.0 data requirement fixes/problems/map-drawers.csv", "r") as f:
+    for line in f:
+        line = line[:-1]
+        pairing[line.split(",")[-1]] = line.split(",")[0]
+    print(pairing)
 def spaceinator (content):
     #print(content)
     if content != None:
@@ -130,12 +136,15 @@ def aspace_processor (file_name):
             ident.attrib.pop('countrycode')
     maps = dom.xpath(".//ead:did/ead:container[1]", namespaces=nsmap)
     for map in maps:
-        #if map.attrib['type'] == "Map":
-        print(map.text)
-        turkey = ET.Element("container")
-        turkey.text = "placeholder"
-        turkey.attrib['type'] = "Map-Folder"
-        map.addprevious(turkey)
+        if map.attrib['type'] == "Map":
+            print(map.text)
+            turkey = ET.Element("container")
+            turkey.attrib['type'] = "Map-drawer"
+            if map.text in pairing:
+                turkey.text = pairing[map.text]
+            else:
+                turkey.text = "placeholder"
+            map.addprevious(turkey)
 
     dom.write(filename2, pretty_print=True)
     with open(filename2, "r") as r:
