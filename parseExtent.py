@@ -60,3 +60,9 @@ for dirpath, dirnames, filenames in os.walk(toCrawl):
                 with open(filename, "w") as w:
                     w.write(filedata)
                 w.close()
+            logfile = filename[:-4] + "-01.txt"
+            with open(logfile, "a") as w:
+                dom = ET.parse(filename)
+                extents = dom.xpath(".//ead:extent", namespaces=nsmap)
+                for extent in extents:
+                    w.write(extent.text + "\n")
