@@ -2,7 +2,7 @@ import lxml.etree as ET
 import sys, os, re
 
 pairing = {}
-with open("/media/sf_G_DRIVE/working_electronicRecords/ASpace/TARO 2.0 data requirement fixes/problems/map-drawers.csv", "r") as f:
+with open("/media/sf_D_DRIVE/working_electronicRecords/ASpace/TARO 2.0 data requirement fixes/problems/map-drawers.csv", "r") as f:
     for line in f:
         line = line[:-1]
         pairing[line.split(",")[-1]] = line.split(",")[0]
@@ -51,7 +51,7 @@ def aspace_processor (file_name):
         if titleText.endswith(', "'):
             titleText = titleText[:-3] + '"LadyGaga'
             title.text = titleText
-    turkey = dom.find(".//ead:archdesc/ead:arrangement", namespaces=nsmap)
+    turkey = dom.find(".//ead:archdesc/ead:did", namespaces=nsmap)
     myRelatives = dom.xpath(".//ead:relatedmaterial/ead:relatedmaterial", namespaces=nsmap)
     if myRelatives != None:
         for item in myRelatives:
