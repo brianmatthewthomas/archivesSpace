@@ -374,7 +374,9 @@ def timeturner (dateify):
         dateify = dateify[1:]
     date_normal = ""
     try:
-        temp_value = daterangeparser.parse(dateify)
+        print("made it this far")
+        #print(dateify)
+        #temp_value = daterangeparser.parse(dateify)
         if "-" in dateify:
             start, end = daterangeparser.parse(dateify)
             start = start.strftime("%Y-%m-%d")
@@ -425,12 +427,18 @@ def timeturner (dateify):
                     else:
                         date_normal += start + "/" + start + "/"
                 except:
-                    print(dateify2)
-                    print(item)
-                    newDate = input("manually enter date normal attribute above using YYYY-MM-DD/YYYY-MM-DD: ")
-                    if not newDate.endswith("/"):
-                        newDate += "/"
-                    date_normal += newDate
+                    splity = item.split("-")
+                    if len(splity) == 1 and len(splity[0]) == 4:
+                        date_normal = splity[0] + "-01-01/" + splity[0] + "-12-31/"
+                    elif len(splity) == 2 and len(splity[0]) == 4 and len(splity[-1]) == 4:
+                        date_normal = splity[0] + "-01-01/" + splity[-1] + "-12-31/"
+                    else:
+                        print(dateify2)
+                        print(item)
+                        newDate = input("manually enter date normal attribute above using YYYY-MM-DD/YYYY-MM-DD: ")
+                        if not newDate.endswith("/"):
+                            newDate += "/"
+                        date_normal += newDate
     date_normal = date_normal[:-1]
     if date_normal.startswith("/"):
         date_normal = date_normal[1:]
