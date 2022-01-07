@@ -42,8 +42,8 @@ def extent_changer(resource_records, repo_number, type):
         except:
             pass
     print('{0} resource records checked; {1} records updated.'.format(len(resource_records), len(found_records)))
-
-
+print("adapter from work by Scott Carlson with his work at Rice")
+print("this is going to take a while, take a coffee break")
 resource_records = (client.get('repositories/11/resources', params={'all_ids': True})).json()
 print("checking resources in SHC")
 extent_changer(resource_records, "11", "resources")
@@ -56,10 +56,10 @@ extent_changer(resource_records, "12", "resources")
 archival_objects = (client.get("repositories/12/archival_objects", params={'all_ids': True})).json()
 print('checking archival objects in review')
 extent_changer(archival_objects, "12", "archival_objects")
-# resource_records = (client.get('repositories/2/resources', params={'all_ids': True})).json()
-# print("checking resources in Zavala")
-# extent_changer(resource_records, "2", "resources")
-# archival_objects = (client.get("repositories/2/archival_objects", params={'all_ids': True})).json()
-# print('checking archival objects in Zavala')
-# extent_changer(archival_objects, "2", "archival_objects")
+resource_records = (client.get('repositories/2/resources', params={'all_ids': True})).json()
+print("checking resources in Zavala")
+extent_changer(resource_records, "2", "resources")
+archival_objects = (client.get("repositories/2/archival_objects", params={'all_ids': True})).json()
+print('checking archival objects in Zavala')
+extent_changer(archival_objects, "2", "archival_objects")
 
