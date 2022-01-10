@@ -73,7 +73,7 @@ def extent_changer(resource_records, repo_number, type):
             for ext_index, extent in enumerate(extents):
                 for key, value in changes.items():
                     if extent['extent_type'] in value:
-                        print(extent['extent_type'])
+                        #print(extent['extent_type'])
                         updated_record['extents'][ext_index]['extent_type'] = key
                         break
                     else:
