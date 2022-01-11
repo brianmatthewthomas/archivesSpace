@@ -75,6 +75,9 @@ def extent_changer(resource_records, repo_number, type):
                     if extent['extent_type'] in value:
                         #print(extent['extent_type'])
                         updated_record['extents'][ext_index]['extent_type'] = key
+                        with open("log2.csv", "a") as w:
+                            w.write(res_record['title'] + "|" + res_record['uri'] + "|" + extent['extent_type'] + "\n")
+                        w.close()
                         break
                     else:
                         pass
@@ -89,7 +92,7 @@ def extent_changer(resource_records, repo_number, type):
                 pass
         except:
             pass
-    print('{0} resource records checked; {1} records updated.'.format(len(resource_records), len(found_records)))
+    print('{0} records checked; {1} records updated.'.format(len(resource_records), len(found_records)))
 print("adapter from work by Scott Carlson with his work at Rice")
 print("this is going to take a while, take a coffee break")
 resource_records = (client.get('repositories/11/resources', params={'all_ids': True})).json()
@@ -98,16 +101,25 @@ extent_changer(resource_records, "11", "resources")
 archival_objects = (client.get("repositories/11/archival_objects", params={'all_ids': True})).json()
 print('checking archival objects in SHC')
 extent_changer(archival_objects, "11", "archival_objects")
+accessions = (client.get("repositories/11/accessions", params={'all_ids': True})).json()
+print('checking accessions in SHC')
+extent_changer(accessions, "11", "accessions")
 resource_records = (client.get('repositories/12/resources', params={'all_ids': True})).json()
 print("checking resources in review")
 extent_changer(resource_records, "12", "resources")
 archival_objects = (client.get("repositories/12/archival_objects", params={'all_ids': True})).json()
 print('checking archival objects in review')
 extent_changer(archival_objects, "12", "archival_objects")
+accessions = (client.get("repositories/12/accessions", params={'all_ids': True})).json()
+print('checking accessions in review')
+extent_changer(accessions, "12", "accessions")
 resource_records = (client.get('repositories/2/resources', params={'all_ids': True})).json()
 print("checking resources in Zavala")
 extent_changer(resource_records, "2", "resources")
 archival_objects = (client.get("repositories/2/archival_objects", params={'all_ids': True})).json()
 print('checking archival objects in Zavala')
 extent_changer(archival_objects, "2", "archival_objects")
+accessions = (client.get("repositories/2/accessions", params={'all_ids': True})).json()
+print('checking accessions in Zavala')
+extent_changer(accessions, "2", "accessions")
 
