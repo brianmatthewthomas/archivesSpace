@@ -53,11 +53,6 @@ def aspace_processor (file_name):
         dateText = date.text
         dateText = spaceinator(dateText)
         date.text = dateText
-    titles = dom.xpath(".//ead:unittitle", namespaces=nsmap)
-    for title in titles:
-        titleText = title.text
-        titleText = spaceinator(titleText)
-        title.text = titleText
     title_emph = dom.xpath(".//ead:unittitle/ead:emph", namespaces=nsmap)
     for title in title_emph:
         titleText = title.text
@@ -73,6 +68,11 @@ def aspace_processor (file_name):
         if titleText.endswith(', "'):
             titleText = titleText[:-3] + '"LadyGaga'
             title.text = titleText
+    titles = dom.xpath(".//ead:unittitle", namespaces=nsmap)
+    for title in titles:
+        titleText = title.text
+        titleText = spaceinator(titleText)
+        title.text = titleText
     turkey = dom.find(".//ead:archdesc/ead:did", namespaces=nsmap)
     myRelatives = dom.xpath(".//ead:relatedmaterial/ead:relatedmaterial", namespaces=nsmap)
     if myRelatives != None:

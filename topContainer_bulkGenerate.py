@@ -23,6 +23,7 @@ def row_converter(row, listy):
     print(pictionary)
     return pictionary
 
+myTime = time.asctime()
 post_back = {}
 container_profiles = {'Capitol drawings cabinet drawer (434-445)':'/container_profiles/11',
                       'Card file box A':'/container_profiles/21',
@@ -111,5 +112,6 @@ for thing in listy:
     temp2 = (client.post(thing, json=temp))
     print(temp)
     print(temp2.status_code)
-
+yourTime = time.asctime()
+print(f"process started at {myTime} and completed at {yourTime}")
 
