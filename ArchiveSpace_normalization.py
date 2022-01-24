@@ -2,11 +2,11 @@ import lxml.etree as ET
 import sys, os, re
 
 pairing = {}
-with open("/media/sf_D_DRIVE/working_electronicRecords/ASpace/TARO 2.0 data requirement fixes/problems/map-drawers.csv", "r") as f:
+'''with open("/media/sf_D_DRIVE/working_electronicRecords/ASpace/TARO 2.0 data requirement fixes/problems/map-drawers.csv", "r") as f:
     for line in f:
         line = line[:-1]
         pairing[line.split(",")[-1]] = line.split(",")[0]
-    print(pairing)
+    print(pairing)'''
 def spaceinator (content):
     #print(content)
     if content != None:
@@ -167,7 +167,47 @@ def aspace_processor (file_name):
             else:
                 turkey.text = "placeholder"
             map.addprevious(turkey)
-
+    containerslist = []
+    containerslength = {}
+    containers = dom.xpath(".//ead:container", namespaces=nsmap)
+    for container in containers:
+        temp = container.text
+        if "-" in temp:
+            temp2 = temp.split("-")[0]
+            if len(temp2) == 8:
+                if temp2 not in containerslist:
+                    containerslist.append(temp2)
+                    containerslength[temp2] = 0
+                temp3 = len(temp.split("-")[-1])
+                if temp3 > containerslength[temp2]:
+                    containerslength[temp2] = temp3
+            if "LR" in temp2:
+                if temp2 not in containerslist:
+                    containerslist.append(temp2)
+                    containerslength[temp2] = 0
+                temp3 = len(temp.split("-")[-1])
+                if temp3 > containerslength[temp2]:
+                    containerslength[temp2] = temp3
+    for container in containers:
+        temp = container.text
+        if "-" in temp:
+            temp2 = temp.split("-")[0]
+            if len(temp2) == 8:
+                temp3 = temp.split("-")[-1]
+                temp4 = temp3
+                while len(temp4) < containerslength[temp2]:
+                    temp4 = "0" + temp4
+                temp = temp[:-len(temp3)] + temp4
+                print(temp)
+                container.text = temp
+            if "LR" in temp2:
+                temp3 = temp.split("-")[-1]
+                temp4 = temp3
+                while len(temp4) < containerslength[temp2]:
+                    temp4 = "0" + temp4
+                temp = temp[:-len(temp3)] + temp4
+                print(temp)
+                container.text = temp
     dom.write(filename2, pretty_print=True)
     with open(filename2, "r") as r:
         filedata = r.read()
