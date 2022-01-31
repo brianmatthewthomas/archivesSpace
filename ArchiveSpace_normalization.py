@@ -225,6 +225,7 @@ def aspace_processor (file_name):
                 temp2 = item.split("/")[-2]
                 new_url = f'https://www.txarchives.org/{temp1}/finding_aids/{temp2}.xml'
                 filedata = filedata.replace(item,new_url)
+        filedata = filedata.replace("&apos;",";")
         with open(filename2, "w") as w:
             w.write(filedata)
         w.close()

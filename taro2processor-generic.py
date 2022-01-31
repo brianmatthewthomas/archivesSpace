@@ -2836,6 +2836,8 @@ for dirpath, dirnames, filenames in os.walk(process):
         output_file = os.path.join(output,filename)
         exception_file = os.path.join(exception,filename)
         validation_exception_file = os.path.join(validation_exception,filename)
+        if not os.path.exists(os.path.dirname(validation_exception_file)):
+            os.makedirs(os.path.dirname(validation_exception_file), exist_ok=True)
         with open(ead_file, "r") as r:
             filedata = r.read()
             if "xmlns:ead" not in filedata:
@@ -2851,6 +2853,8 @@ for dirpath, dirnames, filenames in os.walk(process):
             boss = boss.getparent()
             boss.append(item)
         newdom = transform(dom)
+        if not os.path.exists(os.path.dirname(output_file)):
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
         newdom.write(output_file, pretty_print=True)
         with open(output_file, "r") as r:
             filedata = r.read()
@@ -3035,7 +3039,20 @@ for dirpath, dirnames, filenames in os.walk(process):
                 item.attrib['xmlns'] = "urn:isbn:1-931666-22-9"
             item.attrib['relatedencoding'] = "MARC21"
         unitid = dom2.find("//ead:unitid", namespaces=nsmap)
-        unitid['repositorycode'] = repoCode
+        unitid.attrib['repositorycode'] = repoCode
+        #remove note head
+        heads = dom2.xpath("//ead:note/ead:head", namespaces=nsmap)
+        for item in heads:
+            item.getparent().remove(item)
+        # play with the scope note
+        c_tags = ['c01','c02','c03','c04','c05','c06','c07','c08','c09']
+        for c in c_tags:
+            scopecontents = dom2.xpath(f"//ead:{c}[@level = 'series']/ead:scopecontent", namespaces=nsmap)
+            for item in scopecontents:
+                if item.text != "\n":
+                    print(item.text)
+                    item.text = "<p>" + item.text + "</p>"
+        scopecontents = dom2.xpath("//ead")
         dom2.write(output_file, pretty_print=True)
         with open(output_file, "r") as r:
             filedata = r.read()
@@ -3103,6 +3120,11 @@ for dirpath, dirnames, filenames in os.walk(process):
                 for item in donkeykong:
                     item = str(item)
                     filedata = filedata.replace(item,"")
+            if "</emph>,</unittitle>" in filedata:
+                filedata = filedata.replace("</emph>,</unittitle>",",</emph></unittitle>")
+            if "</emph>, </unittitle>" in filedata:
+                filedata = filedata.replace("</emph>, </unittitle>",",</emph> </unittitle>")
+
             if ' xmlns="urn:isbn:1-931666-22-9" ' in filedata and ' xmlns="urn:isbn:1-931666-22-9">' in filedata:
                 filedata = filedata.replace('xmlns="urn:isbn:1-931666-22-9">','>')
             filedata = filedata.replace('xsi:schemaLocation="urn:isbn:1-931666-22-9 ead.xsd" xmlns="urn:isbn:1-931666-22-9"','xsi:schemaLocation="urn:isbn:1-931666-22-9 ead.xsd"')
