@@ -60,11 +60,11 @@ baseline = {'jsonmodel_type': 'top_container',
                   'indicator': 'turkey-002',
                   'type': 'Box',
                   'barcode': '',
-                  'repository': {'ref': ''},
+                  'repository': {'ref': '/repositories/2'},
                   'restricted': 'false',
                   'container_profile': {'ref': ''},
-                  'container_locations': [{'ref': '/locations/2960', 'jsonmodel_type': 'container_location', 'status': 'current', 'start_date': '2021-11-09'}]}
-df1 = PD.read_excel("/media/sf_Documents/topContainer_csv.xlsx", sheet_name="Sheet1", dtype=object)
+                  'container_locations': [{'ref': '', 'jsonmodel_type': 'container_location', 'status': 'current', 'start_date': '2021-11-09'}]}
+df1 = PD.read_excel("/media/sf_Documents/topContainer_csv_zavala.xlsx", sheet_name="Sheet1", dtype=object)
 print(df1[:5])
 df2 = PD.read_csv("/media/sf_Documents/locations_list2.csv", dtype=object)
 print(df2[:5])
@@ -90,8 +90,12 @@ for row in df3.itertuples():
             print(post_back)
         else:
             post_back[collectionString] = [thisContainer['indicator']]
+        thisContainer['series'] = []
         thisContainer['series'].append({'ref': collectionString, 'jsonmodel_type':valuables['type of linked record']})
-    thisContainer['container_locations'][0]['ref'] = valuables['location_ref']
+    if str(valuables['location_ref']) != 'nan':
+        thisContainer['container_locations'][0]['ref'] = valuables['location_ref']
+    if str(valuables['location_ref']) == 'nan':
+        thisContainer['container_locations'] = []
     print(thisContainer)
     endpoint = thisContainer['repository']['ref'] + "/top_containers"
     response = client.post(endpoint, json=thisContainer)

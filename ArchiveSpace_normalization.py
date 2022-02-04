@@ -37,13 +37,43 @@ def aspace_processor (file_name):
             extentText = extentText[:-1]
         if extentText.endswith(":") or extentText.endswith(","):
             extentText = extentText[:-1]
+        if extentText.endswith(" ft."):
+            extentText = extentText.replace(" ft.","_feet")
         if extentText.endswith("_ft."):
             extentText = extentText.replace("_ft.","_feet")
+        if extentText.endswith("_ft"):
+            extentText = extentText.replace("_ft","_feet")
         if extentText.endswith("KB") or extentText.endswith("MB") or extentText.endswith("GB") or extentText.endswith("TB"):
             extentText = extentText.replace(" KB"," kilobytes").replace(" MB"," megabytes").replace(" GB"," gigabytes").replace(" TB"," terabytes")
         if extentText.endswith(")") and not extentText.endswith("s)"):
             extentText = extentText.replace(")","s)")
-        if not extentText.endswith("s") and not extentText.endswith("s)"):
+        if not extentText.endswith("s") and not extentText.endswith("s)") and not extentText.endswith("_feet"):
+            extentText = extentText + "s"
+        if extentText.endswith("ys") or extentText.endswith("ys)"):
+            extentText = extentText.replace("ys","ies")
+        extent.text = extentText
+    extents = dom.xpath(".//ead:extent/ead:emph", namespaces=nsmap)
+    for extent in extents:
+        extentText = extent.text
+        temp = extentText.split(" ")[0]
+        temptation = extentText.replace(temp + " ","")
+        temptation2 = temptation.replace(" ","_")
+        extentText = extentText.replace(temptation,temptation2)
+        while extentText.endswith(" "):
+            extentText = extentText[:-1]
+        if extentText.endswith(":") or extentText.endswith(","):
+            extentText = extentText[:-1]
+        if extentText.endswith(" ft."):
+            extentText = extentText.replace(" ft.","_feet")
+        if extentText.endswith("_ft."):
+            extentText = extentText.replace("_ft.","_feet")
+        if extentText.endswith("_ft"):
+            extentText = extentText.replace("_ft","_feet")
+        if extentText.endswith("KB") or extentText.endswith("MB") or extentText.endswith("GB") or extentText.endswith("TB"):
+            extentText = extentText.replace(" KB"," kilobytes").replace(" MB"," megabytes").replace(" GB"," gigabytes").replace(" TB"," terabytes")
+        if extentText.endswith(")") and not extentText.endswith("s)"):
+            extentText = extentText.replace(")","s)")
+        if not extentText.endswith("s") and not extentText.endswith("s)") and not extentText.endswith("_feet"):
             extentText = extentText + "s"
         if extentText.endswith("ys") or extentText.endswith("ys)"):
             extentText = extentText.replace("ys","ies")
@@ -169,45 +199,54 @@ def aspace_processor (file_name):
             map.addprevious(turkey)
     containerslist = []
     containerslength = {}
+    containers = dom.xpath(".//ead:did/ead:container[1]", namespaces=nsmap)
+    for container in containers:
+        temp = container.text
+        if "-" in temp:
+            temp2 = temp.split("-")[0]
+            if len(temp2) == 8:
+                if temp2 not in containerslist:
+                    containerslist.append(temp2)
+                    containerslength[temp2] = 0
+                temp3 = len(temp.split("-")[-1])
+                if temp3 > containerslength[temp2]:
+                    containerslength[temp2] = temp3
+            if "LR" in temp2:
+                if temp2 not in containerslist:
+                    containerslist.append(temp2)
+                    containerslength[temp2] = 0
+                temp3 = len(temp.split("-")[-1])
+                if temp3 > containerslength[temp2]:
+                    containerslength[temp2] = temp3
+    for container in containers:
+        temp = container.text
+        if "-" in temp:
+            temp2 = temp.split("-")[0]
+            if len(temp2) == 8:
+                temp3 = temp.split("-")[-1]
+                temp4 = temp3
+                while len(temp4) < containerslength[temp2]:
+                    temp4 = "0" + temp4
+                temp = temp[:-len(temp3)] + temp4
+                print(temp)
+                container.text = temp
+            if "LR" in temp2:
+                temp3 = temp.split("-")[-1]
+                temp4 = temp3
+                while len(temp4) < containerslength[temp2]:
+                    temp4 = "0" + temp4
+                temp = temp[:-len(temp3)] + temp4
+                print(temp)
+                container.text = temp
     containers = dom.xpath(".//ead:container", namespaces=nsmap)
     for container in containers:
-        temp = container.text
-        if "-" in temp:
-            temp2 = temp.split("-")[0]
-            if len(temp2) == 8:
-                if temp2 not in containerslist:
-                    containerslist.append(temp2)
-                    containerslength[temp2] = 0
-                temp3 = len(temp.split("-")[-1])
-                if temp3 > containerslength[temp2]:
-                    containerslength[temp2] = temp3
-            if "LR" in temp2:
-                if temp2 not in containerslist:
-                    containerslist.append(temp2)
-                    containerslength[temp2] = 0
-                temp3 = len(temp.split("-")[-1])
-                if temp3 > containerslength[temp2]:
-                    containerslength[temp2] = temp3
-    for container in containers:
-        temp = container.text
-        if "-" in temp:
-            temp2 = temp.split("-")[0]
-            if len(temp2) == 8:
-                temp3 = temp.split("-")[-1]
-                temp4 = temp3
-                while len(temp4) < containerslength[temp2]:
-                    temp4 = "0" + temp4
-                temp = temp[:-len(temp3)] + temp4
-                print(temp)
-                container.text = temp
-            if "LR" in temp2:
-                temp3 = temp.split("-")[-1]
-                temp4 = temp3
-                while len(temp4) < containerslength[temp2]:
-                    temp4 = "0" + temp4
-                temp = temp[:-len(temp3)] + temp4
-                print(temp)
-                container.text = temp
+        temptext = container.text
+        print(temptext)
+        while temptext.endswith(" "):
+            temptext = temptext[:-1]
+        while temptext.endswith("."):
+            temptext = temptext[:-1]
+        container.text = temptext
     dom.write(filename2, pretty_print=True)
     with open(filename2, "r") as r:
         filedata = r.read()
