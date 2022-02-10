@@ -82,6 +82,8 @@ def aspace_processor (file_name):
     for date in dates:
         dateText = date.text
         dateText = spaceinator(dateText)
+        if dateText != None and dateText.endswith(","):
+            dateText = dateText[:-1]
         date.text = dateText
     title_emph = dom.xpath(".//ead:unittitle/ead:emph", namespaces=nsmap)
     for title in title_emph:

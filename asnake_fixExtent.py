@@ -16,20 +16,23 @@ changes = {'blueprints_(reprographic_copies)':['blueprints (reprographic copies)
            'architectural_drawings_(visual_works)':['architectural drawing (visual work)','architectural drawing (visual works)','architectural drawings (visual work)','architectural drawings (visual works)'],
            'artifacts_(object_genre)':['artifact (object genre)','artifacts','artifacts (object genre)'],
            'audiocassettes':['audiocassette'],
-           'black-and-white_negatives':['black-and-white negative','black-and-white negatives'],
+           'Betacam_(TM)':['Betacams'],
+           'black-and-white_negatives':['black-and-white negative','black-and-white negatives','black-and-white_black-and-white_negatives','black-and-white_black-and-white_negativess'],
+           'black-and-white_photographs':['black-and-white photographs'],
            'black-and-white_prints_(prints_on_paper)':['black-and-white print (visual work)','black-and-white prints (prints on paper)'],
            'blueline_prints':['blueline print','blueline prints'],
            'boudoir_photographs':['boudoir photograph'],
            'broadsides_(notices)':['broadside (notice)'],
            'clippings_(information_artifacts)':['clipping (information artifact)'],
-           'compact_discs':['compact discs'],
+           'compact_discs':['compact discs','optical_discs'],
            'contact_sheets':['contact sheet'],
-           'cubic_feet':['cubic ft.,','cubic ft.'],
+           'cubic_feet':['cubic ft.,','cubic ft.','cubic_ft._s','cubic_feets','cubic_fts'],
            'diazotypes_(copies)':['diazotype (copy)','diazotypes (copies)'],
            'drawings_(visual_works)':['drawings'],
            'DVDs':['DVD'],
-           'electronic_files':['electronic file','electronic files'],
+           'electronic_files':['electronic file','electronic files','electronic_electronic_files','MB_35_electronic_files','electronic_files_s'],
            'envelopes':['envelope'],
+           'files':['files_s','iles'],
            'folders':['folder','folder)','of 3 folders'],
            'gelatin_silver_prints':['gelatin silver print'],
            'gigabytes':['GB (1,797 files)','GB (2,865 files)'],
@@ -54,7 +57,8 @@ changes = {'blueprints_(reprographic_copies)':['blueprints (reprographic copies)
            'scrapbooks':['scrapbook'],
            'sheets_(paper_artifacts)':['(paper artifacts)','sheet (paper artifact)'],
            'stats_(copies)':['stat (copy)'],
-           'tintypes_(prints)':['tintype (prints)'],
+           'tintypes_(prints)':['tintype (prints)','tintype_(prints)'],
+           'VHS':['VHSs'],
            'videocassettes':['videocassette'],
            'videotapes':['videotape'],
            'volumes':['volume'],
@@ -96,30 +100,30 @@ def extent_changer(resource_records, repo_number, type):
 print("adapter from work by Scott Carlson with his work at Rice")
 print("this is going to take a while, take a coffee break")
 resource_records = (client.get('repositories/11/resources', params={'all_ids': True})).json()
-print("checking resources in SHC")
+print("\nchecking resources in SHC")
 extent_changer(resource_records, "11", "resources")
 archival_objects = (client.get("repositories/11/archival_objects", params={'all_ids': True})).json()
-print('checking archival objects in SHC')
+print('\nchecking archival objects in SHC')
 extent_changer(archival_objects, "11", "archival_objects")
 accessions = (client.get("repositories/11/accessions", params={'all_ids': True})).json()
-print('checking accessions in SHC')
+print('\nchecking accessions in SHC')
 extent_changer(accessions, "11", "accessions")
 resource_records = (client.get('repositories/12/resources', params={'all_ids': True})).json()
-print("checking resources in review")
+print("\nchecking resources in review")
 extent_changer(resource_records, "12", "resources")
 archival_objects = (client.get("repositories/12/archival_objects", params={'all_ids': True})).json()
-print('checking archival objects in review')
+print('\nchecking archival objects in review')
 extent_changer(archival_objects, "12", "archival_objects")
 accessions = (client.get("repositories/12/accessions", params={'all_ids': True})).json()
-print('checking accessions in review')
+print('\nchecking accessions in review')
 extent_changer(accessions, "12", "accessions")
 resource_records = (client.get('repositories/2/resources', params={'all_ids': True})).json()
-print("checking resources in Zavala")
+print("\nchecking resources in Zavala")
 extent_changer(resource_records, "2", "resources")
 archival_objects = (client.get("repositories/2/archival_objects", params={'all_ids': True})).json()
-print('checking archival objects in Zavala')
+print('\nchecking archival objects in Zavala')
 extent_changer(archival_objects, "2", "archival_objects")
 accessions = (client.get("repositories/2/accessions", params={'all_ids': True})).json()
-print('checking accessions in Zavala')
+print('\nchecking accessions in Zavala')
 extent_changer(accessions, "2", "accessions")
 
