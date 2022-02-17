@@ -249,6 +249,16 @@ def aspace_processor (file_name):
         while temptext.endswith("."):
             temptext = temptext[:-1]
         container.text = temptext
+    containers = dom.xpath(".//ead:container[1][@type = 'Microfilm']", namespaces=nsmap)
+    for container in containers:
+        tommy = container.getnext()
+        if tommy.tag == '{urn:isbn:1-931666-22-9}container':
+            tommy.addnext(container)
+    containers = dom.xpath(".//ead:container[2][@type = 'Microfilm']", namespaces=nsmap)
+    for container in containers:
+        tommy = container.getnext()
+        if tommy.tag == '{urn:isbn:1-931666-22-9}container':
+            tommy.addnext(container)
     dom.write(filename2, pretty_print=True)
     with open(filename2, "r") as r:
         filedata = r.read()
