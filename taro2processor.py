@@ -3062,6 +3062,10 @@ for dirpath, dirnames, filenames in os.walk(process):
         for container in containers:
             type = container.attrib['type']
             container.attrib['type'] = type.capitalize()
+        language = dom2.find(".//ead:langmaterial", namespaces=nsmap)
+        temp = language.text
+        temp = temp.replace('English','<language langcode="eng" scriptcode="Latn">English</language>')
+        language.text = temp
         dom2.write(output_file, pretty_print=True)
         with open(output_file, "r") as r:
             filedata = r.read()
