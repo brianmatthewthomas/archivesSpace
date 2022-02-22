@@ -3066,6 +3066,14 @@ for dirpath, dirnames, filenames in os.walk(process):
         temp = language.text
         temp = temp.replace('English','<language langcode="eng" scriptcode="Latn">English</language>')
         language.text = temp
+        extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
+        for extent in extents:
+            temp = extent.text
+            other_tag = extent.getnext()
+            if other_tag.tag == '{urn:isbn:1-931666-22-9}genreform':
+                temp = temp + other_tag.text
+                extent.text = temp
+                other_tag.getparent().remove(other_tag)
         dom2.write(output_file, pretty_print=True)
         with open(output_file, "r") as r:
             filedata = r.read()
