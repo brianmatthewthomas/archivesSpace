@@ -37,6 +37,7 @@ archival_objects = (client.get("repositories/2/archival_objects", params={'all_i
 #print(archival_objects)
 address = f'repositories/2/archival_objects/' + "{0}"
 for archival_object in tqdm(archival_objects):
+    selection = False
     if str(archival_object) not in itemlog:
         rec_uri = address.format(archival_object)
         res_record = client.get(rec_uri).json()
@@ -45,7 +46,6 @@ for archival_object in tqdm(archival_objects):
         # output.close()
         listy = []
         for instance in res_record['instances']:
-            selection = False
             #print(instance)
             if 'type_3' in instance['sub_container']:
                 if instance['sub_container']['type_3'] == "Volume":
@@ -70,8 +70,11 @@ for archival_object in tqdm(archival_objects):
                                                                     'top_container': {'ref': widget['id']}}})
                                     exists = True
                                     selection = True
-                            del instance['sub_container']['type_3']
-                            del instance['sub_container']['indicator_3']
+                                    try:
+                                        del instance['sub_container']['type_3']
+                                        del instance['sub_container']['indicator_3']
+                                    except:
+                                        continue
                         if exists is False:
                             print("this microfilm doesn't exist yet, creating it")
                             current = this_container
@@ -87,8 +90,11 @@ for archival_object in tqdm(archival_objects):
                                                   'sub_container': {'jsonmodel_type': 'sub_container',
                                                                     'top_container': {'ref': widget['id']}}})
                                     selection = True
-                            del instance['sub_container']['type_3']
-                            del instance['sub_container']['indicator_3']
+                                    try:
+                                        del instance['sub_container']['type_3']
+                                        del instance['sub_container']['indicator_3']
+                                    except:
+                                        continue
             if 'type_2' in instance['sub_container']:
                 if instance['sub_container']['type_2'] == "Volume":
                     print("yes, applicable key 2 exists")
@@ -113,8 +119,11 @@ for archival_object in tqdm(archival_objects):
                                                                     'top_container': {'ref': widget['id']}}})
                                     exists = True
                                     selection = True
-                            del instance['sub_container']['type_2']
-                            del instance['sub_container']['indicator_2']
+                                    try:
+                                        del instance['sub_container']['type_2']
+                                        del instance['sub_container']['indicator_2']
+                                    except:
+                                        continue
                         if exists is False:
                             print("this microfilm doesn't exist yet, creating it")
                             current = this_container
@@ -130,8 +139,11 @@ for archival_object in tqdm(archival_objects):
                                                   'sub_container': {'jsonmodel_type': 'sub_container',
                                                                     'top_container': {'ref': widget['id']}}})
                                     selection = True
-                            del instance['sub_container']['type_2']
-                            del instance['sub_container']['indicator_2']
+                                    try:
+                                        del instance['sub_container']['type_2']
+                                        del instance['sub_container']['indicator_2']
+                                    except:
+                                        continue
         if selection is True:
             print(listy)
             if listy != []:
