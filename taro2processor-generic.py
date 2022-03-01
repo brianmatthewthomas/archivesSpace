@@ -2814,6 +2814,7 @@ insert proper attributes in the date and keep just the date and not the whole UT
 <xsl:template match="ead:ead/ead:archdesc/ead:originalsloc"/>
 <xsl:template match="ead:ead/ead:archdesc/ead:odd"/>
 <xsl:template match="//ead:c01/ead:controlaccess"/>
+<xsl:template match="//ead:accessrestrict[@ audience='internal']"/>
 <xsl:template match="//ead:c01/ead:scopecontent/ead:head|//ead:c02/ead:scopecontent/ead:head|//ead:c03/ead:scopecontent/ead:head|//ead:c04/ead:scopecontent/ead:head|//ead:c05/ead:scopecontent/ead:head|//ead:c06/ead:scopecontent/ead:head|//ead:c07/ead:scopecontent/ead:head|//ead:c07/ead:scopecontent/ead:head|//ead:c08/ead:scopecontent/ead:head|//ead:c09/ead:scopecontent/ead:head"/>
 </xsl:stylesheet>''')
 nsmap = {'xmlns': 'urn:isbn:1-931666-22-9',
@@ -2931,6 +2932,8 @@ for dirpath, dirnames, filenames in os.walk(process):
                 date.attrib['calendar'] = 'gregorian'
             if date.attrib['calendar'] == "":
                 date.attrib['calendar'] = 'gregorian'
+        print("saving work")
+        dom2.write(output_file, pretty_print=True)
         subjects = dom2.xpath("//ead:subject", namespaces=nsmap)
         subjectlist = []
         for subject in subjects:
@@ -3057,10 +3060,16 @@ for dirpath, dirnames, filenames in os.walk(process):
         for extent in extents:
             temp = extent.text
             other_tag = extent.getnext()
-            if other_tag.tag == '{urn:isbn:1-931666-22-9}genreform':
+            
+            if other_tag != None and other_tag.tag == '{urn:isbn:1-931666-22-9}genreform':
                 temp = temp + other_tag.text
                 extent.text = temp
                 other_tag.getparent().remove(other_tag)
+        # pull out access restrict with audience = internal if still there
+        restrictions = dom2.xpath(".//ead:accessrestrict[@audience = 'internal']", namespaces=nsmap)
+        if restrictions is not None:
+            for restriction in restrictions:
+                restriction.getparent().remove(restriction)
         dom2.write(output_file, pretty_print=True)
         with open(output_file, "r") as r:
             filedata = r.read()
