@@ -132,10 +132,10 @@ for dirpath, dirnames, filenames in os.walk(seriousFilepath):
         filename = os.path.join(dirpath, filename)
         if filename.endswith(('.xml')):
             dom = ET.parse(filename)
-            xslt = ET.parse(catalyst)
-            transform = ET.XSLT(xslt)
+            #xslt = ET.parse(catalyst)
+            #transform = ET.XSLT(xslt)
             newdom = transform(dom)
-            newFilename = os.path.join(output, filename)
+            newFilename = os.path.join(output, filename2)
             if not os.path.exists(os.path.dirname(newFilename)):
                 try:
                     os.makedirs(os.path.dirname(newFilename), exist_ok=True)
@@ -144,11 +144,18 @@ for dirpath, dirnames, filenames in os.walk(seriousFilepath):
                         raise
             newdom.write(newFilename, xml_declaration=True, encoding='UTF-8', standalone='yes', pretty_print=True)
             print(newFilename + " is processed!")
+            with open(newFilename, "r") as r:
+                filedata = r.read()
+                filedata = filedata.replace(' xmlns=""','')
+                with open(newFilename, "w") as w:
+                    w.write(filedata)
+                w.close()
             print("creating csv file of extents to review")
             with open(newFilename[:-4] + ".csv", "a") as f:
                 tree = ET.parse(newFilename)
                 extents = tree.xpath("//ead:extent", namespaces=nsmap)
                 for extent in extents:
+                    print(extent.text)
                     if extent == None:
                         extentText = "NOTHING THERE"
                     else:
