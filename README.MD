@@ -107,3 +107,30 @@ Some dates that have to get extra reconfiguration for daterangeparser to work wi
 
 ### taro2processor-generic.py ###
 A genericized version of the `taro2processor.py` for other archives that want to go through roughly the same process. Users will need to know their repo code. Experimental and may not work perfect so check your output.
+### fix_low-level_unitid.py
+Resolves an issue where TARO2 normalization had inserted the wrong attributes to lower level unitids.
+### marcXML_subjects.py
+Takes a dump of subject terms from SIRSI via MarcEdit API connection and removes 650/651 items. Used before mass importing Marc encoded subject terms.
+### parseExtent.py
+Used for normalizing errant extent types pre-import into ArchivesSpace.
+# ArchiveSnake tools
+These are scripts that rely on archivesnake to do API tasks. You will need to have that installed and configured to log into your system. 
+## asnake_fixExtent.py
+Uses a dictionary method to normalize errant extent types. The correct extent type is the dictionary key, the errant type is a text item in a list associated with the key. Crawls all repositories based on repo number.       This needs to be localized.
+## asnake_fixSubjects.py
+Meant to correct a problem where some LCSH subject terms were imported as `Library of Congress Subject Headings` rather than `lcsh`. Crawls entire system.
+## asnake_microfilm.py
+Meant to crawl repo #2  for instances where there are multiple top containers for an item, one physical item and one microfilm. Finds the microfilm container or creates a new top-container for the microfilm if that doesn't exist, makes the item pairing, removes the data for the microfilm from the original container.
+Note that it has to wait for 30 seconds for a newly created container to register in the system so it can take a while. Has a feature to pick up where it left off built in so multiple full passes aren't necessary if you've added stuff and need to rerun.
+## asnake_retype_top_container.py
+A testing tool to change a top container type from one to another. Configured for changing "Reel" to microfilm but can be applicable to anything.
+## container_test.py
+The output of a container creation test, provides information on how container data is structured.
+## generate_locations_csv.py
+Crawls system for all generated locations and creates spreadsheet with the data points. Meant for future pairing of containers created as part of Aspace import to their correct stacks coordinates.
+## topContainer_create.py
+A testing tool to make sure it is possible to create top containers via the API
+## topContainer_bulkGenerate.py
+An API tool to take       a csv with container names and bulk generate those containers. Spreadsheet also hase informattttion parameters to link into a specific collection/accession, assign a container profile, and assign a location via the location UUID. Has a pause of 30 seconds after bulk create before trying any pairing to try to get the containers registered in the system.
+
+***Note***: There is a known irresolvable issue where the containers do not always take in the system, or do take but there is a delay in getting recognized by the index. You may need to run, curate to what didn't get created, rerun, etc. ***and then*** check for dedupe needs.
