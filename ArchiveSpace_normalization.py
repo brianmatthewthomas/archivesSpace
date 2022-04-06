@@ -9,7 +9,7 @@ pairing = {}
     print(pairing)'''
 def spaceinator (content):
     #print(content)
-    if content != None:
+    if content is not None:
         while content.startswith(" "):
             content = content[1:]
         while content.endswith(" "):
@@ -29,6 +29,7 @@ def aspace_processor (file_name):
     extents = dom.xpath(".//ead:extent", namespaces=nsmap)
     for extent in extents:
         extentText = extent.text
+        print(extentText)
         temp = extentText.split(" ")[0]
         temptation = extentText.replace(temp + " ","")
         temptation2 = temptation.replace(" ","_")
@@ -82,13 +83,16 @@ def aspace_processor (file_name):
     for date in dates:
         dateText = date.text
         dateText = spaceinator(dateText)
-        if dateText != None and dateText.endswith(","):
+        if dateText is not None and dateText.endswith(","):
             dateText = dateText[:-1]
+        dateText = spaceinator(dateText)
         date.text = dateText
     title_emph = dom.xpath(".//ead:unittitle/ead:emph", namespaces=nsmap)
     for title in title_emph:
         titleText = title.text
-        if titleText.endswith(", "):
+        titleText = spaceinator(titleText)
+        print(titleText)
+        if titleText is not None and titleText.endswith(", "):
             titleText = titleText[:-2] + '"LadyGaga'
             title.text = titleText
         if titleText.endswith(","):
@@ -107,72 +111,72 @@ def aspace_processor (file_name):
         title.text = titleText
     turkey = dom.find(".//ead:archdesc/ead:did", namespaces=nsmap)
     myRelatives = dom.xpath(".//ead:relatedmaterial/ead:relatedmaterial", namespaces=nsmap)
-    if myRelatives != None:
+    if myRelatives is not None:
         for item in myRelatives:
             boss = item.getparent()
             turkey.addnext(item)
-            if boss != None:
+            if boss is not None:
                 bossy = boss.getparent()
-                if bossy != None:
+                if bossy is not None:
                     boss.getparent().remove(boss)
     mySubjects = dom.xpath(".//ead:controlaccess/ead:controlaccess", namespaces=nsmap)
     for item in mySubjects:
         boss = item.getparent()
         turkey.addnext(item)
-        if boss != None:
+        if boss is not None:
             bossy = boss.getparent()
-            if bossy != None:
+            if bossy is not None:
                 boss.getparent().remove(boss)
     containers = dom.xpath(".//ead:container", namespaces=nsmap)
     for container in containers:
         type = container.attrib['type']
         container.attrib['type'] = type.capitalize()
     headings = dom.xpath(".//ead:c01[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
-    if headings != None:
+    if headings is not None:
         for heading in headings:
             heading.getparent().remove(heading)
     headings = dom.xpath(".//ead:c02[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
-    if headings != None:
+    if headings is not None:
         for heading in headings:
             print(heading.text)
             heading.getparent().remove(heading)
     headings = dom.xpath(".//ead:c03[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
-    if headings != None:
+    if headings is not None:
         for heading in headings:
             print(heading.text)
             heading.getparent().remove(heading)
     headings = dom.xpath(".//ead:c04[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
-    if headings != None:
+    if headings is not None:
         for heading in headings:
             print(heading.text)
             heading.getparent().remove(heading)
     headings = dom.xpath(".//ead:c05[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
-    if headings != None:
+    if headings is not None:
         for heading in headings:
             print(heading.text)
             heading.getparent().remove(heading)
     headings = dom.xpath(".//ead:c06[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
-    if headings != None:
+    if headings is not None:
         for heading in headings:
             print(heading.text)
             heading.getparent().remove(heading)
     headings = dom.xpath(".//ead:c07[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
-    if headings != None:
+    if headings is not None:
         for heading in headings:
             print(heading.text)
             heading.getparent().remove(heading)
     headings = dom.xpath(".//ead:c08[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
-    if headings != None:
+    if headings is not None:
         for heading in headings:
             print(heading.text)
             heading.getparent().remove(heading)
     headings = dom.xpath(".//ead:c09[@otherlevel='Heading']/ead:did/ead:container", namespaces=nsmap)
-    if headings != None:
+    if headings is not None:
         for heading in headings:
             print(heading.text)
             heading.getparent().remove(heading)
     scripts = dom.xpath(".//ead:language", namespaces=nsmap)
-    if scripts != None:
+    if scripts is not None:
         for script in scripts:
             print(script.text)
             if 'langcode' not in script.attrib:
@@ -184,10 +188,14 @@ def aspace_processor (file_name):
     for ident in idents:
         turkey = ident.getparent().getparent()
         if turkey.tag != "{urn:isbn:1-931666-22-9}archdesc":
-            ident.attrib.pop('label')
-            ident.attrib.pop('repositorycode')
-            ident.attrib.pop('encodinganalog')
-            ident.attrib.pop('countrycode')
+            if 'label' in ident.attrib:
+                ident.attrib.pop('label')
+            if 'repositorycode' in ident.attrib:
+                ident.attrib.pop('repositorycode')
+            if 'encodinganalog' in ident.attrib:
+                ident.attrib.pop('encodinganalog')
+            if 'countrycode' in ident.attrib:
+                ident.attrib.pop('countrycode')
     maps = dom.xpath(".//ead:did/ead:container[1]", namespaces=nsmap)
     for map in maps:
         if map.attrib['type'] == "Map":
