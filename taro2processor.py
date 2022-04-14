@@ -2889,10 +2889,10 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace('xmlns=""','')
             filedata = filedata.replace("\t",'')
             filedata = filedata.replace("\n"," ")
-            while "  " in filedata:
-                filedata = filedata.replace("  "," ")
             filedata = filedata.replace("> <",">\n<")
             filedata = filedata.replace("><",">\n<")
+            while "  " in filedata:
+                filedata = filedata.replace("  "," ")
             filedata = filedata.replace(",, ",", ")
         with open(output_file, "w") as w:
             w.write(filedata)
@@ -2901,7 +2901,7 @@ for dirpath, dirnames, filenames in os.walk(process):
         #print(pairing[unitid_text])
         dom2 = ET.parse(output_file)
         unitid = dom2.xpath("//ead:unitid", namespaces=nsmap)
-        unitid[0].text = pairing[unitid_text]
+        #unitid[0].text = pairing[unitid_text]
         dates = dom2.xpath("//ead:unitdate/ead:emph", namespaces=nsmap)
         screwballs = []
         flag = 0
@@ -3075,13 +3075,32 @@ for dirpath, dirnames, filenames in os.walk(process):
                 temp = temp + other_tag.text
                 extent.text = temp
                 other_tag.getparent().remove(other_tag)
+        #now process in the brackets for physdesc inner content
+        extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
+        for extent in extents:
+            parent = extent.getparent().getparent().getparent()
+            physfacet = extent.find("../ead:physfacet", namespaces=nsmap)
+            dimension = extent.find("../ead:dimensions", namespaces=nsmap)
+            parent_attrib = parent.attrib['level']
+            exceptions = ['class','collection','fonds','otherlevel','recordgrp','series','subfonds','subgrp','subseries','Sub-Series','Sub-Group','Series']
+            if parent_attrib != None and parent_attrib not in exceptions:
+                preceding = extent.getparent()
+                preceding.text = "["
+                extent.text = "[" + extent.text + "]"
+                if extent.attrib['altrender'] == "materialtype spaceoccupied":
+                    del extent.attrib['altrender']
+                #print(parent.attrib['level'])
+                if physfacet != None:
+                    physfacet.text = "[" + physfacet.text + "]"
+                if dimension != None:
+                    dimension.text = "[" + dimension.text + "]"
         # pull out access restrict with audience = internal if still there
         restrictions = dom2.xpath(".//ead:accessrestrict[@audience = 'internal']", namespaces=nsmap)
         if restrictions is not None:
             for restriction in restrictions:
                 restriction.getparent().remove(restriction)
-        dom2.write(output_file, pretty_print=True)
-        with open(output_file, "r") as r:
+        dom2.write(output_file)
+        with open(output_file,"r") as r:
             filedata = r.read()
             filedata = filedata.replace('<extptr href','<extptr xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onLoad" xlink:show="embed" xlink:type="simple" xlink:href')
             filedata = filedata.replace('<ead:extref href','<ead:extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
@@ -3101,6 +3120,11 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace('\n<ead:descgrp type="admininfo">','')
             filedata = filedata.replace("\n</ead:descgrp>","")
             filedata = filedata.replace("ead:","")
+            filedata = filedata.replace("\n<physfacet>","<physfacet>").replace("\n<dimensions>","<dimensions>").replace("\n</physdesc>","</physdesc>")
+            filedata = filedata.replace("<extent>[","[<extent>").replace("]</extent>","</extent>]")
+            filedata = filedata.replace("<physfacet>[","[<physfacet>, ").replace("]</physfacet>","</physfacet>]")
+            filedata = filedata.replace("<dimensions>[","[<dimensions>, ").replace("]</dimensions>","</dimension>]")
+            filedata = filedata.replace("][<physfacet>","<physfacet>").replace("][<dimensions>","<dimensions>")
             filedata = filedata.replace('\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive.</emph>\n</p>','')
             filedata = filedata.replace('\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive. </emph>\n</p>','')
             filedata = filedata.replace("\n</relatedmaterial>\n</relatedmaterial>\n</relatedmaterial>","\n</relatedmaterial>\n</relatedmaterial>")

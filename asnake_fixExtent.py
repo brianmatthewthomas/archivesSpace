@@ -17,7 +17,7 @@ changes = {'blueprints_(reprographic_copies)':['blueprints (reprographic copies)
            'artifacts_(object_genre)':['artifact (object genre)','artifacts','artifacts (object genre)'],
            'audiocassettes':['audiocassette','_______audiocassettes'],
            'Betacam_(TM)':['Betacams'],
-           'black-and-white_negatives':['black-and-white negative','black-and-white negatives','black-and-white_black-and-white_negatives','black-and-white_black-and-white_negativess'],
+           'black-and-white_negatives':['black-and-white_black-and-white_negativess','black-and-white_black-and-white_negatives'],
            'black-and-white_photographs':['black-and-white photographs','black-and-white_photographss'],
            'black-and-white_prints_(prints_on_paper)':['black-and-white print (visual work)','black-and-white prints (prints on paper)'],
            'blueline_prints':['blueline print','blueline prints'],
@@ -27,13 +27,12 @@ changes = {'blueprints_(reprographic_copies)':['blueprints (reprographic copies)
            'clippings_(information_artifacts)':['clipping (information artifact)'],
            'compact_discs':['compact discs','optical_discs','CDs'],
            'contact_sheets':['contact sheet','contact_sheets,_s'],
-           'cubic_feet':['cubic ft.,','cubic ft.','cubic_ft._s','cubic_feets','cubic_fts','cubic ft.s','cubic_ft','cubic_ft.,_s	'],
+           'cubic_feet':['cubic ft.,','cubic ft.','cubic ft.s','cubic_ft','cubic_ft.,_s','cubic ft.'],
            'diazotypes_(copies)':['diazotype (copy)','diazotypes (copies)'],
            'drawings_(visual_works)':['drawings'],
            'DVDs':['DVD'],
-           'electronic_files':['electronic file','electronic files','electronic_electronic_files','MB_35_electronic_files','electronic_files_s'],
+           'electronic_files':['files'],
            'envelopes':['envelope'],
-           'files':['files_s','iles'],
            'folders':['folder','folder)','of 3 folders','folders;s'],
            'gelatin_silver_prints':['gelatin silver print'],
            'gigabytes':['GB_s'],
@@ -42,11 +41,12 @@ changes = {'blueprints_(reprographic_copies)':['blueprints (reprographic copies)
            'ledgers_(account_books)':['ledger (account book)','ledgers (account books)'],
            'letter_books':['letter book'],
            'lithographs':['lithograph'],
+           'maps_(documents)':['maps'],
            'mechanical_drawings_(building_systems_drawings)':['mechanical drawings (building systems drawings)'],
-           'megabytes':['MB','MS_s'],
+           'megabytes':['MB','MS_s','MB_s'],
            'microfilms':['microfilm'],
            'motion_picture_components':['motion picture component','motion picture components'],
-           'motion_pictures_(visual_works)':['motion picture (visual work)','motion_picture_(visual_works)'],
+           'motion_pictures_(visual_works)':['motion_picture_(visual_works)'],
            'open_reel_audiotapes':['open reel audiotape','open reel audiotapes'],
            'paintings_(visual_works)':['painting (visual work)'],
            'photoengravings_(prints)':['photoengraving (print)','photoengraving_(prints)'],
@@ -56,7 +56,7 @@ changes = {'blueprints_(reprographic_copies)':['blueprints (reprographic copies)
            'postcards':['postcard'],
            'posters':['poster'],
            'scrapbooks':['scrapbook'],
-           'sheets_(paper_artifacts)':['(paper artifacts)','sheet (paper artifact)','sheet_(paper_artifact)s'],
+           'sheets_(paper_artifacts)':['sheet_(paper_artifacts)','sheets','sheet_(paper_artifact)s'],
            'stats_(copies)':['stat (copy)'],
            'tintypes_(prints)':['tintype (prints)','tintype_(prints)'],
            'VHS':['VHSs'],
@@ -78,7 +78,7 @@ def extent_changer(resource_records, repo_number, type):
             for ext_index, extent in enumerate(extents):
                 for key, value in changes.items():
                     if extent['extent_type'] in value:
-                        #print(extent['extent_type'])
+                        print(extent['extent_type'], end="\r")
                         updated_record['extents'][ext_index]['extent_type'] = key
                         with open("log2.csv", "a") as w:
                             w.write(res_record['title'] + "|" + res_record['uri'] + "|" + extent['extent_type'] + "\n")
