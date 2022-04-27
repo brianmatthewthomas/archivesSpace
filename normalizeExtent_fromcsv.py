@@ -23,3 +23,4 @@ with open(justifier, 'r') as f:
 		outfile.write(ET.tostring(tree, encoding="utf-8", xml_declaration=True, pretty_print=True))
 		outfile.close()
 
+
