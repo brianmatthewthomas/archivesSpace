@@ -95,13 +95,13 @@ def aspace_processor (file_name):
         if titleText is not None and titleText.endswith(", "):
             titleText = titleText[:-2] + '"LadyGaga'
             title.text = titleText
-        if titleText.endswith(","):
+        if titleText is not None and titleText.endswith(","):
             titleText = titleText[:-1] + '"LadyGaga'
             title.text = titleText
-        if titleText.endswith(',"'):
+        if titleText is not None and titleText.endswith(',"'):
             titleText = titleText[:-2] + '"LadyGaga'
             title.text = titleText
-        if titleText.endswith(', "'):
+        if titleText is not None and titleText.endswith(', "'):
             titleText = titleText[:-3] + '"LadyGaga'
             title.text = titleText
     titles = dom.xpath(".//ead:unittitle", namespaces=nsmap)
