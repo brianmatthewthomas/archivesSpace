@@ -16,71 +16,28 @@ with open("/home/brian/itemlog.txt", "r") as r:
         itemlog.append(line[:-1])
 client = ASnakeClient()
 counter = 0
-changes = {'GB (11,231 files)':['gigabytes','11231','electronic_files'],
-           'MB_(4_files)':['megabytes','4','electronic_files'],
-           'MB_(2_files)':['megabytes','2','electronic_files'],
-           'KB_(1_files)':['kilobytes','1','electronic_files'],
-           'folders_and_1_wallets':['folders','1','wallets'],
-           'folders_and_4_wallets':['folders','4','wallets'],
-           'folders,_1_wallets':['folders','1','wallets'],
-           'folders_and_5_wallets':['folders','5','wallets'],
-           'MB_(642_files)':['megabytes','642','electronic_files'],
-           'folders_and_3_wallets':['folders','3','wallets'],
-           'MB_(469_files)':['megabytes','469','electronic_files'],
-           'folders_and_2_wallets':['folders','2','wallets'],
-           'MB_(342_files)':['megabytes','342','electronic_files'],
-           'MB_(152_files)':['megabytes','152','electronic_files'],
-           'MB_(18_files)':['megabytes','18','electronic_files'],
-           'MB_(76_files)':['megabytes','76','electronic_files'],
-           'MB_(249_files)':['megabytes','249','electronic_files'],
-           'GB_(1,797_files)':['gigabytes','1797','electronic_files'],
-           'KB_(26_files)':['kilobytes','26','electronic_files'],
-           'KB_(34_files)':['megabytes','34','electronic_files'],
-           'MB_(89_files)':['megabytes','89','electronic_files'],
-           'KB_(2_files)':['kilobytes','2','electronic_files'],
-           'MB_(11_files)':['megabytes','11','electronic_files'],
-           'KB_(11_files)':['kilobytes','11','electronic_files'],
-           'MB_(69_files)':['megabytes','69','electronic_files'],
-           'MB_(380_files)':['kilobytes','380','electronic_files'],
-           'KB_(4_files)':['kilobytes','4','electronic_files'],
-           'KB_(13_files)':['kilobytes','13','electronic_files'],
-           'KB_(3_files)':['kilobytes','3','electronic_files'],
-           'KB_(24_files)':['kilobytes','24','electronic_files'],
-           'MB_(26_files)':['megabytes','26','electronic_files'],
-           'MB_(57_files)':['megabytes','57','electronic_files'],
-           'KB_(6_files)':['kilobytes','6','electronic_files'],
-           'MB_(20_files)':['megabytes','20','electronic_files'],
-           'MB_(90_files)':['megabytes','90','electronic_files'],
-           'MB_(39_files)':['megabytes','39','electronic_files'],
-           'GB_(2,865_files)':['gigabytes','2865','electronic_files'],
-           'GB_(3,114_files)':['gigabytes','3114','electronic_files'],
-           'MB_(425_files)':['megabytes','425','electronic_files'],
-           'MB_(349_files)':['megabytes','349','electronic_files'],
-           'MB_(341_files)':['megabytes','341','electronic_files'],
-           'MB_(414_files)':['megabytes','414','electronic_files'],
-           'MB_(16_electronic_files':['megabytes','16','electronic_files'],
-           'MB_(12_electronic_files':['megabytes','12','electronic_files'],
-           'MB_(22_electronic_files':['megabytes','22','electronic_files'],
-           'MB_(9_electronic_files':['megabytes','9','electronic_files'],
-           'MB_(5_electronic_files':['megabytes','5','electronic_files'],
-           'MB_(28_electronic_files':['megabytes','28','electronic_files'],
-           'MB_(90_electronic_files':['megabytes','90','electronic_files'],
-           'KB_(9_electronic_files':['kilobytes','9','electronic_files'],
-           'MB_(44_electronic_files':['megabytes','44','electronic_files'],
-           'MB_(42_electronic_files':['megabytes','42','electronic_files'],
-           'MB_(2_electronic_files':['megabytes','2','electronic_files'],
-           'MB_(33_electronic_files':['megabytes','33','electronic_files'],
-           'KB_(5_electronic_files':['kilobytes','5','electronic_files'],
-           'MB_(29_electronic_files':['megabytes','29','electronic_files'],
-           'MB_(52_electronic_files':['megabytes','52','electronic_files'],
-           'MB_(20_electronic_files':['megabytes','20','electronic_files'],
-           'MB_(24_electronic_files':['megabytes','24','electronic_files'],
-           'MB_(88_electronic_files':['megabytes','88','electronic_files'],
-           'MB,_16_files,_in_7_folders':['megabytes','16','electronic_files'],
-           'MB,_45_files,_in_3_folders':['megabytes','45','electronic_files'],
-           'KB,_5_files':['kilobytes','5','electronic_files'],
-           'MB_(66_files)':['megabytes','66','electronic_files'],
-           'folders,_172_color_slides':['folders','172','color_slides']}
+changes = {'advertising_cards':['advertising_cards]s','advertising cards'],
+           'artifacts_(object_genre)':['artifacts_(object_genres)'],
+           'black-and-white_photographs':['black-and-white_photographs s','black-and-white-photographs_s','black-and-white_photographs_s','black-and-white_photograph s','black_and_white_photographs','black-and-white_Rotographs'],
+           'cabinet_photographs':['cabinet_photographs_s'],
+           'color_photographs':['color_photographs_s'],
+           'cubic_feet':['cubic ft.','cubic_ft._s','cubic_ft._(1473_items)','cubic_ft.,_s','cubic_feet0.58 cubic_feet','cubic_feet0.25 cubic_feet','cubic_feet0.12 cubic_feet','cubic_feet0.63 cubic_feet','cubic_feet1.6 cubic_feet','cubic_feet0.75 cubic_feet'],
+           'cartes-de-visite_(card_photographs)':['cartes-de-visites_(card_photographs)'],
+           'daguerreotypes_(photographs)':['daguerreotypes_(photographs)_s'],
+           'drawings_(visual_works)':['drawings_(visual_works)_s'],
+           'electronic_files':['electronic files','files','files)'],
+           'folders':['folders]s'],
+           'greeting_cards':['greeting_cards]s'],
+           'imperial_photographs':['imperial_photographs_s'],
+           'megabytes':['MB_s'],
+           'offset_lithographs':['offset_lithographs s','offset lithographs','offset_lithographs_s'],
+           'panel_photographs':['panel_photographs_s'],
+           'photographic_postcards':['photographic_postcards]s'],
+           'photomechanical_prints':['photomechanical_prints]s','photomechanical_prints s','photomechanical prints'],
+           'postcards':['postcards_s','postcards s'],
+           'promenade_midget_photographs':['promenade_midget_photographs_s'],
+           'tintypes_(prints)':['tintype_(prints)']
+           }
 
 
 def extent_changer(resource_records, repo_number, type):
@@ -128,7 +85,7 @@ def extent_changer(resource_records, repo_number, type):
     print('{0} records checked; {1} records updated.'.format(len(resource_records), len(found_records)))
 print("adapter from work by Scott Carlson with his work at Rice")
 print("this is going to take a while, take a coffee break")
-'''resource_records = (client.get('repositories/11/resources', params={'all_ids': True})).json()
+resource_records = (client.get('repositories/11/resources', params={'all_ids': True})).json()
 print("\nchecking resources in SHC")
 extent_changer(resource_records, "11", "resources")
 archival_objects = (client.get("repositories/11/archival_objects", params={'all_ids': True})).json()
@@ -148,7 +105,7 @@ print('\nchecking accessions in review')
 extent_changer(accessions, "12", "accessions")
 resource_records = (client.get('repositories/2/resources', params={'all_ids': True})).json()
 print("\nchecking resources in Zavala")
-extent_changer(resource_records, "2", "resources")'''
+extent_changer(resource_records, "2", "resources")
 archival_objects = (client.get("repositories/2/archival_objects", params={'all_ids': True})).json()
 print('\nchecking archival objects in Zavala')
 extent_changer(archival_objects, "2", "archival_objects")
