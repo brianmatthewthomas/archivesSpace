@@ -12,6 +12,7 @@ def subjectspace (subject):
         subject = subject[:-1]
     if subject.endswith("."):
         subject = subject[:-1]
+    subject = subject.replace(" -- ","--")
     return subject
 
 def subarea (subject):
@@ -2973,6 +2974,16 @@ for dirpath, dirnames, filenames in os.walk(process):
                 subjectlist.append(subject.text)
             if subject.attrib['source'] == "local":
                 flag += 1
+        subjects = dom2.xpath("//ead:geogname", namespaces=nsmap)
+        for subject in subjects:
+            subjective = subject.text
+            subject.text = subjectspace(subject)
+            if subject.text in subjectlist:
+                subject.getparent().remove(subject)
+            else:
+                subjectlist.append(subject.text)
+            if subject.attrib['source'] == "local":
+                flag += 1
         subjects = dom2.xpath("//ead:function", namespaces=nsmap)
         subjectlist = []
         for subject in subjects:
@@ -3063,10 +3074,11 @@ for dirpath, dirnames, filenames in os.walk(process):
         for container in containers:
             type = container.attrib['type']
             container.attrib['type'] = type.capitalize()
-        language = dom2.find(".//ead:langmaterial", namespaces=nsmap)
-        temp = language.text
-        temp = temp.replace('English','<language langcode="eng" scriptcode="Latn">English</language>')
-        language.text = temp
+        langs = dom2.xpath("//ead:langmaterial", namespaces=nsmap)
+        for lang in langs:
+            lang_text = lang.text
+            if lang_text.startswith("<![CDATA"):
+                lang.text = lang_text.replace("<![CDATA[","").replace("]]>","")
         extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
         for extent in extents:
             temp = extent.text
@@ -3123,7 +3135,7 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace("\n<physfacet>","<physfacet>").replace("\n<dimensions>","<dimensions>").replace("\n</physdesc>","</physdesc>")
             filedata = filedata.replace("<extent>[","[<extent>").replace("]</extent>","</extent>]")
             filedata = filedata.replace("<physfacet>[","[<physfacet>, ").replace("]</physfacet>","</physfacet>]")
-            filedata = filedata.replace("<dimensions>[","[<dimensions>, ").replace("]</dimensions>","</dimension>]")
+            filedata = filedata.replace("<dimensions>[","[<dimensions>, ").replace("]</dimensions>","</dimensions>]")
             filedata = filedata.replace("][<physfacet>","<physfacet>").replace("][<dimensions>","<dimensions>")
             filedata = filedata.replace('\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive.</emph>\n</p>','')
             filedata = filedata.replace('\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive. </emph>\n</p>','')
