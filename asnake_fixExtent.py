@@ -11,27 +11,7 @@ logging.setup_logging(filename="aris.log", filemode="a")
 
 client = ASnakeClient()
 
-changes = {'advertising_cards':['advertising_cards]s','advertising cards'],
-           'artifacts_(object_genre)':['artifacts_(object_genres)'],
-           'black-and-white_photographs':['black-and-white_photographs s','black-and-white-photographs_s','black-and-white_photographs_s','black-and-white_photograph s','black_and_white_photographs','black-and-white_Rotographs'],
-           'cabinet_photographs':['cabinet_photographs_s'],
-           'color_photographs':['color_photographs_s'],
-           'cubic_feet':['cubic ft.','cubic_ft._s','cubic_ft._(1473_items)','cubic_ft.,_s','cubic_feet0.58 cubic_feet','cubic_feet0.25 cubic_feet','cubic_feet0.12 cubic_feet','cubic_feet0.63 cubic_feet','cubic_feet1.6 cubic_feet','cubic_feet0.75 cubic_feet'],
-           'cartes-de-visite_(card_photographs)':['cartes-de-visites_(card_photographs)'],
-           'daguerreotypes_(photographs)':['daguerreotypes_(photographs)_s'],
-           'drawings_(visual_works)':['drawings_(visual_works)_s'],
-           'electronic_files':['electronic files','files','files)'],
-           'folders':['folders]s'],
-           'greeting_cards':['greeting_cards]s'],
-           'imperial_photographs':['imperial_photographs_s'],
-           'megabytes':['MB_s'],
-           'offset_lithographs':['offset_lithographs s','offset lithographs','offset_lithographs_s'],
-           'panel_photographs':['panel_photographs_s'],
-           'photographic_postcards':['photographic_postcards]s'],
-           'photomechanical_prints':['photomechanical_prints]s','photomechanical_prints s','photomechanical prints'],
-           'postcards':['postcards_s','postcards s'],
-           'promenade_midget_photographs':['promenade_midget_photographs_s'],
-           'tintypes_(prints)':['tintype_(prints)']}
+changes = {'cubic_feet':['placeholder']}
 
 def extent_changer(resource_records, repo_number, type):
     found_records = set([])
