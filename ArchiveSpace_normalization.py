@@ -26,36 +26,16 @@ def aspace_processor (file_name):
     filename2 = filename[:-4] + "-01.xml"
     dom = ET.parse(filename)
     print(f"fixing dates in {ead_name}")
+    extents = dom.xpath(".//ead:extent/ead:emph", namespaces=nsmap)
+    for extent in extents:
+        extentText = extent.text
+        parent = extent.getparent()
+        extent.getparent().remove(extent)
+        parent.text = extentText
     extents = dom.xpath(".//ead:extent", namespaces=nsmap)
     for extent in extents:
         extentText = extent.text
         print(extentText)
-        temp = extentText.split(" ")[0]
-        temptation = extentText.replace(temp + " ","")
-        temptation2 = temptation.replace(" ","_")
-        extentText = extentText.replace(temptation,temptation2)
-        while extentText.endswith(" "):
-            extentText = extentText[:-1]
-        if extentText.endswith(":") or extentText.endswith(","):
-            extentText = extentText[:-1]
-        if extentText.endswith(" ft."):
-            extentText = extentText.replace(" ft.","_feet")
-        if extentText.endswith("_ft."):
-            extentText = extentText.replace("_ft.","_feet")
-        if extentText.endswith("_ft"):
-            extentText = extentText.replace("_ft","_feet")
-        if extentText.endswith("KB") or extentText.endswith("MB") or extentText.endswith("GB") or extentText.endswith("TB"):
-            extentText = extentText.replace(" KB"," kilobytes").replace(" MB"," megabytes").replace(" GB"," gigabytes").replace(" TB"," terabytes")
-        if extentText.endswith(")") and not extentText.endswith("s)"):
-            extentText = extentText.replace(")","s)")
-        if not extentText.endswith("s") and not extentText.endswith("s)") and not extentText.endswith("_feet"):
-            extentText = extentText + "s"
-        if extentText.endswith("ys") or extentText.endswith("ys)"):
-            extentText = extentText.replace("ys","ies")
-        extent.text = extentText
-    extents = dom.xpath(".//ead:extent/ead:emph", namespaces=nsmap)
-    for extent in extents:
-        extentText = extent.text
         temp = extentText.split(" ")[0]
         temptation = extentText.replace(temp + " ","")
         temptation2 = temptation.replace(" ","_")
