@@ -2774,6 +2774,7 @@ insert proper attributes in the date and keep just the date and not the whole UT
 	</xsl:element>
 </xsl:template>
 <!-- now strip out the original copy of everything that was modified above -->
+<xsl:template match="//ead:note/ead:head"/>
 <xsl:template match="ead:ead/ead:archdesc/ead:did"/>
 <xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[2]"/>
 <xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[3]"/>
@@ -2953,6 +2954,9 @@ for dirpath, dirnames, filenames in os.walk(process):
                 date.attrib['calendar'] = 'gregorian'
             if date.attrib['calendar'] == "":
                 date.attrib['calendar'] = 'gregorian'
+        notes = dom2.xpath("//ead:note/ead:head", namespaces=nsmap)
+        for note in notes:
+            note.getparent().remove(note)
         subjects = dom2.xpath("//ead:subject", namespaces=nsmap)
         subjectlist = []
         for subject in subjects:
@@ -3209,3 +3213,4 @@ for dirpath, dirnames, filenames in os.walk(process):
         while switch != "yes":
             switch = input(f"did you verify the ead file is okay with {unitid_text}?: ")
 print("all done!")
+
