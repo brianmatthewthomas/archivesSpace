@@ -2981,7 +2981,7 @@ for dirpath, dirnames, filenames in os.walk(process):
         subjects = dom2.xpath("//ead:geogname", namespaces=nsmap)
         for subject in subjects:
             subjective = subject.text
-            subject.text = subjectspace(subject)
+            subject.text = subjectspace(subjective)
             if subject.text in subjectlist:
                 subject.getparent().remove(subject)
             else:
@@ -3078,6 +3078,42 @@ for dirpath, dirnames, filenames in os.walk(process):
         for container in containers:
             type = container.attrib['type']
             container.attrib['type'] = type.capitalize()
+            container_text = container.text
+            if "-" in container_text:
+                container_temp = container_text.split("-")[-1]
+                while container_temp.startswith("0"):
+                    container_temp = container_temp[1:]
+                container.text = container_text.split("-")[0] + "-" + container_temp
+        container_dids = dom2.xpath(".//ead:did", namespaces=nsmap)
+        for container_did in container_dids:
+            container_type = set()
+            containers = container_did.xpath("ead:container", namespaces=nsmap)
+            for container in containers:
+                print(container.text)
+                container_type.add(container.attrib['type'])
+            container_type = list(container_type)
+            for item in container_type:
+                print(item)
+                container_list = []
+                container_count = 0
+                containers = container_did.xpath(f"ead:container[@type='{item}']", namespaces=nsmap)
+                for container in containers:
+                    container_count += 1
+                print(len(containers))
+                if len(containers) > 1:
+                    for container in containers:
+                        container_list.append(container.text)
+                    container_list.sort()
+                    container_text = container_list[0] + " thru " + container_list[-1]
+                    if "-" in container_text:
+                        container_text_temp = container_text.split("-")[-1]
+                        container_text = container_text.replace(container_list[-1],container_text_temp)
+                    print(container_text)
+                    containers[0].text = container_text
+                    containers = containers[1:]
+                    for container in containers:
+                        print("removing",container.text)
+                        container.getparent().remove(container)
         langs = dom2.xpath("//ead:langmaterial", namespaces=nsmap)
         for lang in langs:
             lang_text = lang.text
@@ -3103,8 +3139,9 @@ for dirpath, dirnames, filenames in os.walk(process):
                 preceding = extent.getparent()
                 preceding.text = "["
                 extent.text = "[" + extent.text + "]"
-                if extent.attrib['altrender'] == "materialtype spaceoccupied":
-                    del extent.attrib['altrender']
+                if 'altrender' in extent.attrib:
+                    if extent.attrib['altrender'] == "materialtype spaceoccupied":
+                        del extent.attrib['altrender']
                 #print(parent.attrib['level'])
                 if physfacet != None:
                     physfacet.text = "[" + physfacet.text + "]"
