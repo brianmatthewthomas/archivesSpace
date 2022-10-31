@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import daterangeparser
 import datetime
@@ -3104,10 +3105,19 @@ for dirpath, dirnames, filenames in os.walk(process):
                     for container in containers:
                         container_list.append(container.text)
                     container_list.sort()
-                    container_text = container_list[0] + " thru " + container_list[-1]
-                    if "-" in container_text:
-                        container_text_temp = container_text.split("-")[-1]
-                        container_text = container_text.replace(container_list[-1],container_text_temp)
+                    try:
+                        top = int(container_list[0].split("-")[-1])
+                        bottom = int(container_list[0].split("-")[-1])
+                        for item in container_list:
+                            temp = int(item.split("-")[-1])
+                            if temp <= top:
+                                top = temp
+                            if temp >= bottom:
+                                bottom = temp
+                        container_text = container_list[0].split("-")[0] + f"-{str(top)} thru {str(bottom)}"
+                    except:
+                        print(f"problem with {container_list[0]}, fix that and try again")
+                        sys.exit()
                     print(container_text)
                     containers[0].text = container_text
                     containers = containers[1:]
@@ -3128,13 +3138,243 @@ for dirpath, dirnames, filenames in os.walk(process):
                 extent.text = temp
                 other_tag.getparent().remove(other_tag)
         #now process in the brackets for physdesc inner content
+        print("on the languages")
+        extent_types ={'45 rpm records': '45 rpm record',
+                       '78 rpm records': '78 rpm record',
+                       '8-track cartridges': '8-track cartridge',
+                       'Beta (Betamax)': 'Beta (Metamax)',
+                       'Betacam (TM)': 'Betacam (TM)',
+                       'Betacam-SP': 'Betacam-SP',
+                       'DVDs': 'DVD',
+                       'Digital Betacam (TM)': 'Digital Betacam (TM)',
+                       'GB': 'GB',
+                       'KB': 'KB',
+                       'MB': 'MB',
+                       'Mini-DV': 'Mini-DV',
+                       'Super-VHS (TM)': 'Super-VHS (TM)',
+                       'TB': 'TB',
+                       'VHS': 'VHS',
+                       'advertising cards': 'advertising card',
+                       'aerial photographs': 'aerial photograph',
+                       'albumen prints': 'albumen prints',
+                       'aluminum discs': 'aluminum disc',
+                       'ambrotypes (photographs)': 'ambrotype (photograph)',
+                       'architectural drawings (visual works)': 'architectural drawing (visual work)',
+                       'architectural models': 'architectural model',
+                       'artifacts (object genre)': 'artifact (object genre)',
+                       'audiocassettes': 'audiocassette',
+                       'audiotapes': 'audiotape',
+                       'black-and-white negatives': 'black-and-white negative',
+                       'black-and-white photographs': 'black-and-white photograph',
+                       'black-and-white prints (prints on paper)': 'black-and-white print (prints on paper)',
+                       'black-and-white slides': 'black-and-white slide',
+                       'black-and-white transparencies': 'black-and-white transparency',
+                       'blueline prints': 'blueline print',
+                       'blueprints (reprographic copies)': 'blueprint (reprographic copy)',
+                       'booklets': 'booklet',
+                       'books': 'book',
+                       'boudoir photographs': 'boudoir photograph',
+                       'broadsides (notices)': 'broadside (notice)',
+                       'brochures': 'brochure',
+                       'building plans': 'build plan',
+                       'cabinet photographs': 'cabinet photograph',
+                       'cartes-de-visite (card photographs)': 'cartes-de-visite (card photograph)',
+                       'cartoons (humorous images)': 'cartton (humorous image)',
+                       'charcoal drawings': 'charoal drawing',
+                       'charts (graphic documents)': 'chart (graphic docuent)',
+                       'chromogenic color prints': 'chromogenic color print',
+                       'chromolithographs': 'chromolithograph',
+                       'clippings (information artifacts)': 'clipping (informtation artifact)',
+                       'collodion prints': 'collodion print',
+                       'collodion transfers': 'collodion transfer',
+                       'collotypes (prints)': 'collotype (print)',
+                       'color negatives': 'color negative',
+                       'color photographs': 'color photograph',
+                       'color slides': 'color slide',
+                       'color transparencies': 'color transparency',
+                       'compact discs': 'compact disc',
+                       'composite photographs': 'composite photograph',
+                       'contact sheets': 'contact sheet',
+                       'contour maps': 'contour map',
+                       'copy prints': 'copy print',
+                       'crystoleums (photographs)': 'crystoleums (photograph)',
+                       'cubic ft.': 'cubic ft.',
+                       'cyanotypes (photographic prints)': 'cyanotype (photographic print)',
+                       'cylinders (sound recordings)': 'cylinder (sound recording)',
+                       'daguerreotypes (photographs)': 'daguerreotype (photograph)',
+                       'data cards': 'data card',
+                       'design drawings': 'design drawing',
+                       'detail drawings (drawings)': 'detail drawing (drawing)',
+                       'diaries': 'diary',
+                       'diazotypes (copies)': 'diazotype (copy)',
+                       'dictation belt': 'dictation belt',
+                       'diffusion transfer prints': 'diffusion transfer print',
+                       'digital audio tapes': 'digital audio tapes',
+                       'digital images': 'digitam image',
+                       'digital photographs': 'digital photograph',
+                       'drawings (visual works)': 'drawing (visual work)',
+                       'dry collodion negatives': 'dry collodion negative',
+                       'dye transfer prints': 'dye transfer print',
+                       'electrical drawings': 'electrical drawing',
+                       'electrical plans': 'electrical plan',
+                       'electronic files': 'electronic file',
+                       'engravings (prints)': 'engraving (print)',
+                       'envelopes': 'envelope',
+                       'etchings (prints)': 'etchings (print)',
+                       'filmstrips': 'filmstrip',
+                       'fire insurance maps': 'fire insurance map',
+                       'flags': 'flag',
+                       'flash drives': 'flash drive',
+                       'floppy disks': 'floppy disk',
+                       'folders': 'folder',
+                       'gelatin silver negatives': 'gelatin silver negative',
+                       'gelatin silver prints': 'gelatin silver print',
+                       'gelatin silver transparencies': 'gelatin silver transparency',
+                       'gem photographs': 'gen photograph',
+                       'geological maps': 'geological map',
+                       'glass plate negatives': 'glass plate negative',
+                       'greeting cards': 'greeting card',
+                       'hard drives': 'hard drive',
+                       'historical maps': 'historical map',
+                       'identifying cards': 'identifying card',
+                       'images': 'image',
+                       'imperial photographs': 'imperial photograph',
+                       'index maps': 'index map',
+                       'inkjet prints': 'inkjet print',
+                       'instantaneous recordings': 'instantaneous recording',
+                       'internegatives': 'internegative',
+                       'isoline maps': 'isoline map',
+                       'issues': 'issue',
+                       'items': 'item',
+                       'lacquer discs': 'lacquer disc',
+                       'land surveys': 'land survey',
+                       'land use maps': 'land use maps',
+                       'lantern slides': 'lantern slide',
+                       'laser prints': 'laser print',
+                       'leaves': 'leaf',
+                       'ledgers (account books)': 'ledger (account book)',
+                       'letter books': 'letter book',
+                       'letterpress copybooks': 'letterpress copybook',
+                       'linear ft.': 'linear ft.',
+                       'lithographs': 'lithograph',
+                       'long-playing records': 'long-playing record',
+                       'magazines_(periodicals)': 'magazine (periodical)',
+                       'magnetic disks': 'magnetic disk',
+                       'magnetic tapes': 'magnetic tape',
+                       'manuscript maps': 'manuscript map',
+                       'maps (documents)': 'map (document)',
+                       'mechanical drawings (building systems drawings)': 'mechanical drawing (building systems drawing)',
+                       'microcassettes': 'microcassette',
+                       'microfiche': 'microfiche',
+                       'microfilms': 'microfilm',
+                       'military maps': 'military map',
+                       'mineral resource maps': 'mineral resource map',
+                       'miniatures (paintings)': 'miniature (painting)',
+                       'motion picture components': 'motion picture component',
+                       'motion pictures (visual works)': 'motion picture (visual work)',
+                       'moving images': 'moving image',
+                       'muster rolls': 'muster roll',
+                       'national maps': 'national map',
+                       'offset lithographs': 'offset lithograph',
+                       'open reel audiotapes': 'open reel audiotape',
+                       'optical disks': 'optical disk',
+                       'paintings (visual works)': 'painting (visual work)',
+                       'panel photographs': 'panel photograph',
+                       'panoramas (visual works)': 'panorama (visual work)',
+                       'panoramic photographs': 'panoramic photograph',
+                       'pastels (visual works)': 'pastel (visual work)',
+                       'pen and ink drawings': 'pen and ink drawing',
+                       'photocopies': 'photocopy',
+                       'photoengravings (prints)': 'photoengraving',
+                       'photograph albums': 'photograph album',
+                       'photographic postcards': 'photographic postcard',
+                       'photographic prints': 'photographic print',
+                       'photographs': 'photograph',
+                       'photogravures (prints)': 'photogravure (print)',
+                       'photomechanical prints': 'photomechanical print',
+                       'picture postcards': 'picture postcard',
+                       'plans (maps)': 'plan (map)',
+                       'plats (maps)': 'plat (map)',
+                       'population maps': 'population map',
+                       'postcards': 'postcard',
+                       'posters': 'poster',
+                       'presentation drawings (proposals)': 'presentation drawing (proposal)',
+                       'prints (visual works)': 'print (visual work)',
+                       'promenade midget photographs': 'promenade midget photograph',
+                       'promenade photographs': 'promenade photograph',
+                       'public utility maps': 'public utility map',
+                       'quadrangle maps': 'quadrangle map',
+                       'reels': 'reel',
+                       'regional maps': 'regional map',
+                       'relief halftones (prints)': 'relief halftone',
+                       'reports': 'report',
+                       'road maps': 'road map',
+                       'scrapbooks': 'scrapbook',
+                       'sheets (paper artifacts)': 'sheet (paper artifact)',
+                       'ships plans': 'ships plan',
+                       'sketchbooks': 'sketchbook',
+                       'sound recordings': 'sound recording',
+                       'sound tracks': 'sound track',
+                       'stained glass (visual works)': 'stained glass',
+                       'stats (copies)': 'stat (copy)',
+                       'steel engravings (visual works)': 'steel engraving (visual work)',
+                       'stereographs': 'stereograph',
+                       'street maps': 'street map',
+                       'structural drawings': 'structural drawing',
+                       'tintypes (prints)': 'tintype (print)',
+                       'topographic maps': 'topographic map',
+                       'topographic surveys': 'topographic survey',
+                       'transportation maps': 'transportation map',
+                       'victoria cards (photographs)': 'victoria card (photograph)',
+                       'videocassettes': 'videocassette',
+                       'videotapes': 'videotape',
+                       'volumes': 'volume',
+                       'wallets': 'wallet',
+                       'watercolors (paintings)': 'watercolor (painting)',
+                       'watershed maps': 'watershed map',
+                       'wet collodion negatives': 'wet collodion negative',
+                       'wire recordings': 'wire recording',
+                       'wood engravings (prints)': 'wood engraving (print)',
+                       'woodcuts (prints)': 'woodcut (print)',
+                       'working drawings': 'working drawing',
+                       'works of art': 'work of art',
+                       'zoning maps': 'zoning map'}
+        exceptions = ['class', 'collection', 'fonds', 'otherlevel', 'recordgrp', 'series', 'subfonds', 'subgrp',
+                      'subseries', 'Sub-Series', 'Sub-Group', 'Series']
+        scopenotes = dom2.xpath(".//ead:scopecontent", namespaces=nsmap)
+        for scopenote in scopenotes:
+            parent = scopenote.getparent()
+            parent_attrib = parent.attrib['level']
+            if parent.attrib != None and parent_attrib not in exceptions:
+                paragraphs = scopenote.xpath("./ead:p", namespaces=nsmap)
+                if paragraphs != None:
+                    for paragraph in paragraphs:
+                        emphasis = paragraph.xpath("./ead:emph", namespaces=nsmap)
+                        if emphasis != []:
+                            print("manual fix to scopenote needed")
+                        else:
+                            myText = paragraph.text
+                            emphatic = ET.SubElement(paragraph,'emph')
+                            emphatic.attrib['render'] = 'italics'
+                            emphatic.text = myText
+                            paragraph.text = ""
+                else:
+                    emphasis = scopenote.xpath("./ead:emph", namespaces=nsmap)
+                    if emphasis != []:
+                        print("manual fix to scopenote needed")
+                    else:
+                        myText = scopenote.text
+                        emphatic = ET.SubElement(scopenote,'emph')
+                        emphatic.attrib['render'] = 'italics'
+                        emphatic.text = myText
+                        scopenote.text = ""
+                    print(scopenote.text)
         extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
         for extent in extents:
             parent = extent.getparent().getparent().getparent()
             physfacet = extent.find("../ead:physfacet", namespaces=nsmap)
             dimension = extent.find("../ead:dimensions", namespaces=nsmap)
             parent_attrib = parent.attrib['level']
-            exceptions = ['class','collection','fonds','otherlevel','recordgrp','series','subfonds','subgrp','subseries','Sub-Series','Sub-Group','Series']
             if parent_attrib != None and parent_attrib not in exceptions:
                 preceding = extent.getparent()
                 preceding.text = "["
@@ -3147,8 +3387,23 @@ for dirpath, dirnames, filenames in os.walk(process):
                     physfacet.text = "[" + physfacet.text + "]"
                 if dimension != None:
                     dimension.text = "[" + dimension.text + "]"
+        #process the singularity of extents
+        extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
+        for extent in extents:
+            tempstring = extent.text
+            if "[" in tempstring:
+                tempstring = tempstring[1:-1]
+                print(tempstring)
+            var = tempstring.split(" ")[0]
+            if var == "1":
+                tempstring = tempstring.replace("1 ","")
+                print(tempstring)
+                tempy = extent.text
+                tempy = tempy.replace(tempstring, extent_types[tempstring])
+                extent.text = tempy
+
         # pull out access restrict with audience = internal if still there
-        restrictions = dom2.xpath(".//ead:accessrestrict[@audience = 'internal']", namespaces=nsmap)
+        restrictions = dom2.xpath("//ead:accessrestrict[@audience = 'internal']", namespaces=nsmap)
         if restrictions is not None:
             for restriction in restrictions:
                 restriction.getparent().remove(restriction)
