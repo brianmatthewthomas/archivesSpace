@@ -3369,6 +3369,34 @@ for dirpath, dirnames, filenames in os.walk(process):
                         emphatic.text = myText
                         scopenote.text = ""
                     print(scopenote.text)
+        notes = dom2.xpath(".//ead:note", namespaces=nsmap)
+        for note in notes:
+            parent = note.getparent()
+            parent_attrib = parent.attrib['level']
+            if parent.attrib != None and parent_attrib not in exceptions:
+                paragraphs = note.xpath("./ead:p", namespaces=nsmap)
+                if paragraphs != None:
+                    for paragraph in paragraphs:
+                        emphasis = paragraph.xpath("./ead:emph", namespaces=nsmap)
+                        if emphasis != []:
+                            print("manual fix to note needed")
+                        else:
+                            myText = paragraph.text
+                            emphatic = ET.SubElement(paragraph,'emph')
+                            emphatic.attrib['render'] = 'italics'
+                            emphatic.text = myText
+                            paragraph.text = ""
+                else:
+                    emphasis = note.xpath("./ead:emph", namespaces=nsmap)
+                    if emphasis != []:
+                        print("manual fix to note needed")
+                    else:
+                        myText = scopenote.text
+                        emphatic = ET.SubElement(scopenote,'emph')
+                        emphatic.attrib['render'] = 'italics'
+                        emphatic.text = myText
+                        scopenote.text = ""
+                    print(scopenote.text)
         extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
         for extent in extents:
             parent = extent.getparent().getparent().getparent()
