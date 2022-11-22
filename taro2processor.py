@@ -3355,7 +3355,7 @@ for dirpath, dirnames, filenames in os.walk(process):
                         else:
                             myText = paragraph.text
                             emphatic = ET.SubElement(paragraph,'emph')
-                            emphatic.attrib['render'] = 'italics'
+                            emphatic.attrib['render'] = 'italic'
                             emphatic.text = myText
                             paragraph.text = ""
                 else:
@@ -3365,7 +3365,7 @@ for dirpath, dirnames, filenames in os.walk(process):
                     else:
                         myText = scopenote.text
                         emphatic = ET.SubElement(scopenote,'emph')
-                        emphatic.attrib['render'] = 'italics'
+                        emphatic.attrib['render'] = 'italic'
                         emphatic.text = myText
                         scopenote.text = ""
                     print(scopenote.text)
@@ -3384,7 +3384,7 @@ for dirpath, dirnames, filenames in os.walk(process):
                             else:
                                 myText = paragraph.text
                                 emphatic = ET.SubElement(paragraph,'emph')
-                                emphatic.attrib['render'] = 'italics'
+                                emphatic.attrib['render'] = 'italic'
                                 emphatic.text = myText
                                 paragraph.text = ""
                     else:
