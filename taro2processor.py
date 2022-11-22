@@ -2892,7 +2892,7 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace('xmlns=""','')
             filedata = filedata.replace("\t",'')
             filedata = filedata.replace("\n"," ")
-            filedata = filedata.replace("> <",">\n<")
+            #filedata = filedata.replace("> <",">\n<")
             filedata = filedata.replace("><",">\n<")
             while "  " in filedata:
                 filedata = filedata.replace("  "," ")
@@ -3372,31 +3372,32 @@ for dirpath, dirnames, filenames in os.walk(process):
         notes = dom2.xpath(".//ead:note", namespaces=nsmap)
         for note in notes:
             parent = note.getparent()
-            parent_attrib = parent.attrib['level']
-            if parent.attrib != None and parent_attrib not in exceptions:
-                paragraphs = note.xpath("./ead:p", namespaces=nsmap)
-                if paragraphs != None:
-                    for paragraph in paragraphs:
-                        emphasis = paragraph.xpath("./ead:emph", namespaces=nsmap)
+            if "level" in parent.attrib:
+                parent_attrib = parent.attrib['level']
+                if parent.attrib != None and parent_attrib not in exceptions:
+                    paragraphs = note.xpath("./ead:p", namespaces=nsmap)
+                    if paragraphs != None:
+                        for paragraph in paragraphs:
+                            emphasis = paragraph.xpath("./ead:emph", namespaces=nsmap)
+                            if emphasis != []:
+                                print("manual fix to note needed")
+                            else:
+                                myText = paragraph.text
+                                emphatic = ET.SubElement(paragraph,'emph')
+                                emphatic.attrib['render'] = 'italics'
+                                emphatic.text = myText
+                                paragraph.text = ""
+                    else:
+                        emphasis = note.xpath("./ead:emph", namespaces=nsmap)
                         if emphasis != []:
                             print("manual fix to note needed")
                         else:
-                            myText = paragraph.text
-                            emphatic = ET.SubElement(paragraph,'emph')
-                            emphatic.attrib['render'] = 'italics'
+                            myText = scopenote.text
+                            emphatic = ET.SubElement(scopenote,'emph')
+                            emphatic.attrib['render'] = 'italic'
                             emphatic.text = myText
-                            paragraph.text = ""
-                else:
-                    emphasis = note.xpath("./ead:emph", namespaces=nsmap)
-                    if emphasis != []:
-                        print("manual fix to note needed")
-                    else:
-                        myText = scopenote.text
-                        emphatic = ET.SubElement(scopenote,'emph')
-                        emphatic.attrib['render'] = 'italics'
-                        emphatic.text = myText
-                        scopenote.text = ""
-                    print(scopenote.text)
+                            scopenote.text = ""
+                        print(scopenote.text)
         extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
         for extent in extents:
             parent = extent.getparent().getparent().getparent()
@@ -3429,6 +3430,17 @@ for dirpath, dirnames, filenames in os.walk(process):
                 tempy = extent.text
                 tempy = tempy.replace(tempstring, extent_types[tempstring])
                 extent.text = tempy
+        #process partial extents as 'includes'
+        extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
+        for extent in extents:
+            tempstring = extent.text
+            parental = extent.getparent()
+            if 'altrender' in parental.attrib:
+                parent_part = parental.attrib['altrender']
+                if "part" in parent_part:
+                    if not tempstring.startswith("("):
+                        tempstring = f"(includes {tempstring})"
+                        extent.text = tempstring
 
         # pull out access restrict with audience = internal if still there
         restrictions = dom2.xpath("//ead:accessrestrict[@audience = 'internal']", namespaces=nsmap)
@@ -3487,7 +3499,7 @@ for dirpath, dirnames, filenames in os.walk(process):
                 filedata = filedata.replace('relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">','>')
             filedata = filedata.replace("[[","[").replace("]]","]").replace("[ [", "[").replace("] ]","]").replace(",</emph>\n, </unitdate>","</emph>, </unitdate>")
             filedata = filedata.replace("\n<unittitle>, </unittitle>","")
-            filedata = filedata.replace('<container type="box">','<container type="Box">')
+            filedata = filedata.replace('<container type="box">','<container type="Box">').replace('Texas-digital-archive', 'Texas-Digital-Archive')
             filedata = filedata.replace('<container type="folder">','<container type="Folder">').replace("&lt;","<").replace("&gt;",">")
             # removed a few blank items i think, appears to create a problem so removing for now
             #filedata = filedata.replace("\n<?xm-replace_text (be sure level attribute is correct)?>","")
