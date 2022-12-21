@@ -14,24 +14,24 @@ logging.setup_logging(filename="aris.log", filemode="a")
 
 client = ASnakeClient()
 
-responses = (client.get('repositories/2/resources/1087/tree').json())
+responses = (client.get('repositories/2/resources/1141/tree').json())
 
 output = open("./sample.json", "w")
 output.write(json.dumps(responses))
 output.close()
 
-for item in utils.walk_tree('repositories/2/resources/1087', client):
+for item in utils.walk_tree('repositories/2/resources/1141', client):
     response = (client.get(item['uri']).json())
     if "instances" in response:
         if len(response['instances']) is not None:
             for instance in response['instances']:
                 print(instance['instance_type'])
                 if 'sub_container' in instance:
-                    print(instance['sub_container']['type_2'])
-                    if instance['sub_container']['type_2'] == "File":
-                        instance['sub_container']['type_2'] = "Folder"
+                    if 'type_2' in instance['sub_container']:
+                        del instance['sub_container']['type_2']
+                        if 'indicator_2' in instance['sub_container']:
+                            del instance['sub_container']['indicator_2']
                         fixed_response = client.post(item['uri'], json=response)
-'''    output = open("./sample2.json", "w")
-    output.write(json.dumps(response))
-    output.close()
-'''
+                        output = open("./sample3.json", "w")
+                        output.write(json.dumps(response))
+                        output.close()
