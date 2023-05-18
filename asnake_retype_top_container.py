@@ -11,16 +11,16 @@ logging.setup_logging(filename="../../.config/JetBrains/PyCharmCE2021.3/scratche
 
 client = ASnakeClient()
 temp2 = "PP12345-micro"
-responses = (client.get('repositories/2/resources/568/top_containers').json())
+responses = (client.get('repositories/2/resources/1115/top_containers').json())
 print(responses)
 counter = 0
 for response in responses:
     container = client.get(response['ref']).json()
     if "type" in container:
-        if container['type'] == "Reel":
-            container['type'] = "Microfilm"
+        if container['type'] == "box":
+            container['type'] = "Box"
             container['container_profile'] = {}
-            container['container_profile']['ref'] = '/container_profiles/9'
+            container['container_profile']['ref'] = '/container_profiles/3'
             submission = client.post(response['ref'], json=container).json()
             print(container)
             print("update status:",submission)

@@ -2843,6 +2843,7 @@ output = sourceDir + "/processed"
 exception = sourceDir + "/problems"
 validation_exception = sourceDir + "/xml_validation"
 tx_number = sourceDir + "/" + tx_number
+'''
 pairing = {}
 with open(tx_number, "r") as r:
     for line in r:
@@ -2850,6 +2851,7 @@ with open(tx_number, "r") as r:
         line = line.split(",")
         pairing[line[0]] = line[1]
 print(pairing)
+'''
 for dirpath, dirnames, filenames in os.walk(process):
     for filename in filenames:
         ead_file = os.path.join(dirpath, filename)
