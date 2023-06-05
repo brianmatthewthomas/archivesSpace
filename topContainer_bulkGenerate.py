@@ -18,7 +18,7 @@ def row_converter(row, listy):
     pictionary = {}
     pictionary['Index'] = row[0]
     for item in listy:
-        pictionary[item] = row[count]
+        pictionary[item] = str(row[count])
         count += 1
     print(pictionary)
     return pictionary

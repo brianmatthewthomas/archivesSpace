@@ -2957,6 +2957,10 @@ for dirpath, dirnames, filenames in os.walk(process):
                 date.attrib['calendar'] = 'gregorian'
             if date.attrib['calendar'] == "":
                 date.attrib['calendar'] = 'gregorian'
+        dates = dom2.xpath("//ead:date", namespaces=nsmap)
+        for date in dates:
+            date.attrib['calendar'] = "gregorian"
+            date.attrib['era'] = "ce"
         notes = dom2.xpath("//ead:note/ead:head", namespaces=nsmap)
         for note in notes:
             note.getparent().remove(note)
@@ -2995,6 +2999,8 @@ for dirpath, dirnames, filenames in os.walk(process):
         subjectlist = []
         for subject in subjects:
             subjective = subject.text
+            while subjective.endswith("."):
+                subjective = subjective[:-1]
             subject.text = subjectspace(subjective)
             if subject.text in subjectlist:
                 subject.getparent().remove(subject)
@@ -3027,12 +3033,13 @@ for dirpath, dirnames, filenames in os.walk(process):
         for subject in subjects:
             subjective = subject.text
             subject.text = subjectspace(subjective)
-            if subject.attrib['encodinganalog'] == "710":
-                subject.text = subarea(subject.text)
-            if subject.attrib['encodinganalog'] == "110":
-                subject.text = subarea(subject.text)
-            if subject.attrib['encodinganalog'] == "610":
-                subject.text = subarea(subject.text)
+            if 'encodinganalog' in subject.attrib:
+                if subject.attrib['encodinganalog'] == "710":
+                    subject.text = subarea(subject.text)
+                if subject.attrib['encodinganalog'] == "110":
+                    subject.text = subarea(subject.text)
+                if subject.attrib['encodinganalog'] == "610":
+                    subject.text = subarea(subject.text)
             if subject.text in subjectlist:
                 subject.getparent().remove(subject)
             else:
@@ -3480,8 +3487,8 @@ for dirpath, dirnames, filenames in os.walk(process):
             filedata = filedata.replace("\n</relatedmaterial>\n</relatedmaterial>\n</relatedmaterial>","\n</relatedmaterial>\n</relatedmaterial>")
             filedata = filedata.replace('\n<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>','')
             if "852$a" not in filedata:
-                filedata = filedata.replace("</abstract>",'</abstract>\n<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.state.tx.us/arc/index.html">Texas State Archives</extref>\n</repository>')
-            filedata = filedata.replace('<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.state.tx.us/arc/index.html">Texas State Archives</extref>\n</repository>\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>\n','')
+                filedata = filedata.replace("</abstract>",'</abstract>\n<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.texas.gov/arc/index.html">Texas State Archives</extref>\n</repository>')
+            filedata = filedata.replace('<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.texas.gov/arc/index.html">Texas State Archives</extref>\n</repository>\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>\n','')
             filedata = filedata.replace('\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>','')
             filedata = filedata.replace('<controlaccess>\n<head>Personal Names:</head>\n</controlaccess>\n','')
             filedata = filedata.replace('<controlaccess>\n<head>Family Names:</head>\n</controlaccess>\n','')
