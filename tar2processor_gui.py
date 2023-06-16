@@ -1,10 +1,62 @@
-import os
 import sys
-import shutil
 import daterangeparser
 import datetime
 import lxml.etree as ET
 import re
+import PySimpleGUI as Sg
+
+my_icon = b'iVBORw0KGgoAAAANSUhEUgAAAHgAAABsCAQAAAALKr7UAAAAAmJLR0QAAKqNIzIAAAAJcEhZcwAALEsAACxLAaU9lqkAAAAHdElNRQ' \
+          b'fmAhQHBBtCNNv6AAANwUlEQVR42u2ca3hV5ZXHf0lObgRz4WK4WmpAEFFHFBTkMQWUoTyoiIpDrajcpGOFWsaOtCqgraIdO8pDp7VF' \
+          b'awtVKlSpoigXUZDLYBlCRCAkJCEhIUDIhYSEJOec/3zYSdg7yd7nJDlJSJ78z6ez93r3Xuustde7bvtAJzrRiU50ohOd6EQnOtGJTv' \
+          b'iBoA4kSyRdCKKc8x1f4K6M4naGcznBFJLCVrZxquPaaCIbKEWmTxX7mEd0R9RwBPN4mngq+YZdpFFFP0YyghjcrGcRaR1Lu+EsoRyR' \
+          b'zEP0qD0axVjeowKxg6s7krjBLKAMsZ6r6p2L4kkKEVvp13EE/lfOID6kt83PMZdziN8T3jHE7c0exD4G2lK4eB43JUzuGOa8GA+FTH' \
+          b'Kk6sFXiI/ocqmw7SK0iSuHkYVY4XP9DCop5jbzLdsO/fglPcgigwyyyaOAMjx+rQxhFv3J5LdU+aD8jMNcx93sQG0t8PX8svbp8nCe' \
+          b'AvLIIp1jZJJDPueosF17FfchVnHE511Os5HrGE938ttS4HCm8wwJMUyilBxOhRRFl0VrALcAcIFiznCCDNJJJ4s8Cimr0RAA99OXE7' \
+          b'xjOdYwxFbmk8DgthT4OyxiBpFDWMy9QClnya1W7nFyORtRElEVzzAA3JRylhwySSONTHI5SxzTCOJ9Uvy622FySeAadraNwMFMZCk3' \
+          b'hTKFxVwDQBxx1XuLKKeIU5wgnXQyyOaUqzi2LJYEbgO8nOcsOVQwmAqO0IcCyn3e8SyZJDC4bWLpHszncbr15j+Yw2U+iKsoIZ8cMk' \
+          b'ir1n0h52usWJzjDNmkksJRMkmnzDa5WMWDrOJhPx6AAGMUm/AEaay2q7Fwq1jHtEN/0bN6QCPVT10u5kYVnOKPRNnedyXibwS3rkl3' \
+          b'ZSZP0S+Wx3iS+EYvDyGaaK5kDOChhEKyOUoKR8kgK6z4csYRY5P4BxEKuFt3WxrGM0wl9AYWM5mQZlwolQ0cwMMQJjEbqKKYl/gNnL' \
+          b'Wtc4QQAxS3nkFH8DApKFKzdEzNgUfv6KpaQ47XMpVLkuYL8TFhtra1E7G4tcRNYCVlaJD+VM1e07FRPYS6Klgh6iEUruXyyq37hXjL' \
+          b'1v324xhiZmsIG8q9JKFQTVOymosS3SE0XH9WvFz6je4RSlC6ypUoxK9subiVEspIbI3wYjnnUH8tV4maj32KU5jWqEQ3CL2iJPVUsN' \
+          b'aoQNcI8bgtH08iUi+WAYJbSLf38D5PhFw2iXU8QdcAXPI0pURzLVEMBvbRj/54yaWIQvBw0mZZJBOAr8lrSYG/w6v8meF9eInVjAzY' \
+          b'vhZKOacIYjjwLakUATHkUwLlFwWql6LcjJuNuFvKkMO4j30oRN/XLgUSebpWaJoK9JWi1FUT5VJ3JWm9XCKXQTaB7OuIQ/RtKXEH8Q' \
+          b'YlqI9eVoECC69ek0vBmqhfKb56a5qnKr0uxDemmqUZ/0IOXpa0TAAdycN8i1y6U7t9sn9BVU3w0wsUUbsPB+suZUtaKMRmIhpMQt9G' \
+          b'pNlov5m4ltWUowF6XUU+GD+h5zRB92udKhspcpn+qskapP5yyaW3pZpd+E8N6nA6pbhZGHj9xvA4aShcD2i/T6YLdHe1jqL1dhNM+4' \
+          b'JylKLxQmNVqBKNkk0cdR1HEJvpHlhhg7iVj6hEg7VSpX4wvFahtWZ5i09rsMPf1UUuLVOWrhReHq7H12C2I04wOrDi9mIJJ1FXzdJh' \
+          b'P9O8maam13eV3USBy/SIUE89rThRxrg6fN3ILkQRjwTSnMOYwi68aITWqcJPRrNN4T9KbEYMlq4RQi4FiZMWtxTBAxxBFDCvWYlZHQ' \
+          b'xlJSXGb5wtqUzfKEnnfLK5zmTQ6HmTB35fS/WHRml8r25WkBCnuZeehBNBLyazhlJEFtMDF1R1Yz6pKFST9IU8kg5rqnqquyZqn48E' \
+          b'b45J3BjtrD5erDkKFwrSKB1qhMgZGmNcq5RkNrGZQ5QjPGxhTOCi5IlswY0G6bfVLqek1u+i7+msA4M5GmIS+FYVVx9/16T3mY3YrK' \
+          b'o02Ysoprz2qiV8xTwnz9y4iscQ5jOd2Bims4Ah1Qe3samWYC8HzX2NOthLuunb7bUt+v2mBsKHzOVmP9kpqDwKYfw3uxhGPJBLEgco' \
+          b'Coxu43iCoyhE4/SJSQtlmmLSWqQ+dzDoeSbKy7Sj9sx/mccV9JjfUdj/poYVU8n3WyLdm8hmqtBAvVbHaLco2sTs9Tppy95JDTVRjj' \
+          b'LtwQfVz3QmXv/np0W/9hkXOMXQwIeNf6AIxeixei6lQg+aWA3WKw78fahwE+0zFt3/xKLjBXL7I3DBlI8Q+4gLbGjxNBnIpfEWQ67B' \
+          b'LnUzMXqVMhyynR+bKLvqC8vZ/eplOttXB/0JYk4M3Y14N3C7bRf+jT140dVa0aD3rdJcE5tBek5eH/lszWdknfTRrR9ZdPwzeXwKnH' \
+          b'+6by7iF4HqAY1mLWWopxYqzeaWVr1coSMO7H1sSu3Q0/UdkHqYzg9Qik+Bk9xxbiq5KxDidmcZp1CEpmqH7W/t0U8tWlnooBWvFpgo' \
+          b'o7S1HkWlHvXbWgy8oxCRe7FN1pzndg3eYI3UO475z2FdYWKxl5IcaE/rehPtjQ0+IDsUZ6IZ6LNsv1CIHYGoEH6PC8Gar1wfJZfnjE' \
+          b'jWr93zU0WaaJ9qUHsV+oFFxy863v+8xgqxvLH5UEMBdhrHRR+b8acaHOddU7umG484BG1ik6mR24U7GuQyjFmm8UiximyH+58gBTzs' \
+          b'bWzPqCGBc9khNlLquPA9jpm+TWK4UwjINktufoMN3WjuMH1LYa3DNZM5DQUcaLw3rg8vn1KVzCGHZbmsxlv7LZpHbXtZRqxsnk4Yax' \
+          b'vbRzDL1Ob18hfb+jrsxg2pZAZCYNhDZiFbHJatt/wc4xnlQCs2m9rzkTYGbSCRsaZvB/nQhq6EvUY2UhoYgU+yHT6jxGZRGR+YBqqi' \
+          b'mEmkwy0K+dxSur7RMdaZYxqb87DdZEdmHOMwVLGz8V3fhgX28DGVSSTbLLpQMwMEwMDqaSM7HOCwZQvo4aMEGmGxDrtEsxDy2N+UiM' \
+          b'ruEUk7x6e2yVOExamvsdGDgc2m5nwEExz3keP8nAJLdT+4ARezkRV4IZkTgSy/Lkc32dQvKnWvJcbqqQ22+2WhbjZRDlOew956zpJ7' \
+          b'IZf+WI+mWC8ZQWg+DwU2KZzA+Uh9YsPaBsVaWBtiG2d9qa4muscdAsYqLZXLctWp9TpURzTNoPmaCYGeT4ljD5pnEx+7tUxhFubGKa' \
+          b'dBymdMNOH6h2NsHG254nAdrXPPfxgZVwVv892W6Bc9iwbquA17pZptCS2DNKuByLvIaIVUf4Y6hKu7NcAibp86xaICLTZi7ZP8xGEm' \
+          b'q1m4kfwQvWnLYq5ut7AYqhfrVSp2WLQ2zzafytRoy7WitNJi/Em6S8FC7K7XZQggIliPJqnMVuQDutrCZqzW1KFYYjobpvdtrlNcx1' \
+          b'mF6GemXkaFVmuQEOW8wRUtO5jyEFVxjt3ej9XTwuoAC3VxTaFcCA22ecqrtKSOs7rH5KxytEBRQhxnboNd4ICiL4fskrmaJHGFJfFD' \
+          b't5jqWrsUYzozu0GD9jo4K6+2GT+Zl81+F6ubuRu/jAYry7Ff+6TxdNV+flDbInvB8oSvtSkjJNg4q2L92ighFbGMy2kljCA/RG84F9' \
+          b'NMrRajGL+pugWTaDo6yKZRttzGWR3QVMPQk5namlPd4axFiT4a10c13ML2G9VlOXNw8qhNrXlZA86qTG8aer/AqgbeOmthTKE8Uut9' \
+          b'1Je+UF+ThjdLkl60GPQam5XbTT+LEVmlaqZR4czkRy214zqnL1+iqT5HQ1dVl1lDNFulkkqNmlP1J8E2gKnUq+qtYEVqsjJUqfd0nR' \
+          b'BuPuIm2gizqYrRNp/DvVv07/qhfqdCSdLXlp7EDIfmiUdJWqNNOqfj+rEReeexKLANlMYhnn3oh36NNVzcwF42BZ4u/dWPlR8YnsDL' \
+          b'5yS29XvN8/F001eN6M1X6E7L8EqGD/pMPWHsxmd4vvW2IKcAJBk95PfoilSu8SaBH3SsWVdoXY1uv+T2FprvbTQW4I71+RybDXRprb' \
+          b'gRWudAmap5uszQ7QtNePujxdCLfeg+h0Sifvt7uqIUpG76uc7bTlut0jAhPGxj/KWi2xrMpbKLbb7T8DDoVq3WHtshlYOaYcThJ3mW' \
+          b'nlxyiGMbSnSc0vEf5/R7I+Vz8wljLtX/mribUpdWBEDcvbrHKBBlsbAt91tfiORdNFipzRI2Xy8bIywVrHOsyV8SGEEuWtCE4e6aMt' \
+          b'wWjVeIECnMCci7Hy2MYF7A2606OWgssvSUuhuDgm+1nz8U6cs/0VjlN1LYcq2pSSH/ybT29c8a91Eaohf9mLK5iGTNMF5/zecV+tPO' \
+          b'EM6bqJffkXWhXtOVxga0iXGBnGBuPQziWzReZ/x4H/QLTTQKNRn8lG60W0ynNFi/8OGts7XIKOKWsZrradcIYwXeWH3gUMtcqxGGk0' \
+          b'riQcd+eTtBP3aia2xm7w5pllG5OMurDKCDIJGT6P7aqfaLUfLvjBc5PGzljvbppOyK9AuocGmpqVrl1S7dbYzzZ/OfPmYb2iGieAvF' \
+          b'1qb3eVqq3kY1eW3bVRxbFv3ZiQZpv6q0QWOMst23zGyLanJrYTTHUaIeM9pmxfxPy7zLeSlhRvV/SnrZxZ1N/kOwdoRQFlFIHs/7mE' \
+          b'btQHBxGzd1qH+57UQ7xv8DgC8wraZy+5gAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMDItMjBUMDc6MDQ6MjcrMDA6MDBxXqaVAAAA' \
+          b'JXRFWHRkYXRlOm1vZGlmeQAyMDIyLTAyLTIwVDA3OjA0OjI3KzAwOjAwAAMeKQAAACZ0RVh0aWNjOmNvcHlyaWdodABObyBjb3B5cm' \
+          b'lnaHQsIHVzZSBmcmVlbHmnmvCCAAAAIXRFWHRpY2M6ZGVzY3JpcHRpb24Ac1JHQiBJRUM2MTk2Ni0yLjFXrdpHAAAAInRFWHRpY2M6' \
+          b'bWFudWZhY3R1cmVyAHNSR0IgSUVDNjE5NjYtMi4xa5wU+QAAABt0RVh0aWNjOm1vZGVsAHNSR0IgSUVDNjE5NjYtMi4xhWT+PAAAAA' \
+          b'BJRU5ErkJggg=='
 
 def subjectspace (subject):
     while subject.startswith(" "):
@@ -1001,7 +1053,7 @@ insert proper attributes in the date and keep just the date and not the whole UT
 		</ead:p>
 		<!-- redirect added authors into controlled access terms and add the correct encoding analog -->
 		<!-- trigger on the existence of the role attribute. Won't create segments if does not exist -->
-		<xsl:if test="//ead:origination/ead:famname[@role]|ead:controlaccess/ead:famname">
+		<xsl:if test="//ead:origination/ead:famname|ead:controlaccess/ead:famname">
 			<xsl:element name="ead:controlaccess">
 				<xsl:element name="ead:head">Family Names:</xsl:element>
 				<xsl:for-each select="//ead:origination/ead:famname">
@@ -1074,7 +1126,7 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				</xsl:for-each>
 			</xsl:element>
 		</xsl:if>
-		<xsl:if test="//ead:origination/ead:persname[@role]|ead:controlaccess/ead:persname">
+		<xsl:if test="//ead:origination/ead:persname|ead:controlaccess/ead:persname">
 			<xsl:element name="ead:controlaccess">
 				<xsl:element name="ead:head">Personal Names:</xsl:element>
 				<xsl:for-each select="//ead:origination/ead:persname[@role]">
@@ -1147,10 +1199,10 @@ insert proper attributes in the date and keep just the date and not the whole UT
 				</xsl:for-each>
 			</xsl:element>
 		</xsl:if>
-		<xsl:if test="//ead:origination/ead:corpname[@role]|ead:controlaccess/ead:corpname">
+		<xsl:if test="//ead:origination/ead:corpname|ead:controlaccess/ead:corpname">
 			<xsl:element name="ead:controlaccess">
 				<xsl:element name="ead:head">Corporate Names:</xsl:element>
-				<xsl:for-each select="//ead:origination/ead:corpname[@role]">
+				<xsl:for-each select="//ead:origination/ead:corpname">
 					<xsl:element name="ead:corpname">
 						<xsl:attribute name="encodinganalog">710</xsl:attribute>
                         <xsl:choose>
@@ -2831,542 +2883,551 @@ insert proper attributes in the date and keep just the date and not the whole UT
 nsmap = {'xmlns': 'urn:isbn:1-931666-22-9',
          'ead': 'urn:isbn:1-931666-22-9',
          'xlink': 'http://www.w3.org/1999/xlink'}
-#parse as xslt for application below
-transform = ET.XSLT(catalyst)
-print("this is supposed to fix a bunch of minor issues related to TARO 2.0 normalization, check output for correctness")
-print("file will be spit out as its original name in a processed folder")
-process = input("folder to process: ")
-tx_number = "txNumbers.csv"  #input("csv file with the tx_number: ")
-sourceDir = input("source directory as relative or absolute filepath: ")
-process = sourceDir + "/" + process
-output = sourceDir + "/processed"
-exception = sourceDir + "/problems"
-validation_exception = sourceDir + "/xml_validation"
-tx_number = sourceDir + "/" + tx_number
-'''
-pairing = {}
-with open(tx_number, "r") as r:
-    for line in r:
-        line = line[:-1]
-        line = line.split(",")
-        pairing[line[0]] = line[1]
-print(pairing)
-'''
-for dirpath, dirnames, filenames in os.walk(process):
-    for filename in filenames:
-        ead_file = os.path.join(dirpath, filename)
-        output_file = os.path.join(output,filename)
-        exception_file = os.path.join(exception,filename)
-        validation_exception_file = os.path.join(validation_exception,filename)
-        with open(ead_file, "r") as r:
-            filedata = r.read()
-            if "xmlns:ead" not in filedata:
-                filedata = filedata.replace('xmlns="','xmlns:ead="urn:isbn:1-931666-22-9" xmlns="')
-            #filedata = filedata.replace("ead:","ead:")
-            with open(ead_file, "w") as w:
-                w.write(filedata)
-            w.close()
-        dom = ET.parse(ead_file)
-        myDates = dom.xpath(".//ead:unittitle/ead:unitdate", namespaces=nsmap)
-        for item in myDates:
-            boss = item.getparent()
-            boss = boss.getparent()
-            boss.append(item)
-        newdom = transform(dom)
-        newdom.write(output_file, pretty_print=True)
-        with open(output_file, "r") as r:
-            filedata = r.read()
-            if "unitid>" not in filedata:
-                if "abstract>" in filedata:
-                    filedata = filedata.replace("abstract>","abstract>\n<ead:unitid label='TSLAC Control No.:' countrycode='US' repositorycode='US-tx' encodinganalog='099'></ead:unitid>")
-                else:
-                    filedata = filedata.replace('origination>',"origination>\n<ead:unitid label='TSLAC Control No.:' countrycode='US' repositorycode='US-tx' encodinganalog='099'></ead:unitid>")
-            filedata = filedata.replace(' xmlns:xlink="http://www.w3.org/1999/xlink"',"")
-            filedata = filedata.replace(' xlink:actuate="onLoad"',"")
-            filedata = filedata.replace(' xlink:actuate="onRequest"',"")
-            filedata = filedata.replace(' xlink:show="embed"','')
-            filedata = filedata.replace(' xlink:show="new"','')
-            filedata = filedata.replace(' xlink:href',' href')
-            filedata = filedata.replace(' xlink:type="simple"','')
-            filedata = filedata.replace(' xlink:role=""','')
-            filedata = filedata.replace(' href=""','')
-            filedata = filedata.replace('<ead:unitdate era="ce" calendar="gregorian"/>','').replace("<unitdate/>",'').replace('<unitdate><?xm-replace_text {date}?></unitdate>','')
-            filedata = filedata.replace('xmlns=""','')
-            filedata = filedata.replace("\t",'')
-            filedata = filedata.replace("\n"," ")
-            #filedata = filedata.replace("> <",">\n<")
-            filedata = filedata.replace("><",">\n<")
-            while "  " in filedata:
-                filedata = filedata.replace("  "," ")
-            filedata = filedata.replace(",, ",", ")
-        with open(output_file, "w") as w:
+def processor(my_xml):
+    #parse as xslt for application below
+    transform = ET.XSLT(catalyst)
+    print("this is supposed to fix a bunch of minor issues related to TARO 2.0 normalization, check output for correctness")
+    print("file will be spit out as its original name in a processed folder")
+    temp1 = my_xml.split("/")[-1].split(".")[0]
+    temp2 = f"{temp1}-done"
+    finished_product = my_xml.replace(temp1, temp2)
+    with open(my_xml, "r") as r:
+        filedata = r.read()
+        if "xmlns:ead" not in filedata:
+            filedata = filedata.replace('xmlns="','xmlns:ead="urn:isbn:1-931666-22-9" xmlns="')
+        #filedata = filedata.replace("ead:","ead:")
+        with open(my_xml, "w") as w:
             w.write(filedata)
         w.close()
-        unitid_text = filename.split(".")[0]
-        #print(pairing[unitid_text])
-        dom2 = ET.parse(output_file)
-        unitid = dom2.xpath("//ead:unitid", namespaces=nsmap)
-        #unitid[0].text = pairing[unitid_text]
-        create_date = dom2.find("//ead:publicationstmt/ead:date", namespaces=nsmap)
-        create_date_text = create_date.text
-        creation = dom2.find("//ead:creation", namespaces=nsmap)
-        creation_text = creation.text
-        creation_text = creation_text.replace(create_date_text, f'<date calendar="gregorian" era="ce">{create_date.text}</date>')
-        creation.text = creation_text
-        dates = dom2.xpath("//ead:unitdate/ead:emph", namespaces=nsmap)
-        screwballs = []
-        flag = 0
-        for date in dates:
-            dateify = date.text
-            date = date.getparent()
-            if "normal" not in date.attrib:
-                date.attrib['normal'] = timeturner(dateify)
-            if "type" not in date.attrib:
-                if "bulk" not in dateify:
-                    date.attrib['type'] = "inclusive"
-                else:
-                    date.attrib['type'] = ""
-            if date.attrib['type'] == "":
-                print(dateify)
-                date.attrib['type'] = input("date type missing, inclusive or bulk: ")
-            if 'era' not in date.attrib:
-                date.attrib['era'] = 'ce'
-            if date.attrib['era'] == "":
-                date.attrib['era'] = 'ce'
-            if 'calendar' not in date.attrib:
-                date.attrib['calendar'] = 'gregorian'
-            if date.attrib['calendar'] == "":
-                date.attrib['calendar'] = 'gregorian'
-        dates = dom2.xpath("//ead:unitdate", namespaces=nsmap)
-        screwballs = []
-        flag = 0
-        for date in dates:
-            dateify = date.text
-            if "normal" not in date.attrib:
-                date.attrib['normal'] = timeturner(dateify)
-            if "type" not in date.attrib:
-                if "bulk" not in dateify:
-                    date.attrib['type'] = "inclusive"
-                else:
-                    date.attrib['type'] = ""
-            if date.attrib['type'] == "":
-                print(dateify)
-                placeholder = ""
-                while placeholder != "inclusive" and placeholder != "bulk":
-                    placeholder = input("date type missing, inclusive or bulk: ")
-                    date.attrib['type'] = placeholder
-            if 'era' not in date.attrib:
-                date.attrib['era'] = 'ce'
-            if date.attrib['era'] == "":
-                date.attrib['era'] = 'ce'
-            if 'calendar' not in date.attrib:
-                date.attrib['calendar'] = 'gregorian'
-            if date.attrib['calendar'] == "":
-                date.attrib['calendar'] = 'gregorian'
-        dates = dom2.xpath("//ead:date", namespaces=nsmap)
-        for date in dates:
-            date.attrib['calendar'] = "gregorian"
-            date.attrib['era'] = "ce"
-        notes = dom2.xpath("//ead:note/ead:head", namespaces=nsmap)
-        for note in notes:
-            note.getparent().remove(note)
-        subjects = dom2.xpath("//ead:subject", namespaces=nsmap)
-        subjectlist = []
-        for subject in subjects:
-            subjective = subject.text
-            subject.text = subjectspace(subjective)
-            if subject.text in subjectlist:
-                subject.getparent().remove(subject)
+    dom = ET.parse(my_xml)
+    myDates = dom.xpath(".//ead:unittitle/ead:unitdate", namespaces=nsmap)
+    for item in myDates:
+        boss = item.getparent()
+        boss = boss.getparent()
+        boss.append(item)
+    newdom = transform(dom)
+    newdom.write(finished_product, pretty_print=True)
+
+    with open(finished_product, "r") as r:
+        filedata = r.read()
+        if "unitid>" not in filedata:
+            if "abstract>" in filedata:
+                filedata = filedata.replace("abstract>","abstract>\n<ead:unitid label='TSLAC Control No.:' countrycode='US' repositorycode='US-tx' encodinganalog='099'></ead:unitid>")
             else:
-                subjectlist.append(subject.text)
-            if subject.attrib['source'] == "local":
-                flag += 1
-        subjects = dom2.xpath("//ead:controlaccess/ead:genreform", namespaces=nsmap)
-        for subject in subjects:
-            subjective = subject.text
-            subject.text = subjectspace(subjective)
-            if subject.text in subjectlist:
-                subject.getparent().remove(subject)
+                filedata = filedata.replace('origination>',"origination>\n<ead:unitid label='TSLAC Control No.:' countrycode='US' repositorycode='US-tx' encodinganalog='099'></ead:unitid>")
+        filedata = filedata.replace(' xmlns:xlink="http://www.w3.org/1999/xlink"',"")
+        filedata = filedata.replace(' xlink:actuate="onLoad"',"")
+        filedata = filedata.replace(' xlink:actuate="onRequest"',"")
+        filedata = filedata.replace(' xlink:show="embed"','')
+        filedata = filedata.replace(' xlink:show="new"','')
+        filedata = filedata.replace(' xlink:href',' href')
+        filedata = filedata.replace(' xlink:type="simple"','')
+        filedata = filedata.replace(' xlink:role=""','')
+        filedata = filedata.replace(' href=""','')
+        filedata = filedata.replace('<ead:unitdate era="ce" calendar="gregorian"/>','').replace("<unitdate/>",'').replace('<unitdate><?xm-replace_text {date}?></unitdate>','')
+        filedata = filedata.replace('xmlns=""','')
+        filedata = filedata.replace("\t",'')
+        filedata = filedata.replace("\n"," ")
+        #filedata = filedata.replace("> <",">\n<")
+        filedata = filedata.replace("><",">\n<")
+        while "  " in filedata:
+            filedata = filedata.replace("  "," ")
+        filedata = filedata.replace(",, ",", ")
+    with open(finished_product, "w") as w:
+        w.write(filedata)
+    w.close()
+    unitid_text = temp1
+    dom2 = ET.parse(finished_product)
+    create_date = dom2.find("//ead:publicationstmt/ead:date", namespaces=nsmap)
+    create_date_text = create_date.text
+    creation = dom2.find("//ead:creation", namespaces=nsmap)
+    creation_text = creation.text
+    creation_text = creation_text.replace(create_date_text, f'<date calendar="gregorian" era="ce">{create_date.text}</date>')
+    creation.text = creation_text
+    dates = dom2.xpath("//ead:unitdate/ead:emph", namespaces=nsmap)
+    screwballs = []
+    flag = 0
+
+    for date in dates:
+        dateify = date.text
+        date = date.getparent()
+        if "normal" not in date.attrib:
+            date.attrib['normal'] = timeturner(dateify)
+        if "type" not in date.attrib:
+            if "bulk" not in dateify:
+                date.attrib['type'] = "inclusive"
             else:
-                subjectlist.append(subject.text)
-            if subject.attrib['source'] == "local":
-                flag += 1
-        subjects = dom2.xpath("//ead:geogname", namespaces=nsmap)
-        for subject in subjects:
-            subjective = subject.text
-            subject.text = subjectspace(subjective)
-            if subject.text in subjectlist:
-                subject.getparent().remove(subject)
+                date.attrib['type'] = ""
+        if date.attrib['type'] == "":
+            print(dateify)
+            date.attrib['type'] = input("date type missing, inclusive or bulk: ")
+        if 'era' not in date.attrib:
+            date.attrib['era'] = 'ce'
+        if date.attrib['era'] == "":
+            date.attrib['era'] = 'ce'
+        if 'calendar' not in date.attrib:
+            date.attrib['calendar'] = 'gregorian'
+        if date.attrib['calendar'] == "":
+            date.attrib['calendar'] = 'gregorian'
+    dates = dom2.xpath("//ead:unitdate", namespaces=nsmap)
+    screwballs = []
+    flag = 0
+    for date in dates:
+        dateify = date.text
+        if "normal" not in date.attrib:
+            date.attrib['normal'] = timeturner(dateify)
+        if "type" not in date.attrib:
+            if "bulk" not in dateify:
+                date.attrib['type'] = "inclusive"
             else:
-                subjectlist.append(subject.text)
-            if subject.attrib['source'] == "local":
-                flag += 1
-        subjects = dom2.xpath("//ead:function", namespaces=nsmap)
-        subjectlist = []
-        for subject in subjects:
-            subjective = subject.text
-            while subjective.endswith("."):
-                subjective = subjective[:-1]
-            subject.text = subjectspace(subjective)
-            if subject.text in subjectlist:
-                subject.getparent().remove(subject)
-            else:
-                subjectlist.append(subject.text)
-        subjects = dom2.xpath("//ead:persname", namespaces=nsmap)
-        subjectlist = []
-        for subject in subjects:
-            subjective = subject.text
-            subject.text = subjectspace(subjective)
-            if subject.text in subjectlist:
-                subject.getparent().remove(subject)
-            else:
-                subjectlist.append(subject.text)
-            if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
-                flag += 1
-        subjects = dom2.xpath("//ead:famname", namespaces=nsmap)
-        subjectlist = []
-        for subject in subjects:
-            subjective = subject.text
-            subject.text = subjectspace(subjective)
-            if subject.text in subjectlist:
-                subject.getparent().remove(subject)
-            else:
-                subjectlist.append(subject.text)
-            if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
-                flag += 1
-        subjects = dom2.xpath("//ead:corpname", namespaces=nsmap)
-        subjectlist = []
-        for subject in subjects:
-            subjective = subject.text
-            subject.text = subjectspace(subjective)
-            if 'encodinganalog' in subject.attrib:
-                if subject.attrib['encodinganalog'] == "710":
-                    subject.text = subarea(subject.text)
-                if subject.attrib['encodinganalog'] == "110":
-                    subject.text = subarea(subject.text)
-                if subject.attrib['encodinganalog'] == "610":
-                    subject.text = subarea(subject.text)
-            if subject.text in subjectlist:
-                subject.getparent().remove(subject)
-            else:
-                subjectlist.append(subject.text)
-            if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
-                flag += 1
-        # sorts subjects, but causes head to sort into the middle so adding a preceding space to get it sort on top, then removing afterwards
-        subjects = dom2.xpath("//ead:head", namespaces=nsmap)
-        for subject in subjects:
-            subject.text = " " + subject.text
-        for node in dom2.xpath("//ead:controlaccess/ead:controlaccess", namespaces=nsmap):
-            if node.tag == "head":
-                node.text = " " + node.text
-            node[:] = sorted(node, key=lambda ch: ch.text)
-        subjects = dom2.xpath("//ead:head", namespaces=nsmap)
-        for subject in subjects:
-            subjective = subject.text
-            subject.text = subjectspace(subjective)
-        header = dom2.xpath("//ead:eadheader", namespaces=nsmap)
-        for item in header:
-            item.attrib['langencoding'] = "iso639-2b"
-            item.attrib['audience'] = "internal"
-            item.attrib['findaidstatus'] = "edited-full-draft"
-            item.attrib['repositoryencoding'] = "iso15511"
-            item.attrib['scriptencoding'] = "iso15924"
-            item.attrib['dateencoding'] = "iso8601"
-            item.attrib['countryencoding'] = "iso3166-1"
-            if 'id' in item.attrib:
-                item.attrib = item.attrib.pop('id')
-        header = dom2.xpath("//ead:eadid", namespaces=nsmap)
-        for item in header:
-            if 'encodinganalog' in item.attrib:
-                item.attrib = item.attrib.pop('encodinganalog')
-            if 'publicid' in item.attrib:
-                item.attrib = item.attrib.pop('publicid')
-            item.attrib['countrycode'] = 'US'
-            item.attrib['mainagencycode'] = 'US-tx'
-        header = dom2.xpath("//ead:ead", namespaces=nsmap)
-        for item in header:
-            if 'xmlns:ead' in item.attrib:
-                item.attrib = item.attrib.pop('xmlns:ead')
-            if 'xmlns' not in item.attrib:
-                item.attrib['xmlns'] = "urn:isbn:1-931666-22-9"
-            item.attrib['relatedencoding'] = "MARC21"
-        containers = dom2.xpath(".//ead:container", namespaces=nsmap)
+                date.attrib['type'] = ""
+        if date.attrib['type'] == "":
+            print(dateify)
+            placeholder = ""
+            while placeholder != "inclusive" and placeholder != "bulk":
+                placeholder = input("date type missing, inclusive or bulk: ")
+                date.attrib['type'] = placeholder
+        if 'era' not in date.attrib:
+            date.attrib['era'] = 'ce'
+        if date.attrib['era'] == "":
+            date.attrib['era'] = 'ce'
+        if 'calendar' not in date.attrib:
+            date.attrib['calendar'] = 'gregorian'
+        if date.attrib['calendar'] == "":
+            date.attrib['calendar'] = 'gregorian'
+    dates = dom2.xpath("//ead:date", namespaces=nsmap)
+    for date in dates:
+        date.attrib['calendar'] = "gregorian"
+        date.attrib['era'] = "ce"
+    notes = dom2.xpath("//ead:note/ead:head", namespaces=nsmap)
+    for note in notes:
+        note.getparent().remove(note)
+    subjects = dom2.xpath("//ead:subject", namespaces=nsmap)
+    subjectlist = []
+    for subject in subjects:
+        subjective = subject.text
+        subject.text = subjectspace(subjective)
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+        if subject.attrib['source'] == "local":
+            flag += 1
+    subjects = dom2.xpath("//ead:controlaccess/ead:genreform", namespaces=nsmap)
+    for subject in subjects:
+        subjective = subject.text
+        subject.text = subjectspace(subjective)
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+        if subject.attrib['source'] == "local":
+            flag += 1
+    subjects = dom2.xpath("//ead:geogname", namespaces=nsmap)
+    for subject in subjects:
+        subjective = subject.text
+        subject.text = subjectspace(subjective)
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+        if subject.attrib['source'] == "local":
+            flag += 1
+    subjects = dom2.xpath("//ead:function", namespaces=nsmap)
+    subjectlist = []
+    for subject in subjects:
+        subjective = subject.text
+        while subjective.endswith("."):
+            subjective = subjective[:-1]
+        subject.text = subjectspace(subjective)
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+    subjects = dom2.xpath("//ead:persname", namespaces=nsmap)
+    subjectlist = []
+    for subject in subjects:
+        subjective = subject.text
+        subject.text = subjectspace(subjective)
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+        if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
+            flag += 1
+    subjects = dom2.xpath("//ead:famname", namespaces=nsmap)
+    subjectlist = []
+    for subject in subjects:
+        subjective = subject.text
+        subject.text = subjectspace(subjective)
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+        if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
+            flag += 1
+    subjects = dom2.xpath("//ead:corpname", namespaces=nsmap)
+    subjectlist = []
+    for subject in subjects:
+        subjective = subject.text
+        subject.text = subjectspace(subjective)
+        if 'encodinganalog' in subject.attrib:
+            if subject.attrib['encodinganalog'] == "710":
+                subject.text = subarea(subject.text)
+            if subject.attrib['encodinganalog'] == "110":
+                subject.text = subarea(subject.text)
+            if subject.attrib['encodinganalog'] == "610":
+                subject.text = subarea(subject.text)
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+        if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
+            flag += 1
+    # sorts subjects, but causes head to sort into the middle so adding a preceding space to get it sort on top, then removing afterwards
+    subjects = dom2.xpath("//ead:head", namespaces=nsmap)
+    for subject in subjects:
+        subject.text = " " + subject.text
+    for node in dom2.xpath("//ead:controlaccess/ead:controlaccess", namespaces=nsmap):
+        if node.tag == "head":
+            node.text = " " + node.text
+        node[:] = sorted(node, key=lambda ch: ch.text)
+    subjects = dom2.xpath("//ead:head", namespaces=nsmap)
+    for subject in subjects:
+        subjective = subject.text
+        subject.text = subjectspace(subjective)
+    header = dom2.xpath("//ead:eadheader", namespaces=nsmap)
+    for item in header:
+        item.attrib['langencoding'] = "iso639-2b"
+        item.attrib['audience'] = "internal"
+        item.attrib['findaidstatus'] = "edited-full-draft"
+        item.attrib['repositoryencoding'] = "iso15511"
+        item.attrib['scriptencoding'] = "iso15924"
+        item.attrib['dateencoding'] = "iso8601"
+        item.attrib['countryencoding'] = "iso3166-1"
+        if 'id' in item.attrib:
+            item.attrib = item.attrib.pop('id')
+    header = dom2.xpath("//ead:eadid", namespaces=nsmap)
+    for item in header:
+        if 'encodinganalog' in item.attrib:
+            item.attrib = item.attrib.pop('encodinganalog')
+        if 'publicid' in item.attrib:
+            item.attrib = item.attrib.pop('publicid')
+        item.attrib['countrycode'] = 'US'
+        item.attrib['mainagencycode'] = 'US-tx'
+    header = dom2.xpath("//ead:ead", namespaces=nsmap)
+    for item in header:
+        if 'xmlns:ead' in item.attrib:
+            item.attrib = item.attrib.pop('xmlns:ead')
+        if 'xmlns' not in item.attrib:
+            item.attrib['xmlns'] = "urn:isbn:1-931666-22-9"
+        item.attrib['relatedencoding'] = "MARC21"
+    containers = dom2.xpath(".//ead:container", namespaces=nsmap)
+    for container in containers:
+        type = container.attrib['type']
+        container.attrib['type'] = type.capitalize()
+        container_text = container.text
+        if "-" in container_text:
+            container_temp = container_text.split("-")[-1]
+            while container_temp.startswith("0"):
+                container_temp = container_temp[1:]
+            container.text = container_text.split("-")[0] + "-" + container_temp
+    container_dids = dom2.xpath(".//ead:did", namespaces=nsmap)
+    for container_did in container_dids:
+        container_type = set()
+        containers = container_did.xpath("ead:container", namespaces=nsmap)
         for container in containers:
-            type = container.attrib['type']
-            container.attrib['type'] = type.capitalize()
-            container_text = container.text
-            if "-" in container_text:
-                container_temp = container_text.split("-")[-1]
-                while container_temp.startswith("0"):
-                    container_temp = container_temp[1:]
-                container.text = container_text.split("-")[0] + "-" + container_temp
-        container_dids = dom2.xpath(".//ead:did", namespaces=nsmap)
-        for container_did in container_dids:
-            container_type = set()
-            containers = container_did.xpath("ead:container", namespaces=nsmap)
+            print(container.text)
+            container_type.add(container.attrib['type'])
+        container_type = list(container_type)
+        for item in container_type:
+            print(item)
+            container_list = []
+            container_count = 0
+            containers = container_did.xpath(f"ead:container[@type='{item}']", namespaces=nsmap)
             for container in containers:
-                print(container.text)
-                container_type.add(container.attrib['type'])
-            container_type = list(container_type)
-            for item in container_type:
-                print(item)
-                container_list = []
-                container_count = 0
-                containers = container_did.xpath(f"ead:container[@type='{item}']", namespaces=nsmap)
+                container_count += 1
+            print(len(containers))
+            if len(containers) > 1:
                 for container in containers:
-                    container_count += 1
-                print(len(containers))
-                if len(containers) > 1:
-                    for container in containers:
-                        container_list.append(container.text)
-                    container_list.sort()
-                    try:
-                        top = int(container_list[0].split("-")[-1])
-                        bottom = int(container_list[0].split("-")[-1])
-                        for item in container_list:
-                            temp = int(item.split("-")[-1])
-                            if temp <= top:
-                                top = temp
-                            if temp >= bottom:
-                                bottom = temp
-                        container_text = container_list[0].split("-")[0] + f"-{str(top)} thru {str(bottom)}"
-                    except:
-                        print(f"problem with {container_list[0]}, fix that and try again")
-                        sys.exit()
-                    print(container_text)
-                    containers[0].text = container_text
-                    containers = containers[1:]
-                    for container in containers:
-                        print("removing",container.text)
-                        container.getparent().remove(container)
-        langs = dom2.xpath("//ead:langmaterial", namespaces=nsmap)
-        for lang in langs:
-            lang_text = lang.text
-            if lang_text.startswith("<![CDATA"):
-                lang.text = lang_text.replace("<![CDATA[","").replace("]]>","")
-        extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
-        for extent in extents:
-            temp = extent.text
-            other_tag = extent.getnext()
-            if other_tag is not None and other_tag.tag == '{urn:isbn:1-931666-22-9}genreform':
-                temp = temp + other_tag.text
-                extent.text = temp
-                other_tag.getparent().remove(other_tag)
-        #now process in the brackets for physdesc inner content
-        print("on the languages")
-        extent_types ={'45 rpm records': '45 rpm record',
-                       '78 rpm records': '78 rpm record',
-                       '8-track cartridges': '8-track cartridge',
-                       'Beta (Betamax)': 'Beta (Metamax)',
-                       'Betacam (TM)': 'Betacam (TM)',
-                       'Betacam-SP': 'Betacam-SP',
-                       'DVDs': 'DVD',
-                       'Digital Betacam (TM)': 'Digital Betacam (TM)',
-                       'GB': 'GB',
-                       'KB': 'KB',
-                       'MB': 'MB',
-                       'Mini-DV': 'Mini-DV',
-                       'Super-VHS (TM)': 'Super-VHS (TM)',
-                       'TB': 'TB',
-                       'VHS': 'VHS',
-                       'advertising cards': 'advertising card',
-                       'aerial photographs': 'aerial photograph',
-                       'albumen prints': 'albumen prints',
-                       'aluminum discs': 'aluminum disc',
-                       'ambrotypes (photographs)': 'ambrotype (photograph)',
-                       'architectural drawings (visual works)': 'architectural drawing (visual work)',
-                       'architectural models': 'architectural model',
-                       'artifacts (object genre)': 'artifact (object genre)',
-                       'audiocassettes': 'audiocassette',
-                       'audiotapes': 'audiotape',
-                       'black-and-white negatives': 'black-and-white negative',
-                       'black-and-white photographs': 'black-and-white photograph',
-                       'black-and-white prints (prints on paper)': 'black-and-white print (prints on paper)',
-                       'black-and-white slides': 'black-and-white slide',
-                       'black-and-white transparencies': 'black-and-white transparency',
-                       'blueline prints': 'blueline print',
-                       'blueprints (reprographic copies)': 'blueprint (reprographic copy)',
-                       'booklets': 'booklet',
-                       'books': 'book',
-                       'boudoir photographs': 'boudoir photograph',
-                       'broadsides (notices)': 'broadside (notice)',
-                       'brochures': 'brochure',
-                       'building plans': 'build plan',
-                       'cabinet photographs': 'cabinet photograph',
-                       'cartes-de-visite (card photographs)': 'cartes-de-visite (card photograph)',
-                       'cartoons (humorous images)': 'cartton (humorous image)',
-                       'charcoal drawings': 'charoal drawing',
-                       'charts (graphic documents)': 'chart (graphic docuent)',
-                       'chromogenic color prints': 'chromogenic color print',
-                       'chromolithographs': 'chromolithograph',
-                       'clippings (information artifacts)': 'clipping (informtation artifact)',
-                       'collodion prints': 'collodion print',
-                       'collodion transfers': 'collodion transfer',
-                       'collotypes (prints)': 'collotype (print)',
-                       'color negatives': 'color negative',
-                       'color photographs': 'color photograph',
-                       'color slides': 'color slide',
-                       'color transparencies': 'color transparency',
-                       'compact discs': 'compact disc',
-                       'composite photographs': 'composite photograph',
-                       'contact sheets': 'contact sheet',
-                       'contour maps': 'contour map',
-                       'copy prints': 'copy print',
-                       'crystoleums (photographs)': 'crystoleums (photograph)',
-                       'cubic ft.': 'cubic ft.',
-                       'cyanotypes (photographic prints)': 'cyanotype (photographic print)',
-                       'cylinders (sound recordings)': 'cylinder (sound recording)',
-                       'daguerreotypes (photographs)': 'daguerreotype (photograph)',
-                       'data cards': 'data card',
-                       'design drawings': 'design drawing',
-                       'detail drawings (drawings)': 'detail drawing (drawing)',
-                       'diaries': 'diary',
-                       'diazotypes (copies)': 'diazotype (copy)',
-                       'dictation belt': 'dictation belt',
-                       'diffusion transfer prints': 'diffusion transfer print',
-                       'digital audio tapes': 'digital audio tapes',
-                       'digital images': 'digitam image',
-                       'digital photographs': 'digital photograph',
-                       'drawings (visual works)': 'drawing (visual work)',
-                       'dry collodion negatives': 'dry collodion negative',
-                       'dye transfer prints': 'dye transfer print',
-                       'electrical drawings': 'electrical drawing',
-                       'electrical plans': 'electrical plan',
-                       'electronic files': 'electronic file',
-                       'engravings (prints)': 'engraving (print)',
-                       'envelopes': 'envelope',
-                       'etchings (prints)': 'etchings (print)',
-                       'filmstrips': 'filmstrip',
-                       'fire insurance maps': 'fire insurance map',
-                       'flags': 'flag',
-                       'flash drives': 'flash drive',
-                       'floppy disks': 'floppy disk',
-                       'folders': 'folder',
-                       'gelatin silver negatives': 'gelatin silver negative',
-                       'gelatin silver prints': 'gelatin silver print',
-                       'gelatin silver transparencies': 'gelatin silver transparency',
-                       'gem photographs': 'gen photograph',
-                       'geological maps': 'geological map',
-                       'glass plate negatives': 'glass plate negative',
-                       'greeting cards': 'greeting card',
-                       'hard drives': 'hard drive',
-                       'historical maps': 'historical map',
-                       'identifying cards': 'identifying card',
-                       'images': 'image',
-                       'imperial photographs': 'imperial photograph',
-                       'index maps': 'index map',
-                       'inkjet prints': 'inkjet print',
-                       'instantaneous recordings': 'instantaneous recording',
-                       'internegatives': 'internegative',
-                       'isoline maps': 'isoline map',
-                       'issues': 'issue',
-                       'items': 'item',
-                       'lacquer discs': 'lacquer disc',
-                       'land surveys': 'land survey',
-                       'land use maps': 'land use maps',
-                       'lantern slides': 'lantern slide',
-                       'laser prints': 'laser print',
-                       'leaves': 'leaf',
-                       'ledgers (account books)': 'ledger (account book)',
-                       'letter books': 'letter book',
-                       'letterpress copybooks': 'letterpress copybook',
-                       'linear ft.': 'linear ft.',
-                       'lithographs': 'lithograph',
-                       'long-playing records': 'long-playing record',
-                       'magazines_(periodicals)': 'magazine (periodical)',
-                       'magnetic disks': 'magnetic disk',
-                       'magnetic tapes': 'magnetic tape',
-                       'manuscript maps': 'manuscript map',
-                       'maps (documents)': 'map (document)',
-                       'mechanical drawings (building systems drawings)': 'mechanical drawing (building systems drawing)',
-                       'microcassettes': 'microcassette',
-                       'microfiche': 'microfiche',
-                       'microfilms': 'microfilm',
-                       'military maps': 'military map',
-                       'mineral resource maps': 'mineral resource map',
-                       'miniatures (paintings)': 'miniature (painting)',
-                       'motion picture components': 'motion picture component',
-                       'motion pictures (visual works)': 'motion picture (visual work)',
-                       'moving images': 'moving image',
-                       'muster rolls': 'muster roll',
-                       'national maps': 'national map',
-                       'offset lithographs': 'offset lithograph',
-                       'open reel audiotapes': 'open reel audiotape',
-                       'optical disks': 'optical disk',
-                       'paintings (visual works)': 'painting (visual work)',
-                       'panel photographs': 'panel photograph',
-                       'panoramas (visual works)': 'panorama (visual work)',
-                       'panoramic photographs': 'panoramic photograph',
-                       'pastels (visual works)': 'pastel (visual work)',
-                       'pen and ink drawings': 'pen and ink drawing',
-                       'photocopies': 'photocopy',
-                       'photoengravings (prints)': 'photoengraving',
-                       'photograph albums': 'photograph album',
-                       'photographic postcards': 'photographic postcard',
-                       'photographic prints': 'photographic print',
-                       'photographs': 'photograph',
-                       'photogravures (prints)': 'photogravure (print)',
-                       'photomechanical prints': 'photomechanical print',
-                       'picture postcards': 'picture postcard',
-                       'plans (maps)': 'plan (map)',
-                       'plats (maps)': 'plat (map)',
-                       'population maps': 'population map',
-                       'postcards': 'postcard',
-                       'posters': 'poster',
-                       'presentation drawings (proposals)': 'presentation drawing (proposal)',
-                       'prints (visual works)': 'print (visual work)',
-                       'promenade midget photographs': 'promenade midget photograph',
-                       'promenade photographs': 'promenade photograph',
-                       'public utility maps': 'public utility map',
-                       'quadrangle maps': 'quadrangle map',
-                       'reels': 'reel',
-                       'regional maps': 'regional map',
-                       'relief halftones (prints)': 'relief halftone',
-                       'reports': 'report',
-                       'road maps': 'road map',
-                       'scrapbooks': 'scrapbook',
-                       'sheets (paper artifacts)': 'sheet (paper artifact)',
-                       'ships plans': 'ships plan',
-                       'sketchbooks': 'sketchbook',
-                       'sound recordings': 'sound recording',
-                       'sound tracks': 'sound track',
-                       'stained glass (visual works)': 'stained glass',
-                       'stats (copies)': 'stat (copy)',
-                       'steel engravings (visual works)': 'steel engraving (visual work)',
-                       'stereographs': 'stereograph',
-                       'street maps': 'street map',
-                       'structural drawings': 'structural drawing',
-                       'tintypes (prints)': 'tintype (print)',
-                       'topographic maps': 'topographic map',
-                       'topographic surveys': 'topographic survey',
-                       'transportation maps': 'transportation map',
-                       'victoria cards (photographs)': 'victoria card (photograph)',
-                       'videocassettes': 'videocassette',
-                       'videotapes': 'videotape',
-                       'volumes': 'volume',
-                       'wallets': 'wallet',
-                       'watercolors (paintings)': 'watercolor (painting)',
-                       'watershed maps': 'watershed map',
-                       'wet collodion negatives': 'wet collodion negative',
-                       'wire recordings': 'wire recording',
-                       'wood engravings (prints)': 'wood engraving (print)',
-                       'woodcuts (prints)': 'woodcut (print)',
-                       'working drawings': 'working drawing',
-                       'works of art': 'work of art',
-                       'zoning maps': 'zoning map'}
-        exceptions = ['class', 'collection', 'fonds', 'otherlevel', 'recordgrp', 'series', 'subfonds', 'subgrp',
-                      'subseries', 'Sub-Series', 'Sub-Group', 'Series']
-        scopenotes = dom2.xpath(".//ead:scopecontent", namespaces=nsmap)
-        for scopenote in scopenotes:
-            parent = scopenote.getparent()
+                    container_list.append(container.text)
+                container_list.sort()
+                try:
+                    top = int(container_list[0].split("-")[-1])
+                    bottom = int(container_list[0].split("-")[-1])
+                    for item in container_list:
+                        temp = int(item.split("-")[-1])
+                        if temp <= top:
+                            top = temp
+                        if temp >= bottom:
+                            bottom = temp
+                    container_text = container_list[0].split("-")[0] + f"-{str(top)} thru {str(bottom)}"
+                except:
+                    print(f"problem with {container_list[0]}, fix that and try again")
+                    sys.exit()
+                print(container_text)
+                containers[0].text = container_text
+                containers = containers[1:]
+                for container in containers:
+                    print("removing",container.text)
+                    container.getparent().remove(container)
+    langs = dom2.xpath("//ead:langmaterial", namespaces=nsmap)
+    for lang in langs:
+        lang_text = lang.text
+        if lang_text.startswith("<![CDATA"):
+            lang.text = lang_text.replace("<![CDATA[","").replace("]]>","")
+    extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
+    for extent in extents:
+        temp = extent.text
+        other_tag = extent.getnext()
+        if other_tag is not None and other_tag.tag == '{urn:isbn:1-931666-22-9}genreform':
+            temp = temp + other_tag.text
+            extent.text = temp
+            other_tag.getparent().remove(other_tag)
+    #now process in the brackets for physdesc inner content
+    print("on the languages")
+    extent_types ={'45 rpm records': '45 rpm record',
+                   '78 rpm records': '78 rpm record',
+                   '8-track cartridges': '8-track cartridge',
+                   'Beta (Betamax)': 'Beta (Metamax)',
+                   'Betacam (TM)': 'Betacam (TM)',
+                   'Betacam-SP': 'Betacam-SP',
+                   'DVDs': 'DVD',
+                   'Digital Betacam (TM)': 'Digital Betacam (TM)',
+                   'GB': 'GB',
+                   'KB': 'KB',
+                   'MB': 'MB',
+                   'Mini-DV': 'Mini-DV',
+                   'Super-VHS (TM)': 'Super-VHS (TM)',
+                   'TB': 'TB',
+                   'VHS': 'VHS',
+                   'advertising cards': 'advertising card',
+                   'aerial photographs': 'aerial photograph',
+                   'albumen prints': 'albumen prints',
+                   'aluminum discs': 'aluminum disc',
+                   'ambrotypes (photographs)': 'ambrotype (photograph)',
+                   'architectural drawings (visual works)': 'architectural drawing (visual work)',
+                   'architectural models': 'architectural model',
+                   'artifacts (object genre)': 'artifact (object genre)',
+                   'audiocassettes': 'audiocassette',
+                   'audiotapes': 'audiotape',
+                   'black-and-white negatives': 'black-and-white negative',
+                   'black-and-white photographs': 'black-and-white photograph',
+                   'black-and-white prints (prints on paper)': 'black-and-white print (prints on paper)',
+                   'black-and-white slides': 'black-and-white slide',
+                   'black-and-white transparencies': 'black-and-white transparency',
+                   'blueline prints': 'blueline print',
+                   'blueprints (reprographic copies)': 'blueprint (reprographic copy)',
+                   'booklets': 'booklet',
+                   'books': 'book',
+                   'boudoir photographs': 'boudoir photograph',
+                   'broadsides (notices)': 'broadside (notice)',
+                   'brochures': 'brochure',
+                   'building plans': 'build plan',
+                   'cabinet photographs': 'cabinet photograph',
+                   'cartes-de-visite (card photographs)': 'cartes-de-visite (card photograph)',
+                   'cartoons (humorous images)': 'cartton (humorous image)',
+                   'charcoal drawings': 'charoal drawing',
+                   'charts (graphic documents)': 'chart (graphic docuent)',
+                   'chromogenic color prints': 'chromogenic color print',
+                   'chromolithographs': 'chromolithograph',
+                   'clippings (information artifacts)': 'clipping (informtation artifact)',
+                   'collodion prints': 'collodion print',
+                   'collodion transfers': 'collodion transfer',
+                   'collotypes (prints)': 'collotype (print)',
+                   'color negatives': 'color negative',
+                   'color photographs': 'color photograph',
+                   'color slides': 'color slide',
+                   'color transparencies': 'color transparency',
+                   'compact discs': 'compact disc',
+                   'composite photographs': 'composite photograph',
+                   'contact sheets': 'contact sheet',
+                   'contour maps': 'contour map',
+                   'copy prints': 'copy print',
+                   'crystoleums (photographs)': 'crystoleums (photograph)',
+                   'cubic ft.': 'cubic ft.',
+                   'cyanotypes (photographic prints)': 'cyanotype (photographic print)',
+                   'cylinders (sound recordings)': 'cylinder (sound recording)',
+                   'daguerreotypes (photographs)': 'daguerreotype (photograph)',
+                   'data cards': 'data card',
+                   'design drawings': 'design drawing',
+                   'detail drawings (drawings)': 'detail drawing (drawing)',
+                   'diaries': 'diary',
+                   'diazotypes (copies)': 'diazotype (copy)',
+                   'dictation belt': 'dictation belt',
+                   'diffusion transfer prints': 'diffusion transfer print',
+                   'digital audio tapes': 'digital audio tapes',
+                   'digital images': 'digitam image',
+                   'digital photographs': 'digital photograph',
+                   'drawings (visual works)': 'drawing (visual work)',
+                   'dry collodion negatives': 'dry collodion negative',
+                   'dye transfer prints': 'dye transfer print',
+                   'electrical drawings': 'electrical drawing',
+                   'electrical plans': 'electrical plan',
+                   'electronic files': 'electronic file',
+                   'engravings (prints)': 'engraving (print)',
+                   'envelopes': 'envelope',
+                   'etchings (prints)': 'etchings (print)',
+                   'filmstrips': 'filmstrip',
+                   'fire insurance maps': 'fire insurance map',
+                   'flags': 'flag',
+                   'flash drives': 'flash drive',
+                   'floppy disks': 'floppy disk',
+                   'folders': 'folder',
+                   'gelatin silver negatives': 'gelatin silver negative',
+                   'gelatin silver prints': 'gelatin silver print',
+                   'gelatin silver transparencies': 'gelatin silver transparency',
+                   'gem photographs': 'gen photograph',
+                   'geological maps': 'geological map',
+                   'glass plate negatives': 'glass plate negative',
+                   'greeting cards': 'greeting card',
+                   'hard drives': 'hard drive',
+                   'historical maps': 'historical map',
+                   'identifying cards': 'identifying card',
+                   'images': 'image',
+                   'imperial photographs': 'imperial photograph',
+                   'index maps': 'index map',
+                   'inkjet prints': 'inkjet print',
+                   'instantaneous recordings': 'instantaneous recording',
+                   'internegatives': 'internegative',
+                   'isoline maps': 'isoline map',
+                   'issues': 'issue',
+                   'items': 'item',
+                   'lacquer discs': 'lacquer disc',
+                   'land surveys': 'land survey',
+                   'land use maps': 'land use maps',
+                   'lantern slides': 'lantern slide',
+                   'laser prints': 'laser print',
+                   'leaves': 'leaf',
+                   'ledgers (account books)': 'ledger (account book)',
+                   'letter books': 'letter book',
+                   'letterpress copybooks': 'letterpress copybook',
+                   'linear ft.': 'linear ft.',
+                   'lithographs': 'lithograph',
+                   'long-playing records': 'long-playing record',
+                   'magazines_(periodicals)': 'magazine (periodical)',
+                   'magnetic disks': 'magnetic disk',
+                   'magnetic tapes': 'magnetic tape',
+                   'manuscript maps': 'manuscript map',
+                   'maps (documents)': 'map (document)',
+                   'mechanical drawings (building systems drawings)': 'mechanical drawing (building systems drawing)',
+                   'microcassettes': 'microcassette',
+                   'microfiche': 'microfiche',
+                   'microfilms': 'microfilm',
+                   'military maps': 'military map',
+                   'mineral resource maps': 'mineral resource map',
+                   'miniatures (paintings)': 'miniature (painting)',
+                   'motion picture components': 'motion picture component',
+                   'motion pictures (visual works)': 'motion picture (visual work)',
+                   'moving images': 'moving image',
+                   'muster rolls': 'muster roll',
+                   'national maps': 'national map',
+                   'offset lithographs': 'offset lithograph',
+                   'open reel audiotapes': 'open reel audiotape',
+                   'optical disks': 'optical disk',
+                   'paintings (visual works)': 'painting (visual work)',
+                   'panel photographs': 'panel photograph',
+                   'panoramas (visual works)': 'panorama (visual work)',
+                   'panoramic photographs': 'panoramic photograph',
+                   'pastels (visual works)': 'pastel (visual work)',
+                   'pen and ink drawings': 'pen and ink drawing',
+                   'photocopies': 'photocopy',
+                   'photoengravings (prints)': 'photoengraving',
+                   'photograph albums': 'photograph album',
+                   'photographic postcards': 'photographic postcard',
+                   'photographic prints': 'photographic print',
+                   'photographs': 'photograph',
+                   'photogravures (prints)': 'photogravure (print)',
+                   'photomechanical prints': 'photomechanical print',
+                   'picture postcards': 'picture postcard',
+                   'plans (maps)': 'plan (map)',
+                   'plats (maps)': 'plat (map)',
+                   'population maps': 'population map',
+                   'postcards': 'postcard',
+                   'posters': 'poster',
+                   'presentation drawings (proposals)': 'presentation drawing (proposal)',
+                   'prints (visual works)': 'print (visual work)',
+                   'promenade midget photographs': 'promenade midget photograph',
+                   'promenade photographs': 'promenade photograph',
+                   'public utility maps': 'public utility map',
+                   'quadrangle maps': 'quadrangle map',
+                   'reels': 'reel',
+                   'regional maps': 'regional map',
+                   'relief halftones (prints)': 'relief halftone',
+                   'reports': 'report',
+                   'road maps': 'road map',
+                   'scrapbooks': 'scrapbook',
+                   'sheets (paper artifacts)': 'sheet (paper artifact)',
+                   'ships plans': 'ships plan',
+                   'sketchbooks': 'sketchbook',
+                   'sound recordings': 'sound recording',
+                   'sound tracks': 'sound track',
+                   'stained glass (visual works)': 'stained glass',
+                   'stats (copies)': 'stat (copy)',
+                   'steel engravings (visual works)': 'steel engraving (visual work)',
+                   'stereographs': 'stereograph',
+                   'street maps': 'street map',
+                   'structural drawings': 'structural drawing',
+                   'tintypes (prints)': 'tintype (print)',
+                   'topographic maps': 'topographic map',
+                   'topographic surveys': 'topographic survey',
+                   'transportation maps': 'transportation map',
+                   'victoria cards (photographs)': 'victoria card (photograph)',
+                   'videocassettes': 'videocassette',
+                   'videotapes': 'videotape',
+                   'volumes': 'volume',
+                   'wallets': 'wallet',
+                   'watercolors (paintings)': 'watercolor (painting)',
+                   'watershed maps': 'watershed map',
+                   'wet collodion negatives': 'wet collodion negative',
+                   'wire recordings': 'wire recording',
+                   'wood engravings (prints)': 'wood engraving (print)',
+                   'woodcuts (prints)': 'woodcut (print)',
+                   'working drawings': 'working drawing',
+                   'works of art': 'work of art',
+                   'zoning maps': 'zoning map'}
+    exceptions = ['class', 'collection', 'fonds', 'otherlevel', 'recordgrp', 'series', 'subfonds', 'subgrp',
+                  'subseries', 'Sub-Series', 'Sub-Group', 'Series']
+    scopenotes = dom2.xpath(".//ead:scopecontent", namespaces=nsmap)
+    for scopenote in scopenotes:
+        parent = scopenote.getparent()
+        parent_attrib = parent.attrib['level']
+        if parent.attrib != None and parent_attrib not in exceptions:
+            paragraphs = scopenote.xpath("./ead:p", namespaces=nsmap)
+            if paragraphs != None:
+                for paragraph in paragraphs:
+                    emphasis = paragraph.xpath("./ead:emph", namespaces=nsmap)
+                    if emphasis != []:
+                        print("manual fix to scopenote needed")
+                    else:
+                        myText = paragraph.text
+                        emphatic = ET.SubElement(paragraph,'emph')
+                        emphatic.attrib['render'] = 'italic'
+                        emphatic.text = myText
+                        paragraph.text = ""
+            else:
+                emphasis = scopenote.xpath("./ead:emph", namespaces=nsmap)
+                if emphasis != []:
+                    print("manual fix to scopenote needed")
+                else:
+                    myText = scopenote.text
+                    emphatic = ET.SubElement(scopenote,'emph')
+                    emphatic.attrib['render'] = 'italic'
+                    emphatic.text = myText
+                    scopenote.text = ""
+                print(scopenote.text)
+    notes = dom2.xpath(".//ead:note", namespaces=nsmap)
+    for note in notes:
+        parent = note.getparent()
+        if "level" in parent.attrib:
             parent_attrib = parent.attrib['level']
             if parent.attrib != None and parent_attrib not in exceptions:
-                paragraphs = scopenote.xpath("./ead:p", namespaces=nsmap)
+                paragraphs = note.xpath("./ead:p", namespaces=nsmap)
                 if paragraphs != None:
                     for paragraph in paragraphs:
                         emphasis = paragraph.xpath("./ead:emph", namespaces=nsmap)
                         if emphasis != []:
-                            print("manual fix to scopenote needed")
+                            print("manual fix to note needed")
                         else:
                             myText = paragraph.text
                             emphatic = ET.SubElement(paragraph,'emph')
@@ -3374,9 +3435,9 @@ for dirpath, dirnames, filenames in os.walk(process):
                             emphatic.text = myText
                             paragraph.text = ""
                 else:
-                    emphasis = scopenote.xpath("./ead:emph", namespaces=nsmap)
+                    emphasis = note.xpath("./ead:emph", namespaces=nsmap)
                     if emphasis != []:
-                        print("manual fix to scopenote needed")
+                        print("manual fix to note needed")
                     else:
                         myText = scopenote.text
                         emphatic = ET.SubElement(scopenote,'emph')
@@ -3384,181 +3445,178 @@ for dirpath, dirnames, filenames in os.walk(process):
                         emphatic.text = myText
                         scopenote.text = ""
                     print(scopenote.text)
-        notes = dom2.xpath(".//ead:note", namespaces=nsmap)
-        for note in notes:
-            parent = note.getparent()
-            if "level" in parent.attrib:
-                parent_attrib = parent.attrib['level']
-                if parent.attrib != None and parent_attrib not in exceptions:
-                    paragraphs = note.xpath("./ead:p", namespaces=nsmap)
-                    if paragraphs != None:
-                        for paragraph in paragraphs:
-                            emphasis = paragraph.xpath("./ead:emph", namespaces=nsmap)
-                            if emphasis != []:
-                                print("manual fix to note needed")
-                            else:
-                                myText = paragraph.text
-                                emphatic = ET.SubElement(paragraph,'emph')
-                                emphatic.attrib['render'] = 'italic'
-                                emphatic.text = myText
-                                paragraph.text = ""
-                    else:
-                        emphasis = note.xpath("./ead:emph", namespaces=nsmap)
-                        if emphasis != []:
-                            print("manual fix to note needed")
-                        else:
-                            myText = scopenote.text
-                            emphatic = ET.SubElement(scopenote,'emph')
-                            emphatic.attrib['render'] = 'italic'
-                            emphatic.text = myText
-                            scopenote.text = ""
-                        print(scopenote.text)
-        extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
-        for extent in extents:
-            parent = extent.getparent().getparent().getparent()
-            physfacet = extent.find("../ead:physfacet", namespaces=nsmap)
-            dimension = extent.find("../ead:dimensions", namespaces=nsmap)
-            parent_attrib = parent.attrib['level']
-            if parent_attrib != None and parent_attrib not in exceptions:
-                preceding = extent.getparent()
-                preceding.text = "["
-                extent.text = "[" + extent.text + "]"
-                if 'altrender' in extent.attrib:
-                    if extent.attrib['altrender'] == "materialtype spaceoccupied":
-                        del extent.attrib['altrender']
-                #print(parent.attrib['level'])
-                if physfacet != None:
-                    physfacet.text = "[" + physfacet.text + "]"
-                if dimension != None:
-                    dimension.text = "[" + dimension.text + "]"
-        #process the singularity of extents
-        extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
-        for extent in extents:
-            tempstring = extent.text
-            if "[" in tempstring:
-                tempstring = tempstring[1:-1]
-                print(tempstring)
-            var = tempstring.split(" ")[0]
-            if var == "1":
-                tempstring = tempstring.replace("1 ","")
-                print(tempstring)
-                tempy = extent.text
-                tempy = tempy.replace(tempstring, extent_types[tempstring])
-                extent.text = tempy
-        #process partial extents as 'includes'
-        extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
-        for extent in extents:
-            tempstring = extent.text
-            parental = extent.getparent()
-            if 'altrender' in parental.attrib:
-                parent_part = parental.attrib['altrender']
-                if "part" in parent_part:
-                    if not tempstring.startswith("("):
-                        tempstring = f"(includes {tempstring})"
-                        extent.text = tempstring
+    extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
+    for extent in extents:
+        parent = extent.getparent().getparent().getparent()
+        physfacet = extent.find("../ead:physfacet", namespaces=nsmap)
+        dimension = extent.find("../ead:dimensions", namespaces=nsmap)
+        parent_attrib = parent.attrib['level']
+        if parent_attrib != None and parent_attrib not in exceptions:
+            preceding = extent.getparent()
+            preceding.text = "["
+            extent.text = "[" + extent.text + "]"
+            if 'altrender' in extent.attrib:
+                if extent.attrib['altrender'] == "materialtype spaceoccupied":
+                    del extent.attrib['altrender']
+            #print(parent.attrib['level'])
+            if physfacet != None:
+                physfacet.text = "[" + physfacet.text + "]"
+            if dimension != None:
+                dimension.text = "[" + dimension.text + "]"
+    #process the singularity of extents
+    extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
+    for extent in extents:
+        tempstring = extent.text
+        if "[" in tempstring:
+            tempstring = tempstring[1:-1]
+            print(tempstring)
+        var = tempstring.split(" ")[0]
+        if var == "1":
+            tempstring = tempstring.replace("1 ","")
+            print(tempstring)
+            tempy = extent.text
+            tempy = tempy.replace(tempstring, extent_types[tempstring])
+            extent.text = tempy
+    #process partial extents as 'includes'
+    extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
+    for extent in extents:
+        tempstring = extent.text
+        parental = extent.getparent()
+        if 'altrender' in parental.attrib:
+            parent_part = parental.attrib['altrender']
+            if "part" in parent_part:
+                if not tempstring.startswith("("):
+                    tempstring = f"(includes {tempstring})"
+                    extent.text = tempstring
 
-        # pull out access restrict with audience = internal if still there
-        restrictions = dom2.xpath("//ead:accessrestrict[@audience = 'internal']", namespaces=nsmap)
-        if restrictions is not None:
-            for restriction in restrictions:
-                restriction.getparent().remove(restriction)
-        dom2.write(output_file)
-        with open(output_file,"r") as r:
-            filedata = r.read()
-            filedata = filedata.replace('<extptr href','<extptr xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onLoad" xlink:show="embed" xlink:type="simple" xlink:href')
-            filedata = filedata.replace('<ead:extref href','<ead:extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
-            filedata = filedata.replace('<ead:archref href','<ead:archref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
-            filedata = filedata.replace('<ead:bibref href','<ead:bibref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
-            filedata = filedata.replace('label="Quantity"','label="Quantity:"')
-            filedata = filedata.replace('label="Creator"','label="Creator:"')
-            filedata = filedata.replace('label="Collector"','label="Collector:"')
-            filedata = filedata.replace('label="Title"','label="Title:"')
-            filedata = filedata.replace('label="Dates"','label="Dates:"')
-            filedata = filedata.replace('label="Abstract"','label="Abstract:"')
-            filedata = filedata.replace(", , <",", <")
-            filedata = filedata.replace("..",".").replace(". .",".")
-            filedata = filedata.replace("\n<ead:descgrp>\n<head>Administrative Information</head>","")
-            filedata = filedata.replace('\n<ead:descgrp type="admininfo">\n<head>Administrative Information</head>','')
-            filedata = filedata.replace("\n<ead:descgrp>","")
-            filedata = filedata.replace('\n<ead:descgrp type="admininfo">','')
-            filedata = filedata.replace("\n</ead:descgrp>","")
-            filedata = filedata.replace("ead:","")
-            filedata = filedata.replace("\n<physfacet>","<physfacet>").replace("\n<dimensions>","<dimensions>").replace("\n</physdesc>","</physdesc>")
-            filedata = filedata.replace("<extent>[","[<extent>").replace("]</extent>","</extent>]")
-            filedata = filedata.replace("<physfacet>[","[<physfacet>, ").replace("]</physfacet>","</physfacet>]")
-            filedata = filedata.replace("<dimensions>[","[<dimensions>, ").replace("]</dimensions>","</dimensions>]")
-            filedata = filedata.replace("][<physfacet>","<physfacet>").replace("][<dimensions>","<dimensions>")
-            filedata = filedata.replace('\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive.</emph>\n</p>','')
-            filedata = filedata.replace('\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive. </emph>\n</p>','')
-            filedata = filedata.replace("\n</relatedmaterial>\n</relatedmaterial>\n</relatedmaterial>","\n</relatedmaterial>\n</relatedmaterial>")
-            filedata = filedata.replace('\n<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>','')
-            if "852$a" not in filedata:
-                filedata = filedata.replace("</abstract>",'</abstract>\n<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.texas.gov/arc/index.html">Texas State Archives</extref>\n</repository>')
-            filedata = filedata.replace('<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.texas.gov/arc/index.html">Texas State Archives</extref>\n</repository>\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>\n','')
-            filedata = filedata.replace('\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>','')
-            filedata = filedata.replace('<controlaccess>\n<head>Personal Names:</head>\n</controlaccess>\n','')
-            filedata = filedata.replace('<controlaccess>\n<head>Family Names:</head>\n</controlaccess>\n','')
-            filedata = filedata.replace('<controlaccess>\n<head>Corporate Names:</head>\n</controlaccess>\n','')
-            filedata = filedata.replace('<controlaccess>\n<head>Subjects (Persons):</head>\n</controlaccess>\n','')
-            filedata = filedata.replace('<controlaccess>\n<head>Subjects (Families):</head>\n</controlaccess>\n','')
-            filedata = filedata.replace('<controlaccess>\n<head>Subjects (Organizations):</head>\n</controlaccess>\n','')
-            filedata = filedata.replace('<controlaccess>\n<head>Subjects:</head>\n</controlaccess>\n','')
-            filedata = filedata.replace('<controlaccess>\n<head>Places:</head>\n</controlaccess>\n','')
-            filedata = filedata.replace('<controlaccess>\n<head>Document Types:</head>\n</controlaccess>\n','')
-            filedata = filedata.replace('<controlaccess>\n<head>Titles:</head>\n</controlaccess>\n','')
-            filedata = filedata.replace('<controlaccess>\n<head>Functions:</head>\n</controlaccess>\n','')
-            filedata = filedata.replace('<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>','')
-            filedata = filedata.replace('<controlaccess>\n</controlaccess>\n','').replace(" , ",", ").replace(", </unitdate>, ","</unitdate>, ").replace(",</unitdate>, ","</unitdate>, ").replace(", </emph>, ", "</emph>, ").replace(",</emph>, ","</emph>, ").replace(" </unitdate>, ","</unitdate>, ")
-            filedata = filedata.replace("</unitdate>, </unittitle>\n<physdesc>",", </unitdate></unittitle>\n<physdesc>")
-            if 'xmlns="urn:isbn:1-931666-22-9" xsi:' in filedata and 'relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">' in filedata:
-                filedata = filedata.replace('relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">','>')
-            filedata = filedata.replace("[[","[").replace("]]","]").replace("[ [", "[").replace("] ]","]").replace(",</emph>\n, </unitdate>","</emph>, </unitdate>")
-            filedata = filedata.replace("\n<unittitle>, </unittitle>","")
-            filedata = filedata.replace('<container type="box">','<container type="Box">').replace('Texas-digital-archive', 'Texas-Digital-Archive')
-            filedata = filedata.replace('<container type="folder">','<container type="Folder">').replace("&lt;","<").replace("&gt;",">")
-            filedata = filedata.replace("English.</langusage>", '<language langcode="eng" scriptcode="Latn">English</language>.</langusage>')
-            # removed a few blank items i think, appears to create a problem so removing for now
-            #filedata = filedata.replace("\n<?xm-replace_text (be sure level attribute is correct)?>","")
-            #filedata = filedata.replace('\n<change>\n<date era="ce" calendar="gregorian">\n<?xm-replace_text {date}?>\n</date>\n<item>\n<?xm-replace_text {item}?>\n</item>\n</change>','')
-            #filedata = filedata.replace('<unitdate era="ce" calendar="gregorian" normal="0000/0000" type="inclusive">\n<?xm-replace_text {date}?>\n</unitdate>\n','')
-            #filedata = filedata.replace('\n<note>\n<p>\n<emph render="italic">\n<?xm-replace_text {Notes, if desired}?>\n</emph>\n</p>\n</note>','')
-            #filedata = filedata.replace('\n<unittitle>\n<?xm-replace_text {title}?>, </unittitle>','')
-            filedata = filedata.replace('\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->','')
-            donkeykong = re.findall(']</physdesc>\n<unitdate *.*, </unitdate>\n</did>', filedata)
-            if donkeykong:
-                for item in donkeykong:
-                    item = str(item)
-                    dittykong = item.replace(", </unitdate>"," </unitdate>")
-                    filedata = filedata.replace(item,dittykong)
-            donkeykong = re.findall(r'\n*.*<\?*.*xml-stylesheet*.*\?>*.*', filedata)
-            if donkeykong:
-                for item in donkeykong:
-                    filedata = filedata.replace(item,"")
-            donkeykong = re.findall(r'\n*.*Remove the ead*.*xsl and ead*.*.css statements*.*>\n',filedata)
-            if donkeykong:
-                for item in donkeykong:
-                    item = str(item)
-                    filedata = filedata.replace(item,"")
-            if ' xmlns="urn:isbn:1-931666-22-9" ' in filedata and ' xmlns="urn:isbn:1-931666-22-9">' in filedata:
-                filedata = filedata.replace('xmlns="urn:isbn:1-931666-22-9">','>')
-            filedata = filedata.replace('xsi:schemaLocation="urn:isbn:1-931666-22-9 ead.xsd" xmlns="urn:isbn:1-931666-22-9"','xsi:schemaLocation="urn:isbn:1-931666-22-9 ead.xsd"')
-        with open(output_file, "w") as w:
-            w.write('<?xml version="1.0" encoding="UTF-8"?>\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->\n<!-- <?xml-stylesheet type="text/xsl" href="ead.xsl"?> <?xml-stylesheet type="text/css" href="ead.css"?> -->\n' + filedata)
-        w.close()
-        switch = True
-        if switch is True:
-            try:
-                dom3 = ET.parse(output_file)
-            except:
-                print(unitid_text, "has a xml tag problem, moving to special handling area")
-                shutil.move(output_file,validation_exception_file)
-        if flag > 0:
-            print("potential subject term issue in",unitid_text,"moving to problem area for checking")
-            shutil.move(output_file,exception_file)
-            switch = False
-        print(f'{unitid_text} finished')
-        switch = "no"
-        while switch != "yes":
-            switch = input(f"did you verify the ead file is okay with {unitid_text}?: ")
-print("all done!")
+    # pull out access restrict with audience = internal if still there
+    restrictions = dom2.xpath("//ead:accessrestrict[@audience = 'internal']", namespaces=nsmap)
+    if restrictions is not None:
+        for restriction in restrictions:
+            restriction.getparent().remove(restriction)
+    dom2.write(finished_product)
+    with open(finished_product, "r") as r:
+        filedata = r.read()
+        filedata = filedata.replace('<extptr href','<extptr xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onLoad" xlink:show="embed" xlink:type="simple" xlink:href')
+        filedata = filedata.replace('<ead:extref href','<ead:extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
+        filedata = filedata.replace('<ead:archref href','<ead:archref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
+        filedata = filedata.replace('<ead:bibref href','<ead:bibref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
+        filedata = filedata.replace('label="Quantity"','label="Quantity:"')
+        filedata = filedata.replace('label="Creator"','label="Creator:"')
+        filedata = filedata.replace('label="Collector"','label="Collector:"')
+        filedata = filedata.replace('label="Title"','label="Title:"')
+        filedata = filedata.replace('label="Dates"','label="Dates:"')
+        filedata = filedata.replace('label="Abstract"','label="Abstract:"')
+        filedata = filedata.replace(", , <",", <")
+        filedata = filedata.replace("..",".").replace(". .",".")
+        filedata = filedata.replace("\n<ead:descgrp>\n<head>Administrative Information</head>","")
+        filedata = filedata.replace('\n<ead:descgrp type="admininfo">\n<head>Administrative Information</head>','')
+        filedata = filedata.replace("\n<ead:descgrp>","")
+        filedata = filedata.replace('\n<ead:descgrp type="admininfo">','')
+        filedata = filedata.replace("\n</ead:descgrp>","")
+        filedata = filedata.replace("ead:","")
+        filedata = filedata.replace("\n<physfacet>","<physfacet>").replace("\n<dimensions>","<dimensions>").replace("\n</physdesc>","</physdesc>")
+        filedata = filedata.replace("<extent>[","[<extent>").replace("]</extent>","</extent>]")
+        filedata = filedata.replace("<physfacet>[","[<physfacet>, ").replace("]</physfacet>","</physfacet>]")
+        filedata = filedata.replace("<dimensions>[","[<dimensions>, ").replace("]</dimensions>","</dimensions>]")
+        filedata = filedata.replace("][<physfacet>","<physfacet>").replace("][<dimensions>","<dimensions>")
+        filedata = filedata.replace('\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive.</emph>\n</p>','')
+        filedata = filedata.replace('\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive. </emph>\n</p>','')
+        filedata = filedata.replace("\n</relatedmaterial>\n</relatedmaterial>\n</relatedmaterial>","\n</relatedmaterial>\n</relatedmaterial>")
+        filedata = filedata.replace('\n<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>','')
+        if "852$a" not in filedata:
+            filedata = filedata.replace("</abstract>",'</abstract>\n<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.texas.gov/arc/index.html">Texas State Archives</extref>\n</repository>')
+        filedata = filedata.replace('<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.texas.gov/arc/index.html">Texas State Archives</extref>\n</repository>\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>\n','')
+        filedata = filedata.replace('\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>','')
+        filedata = filedata.replace('<controlaccess>\n<head>Personal Names:</head>\n</controlaccess>\n','')
+        filedata = filedata.replace('<controlaccess>\n<head>Family Names:</head>\n</controlaccess>\n','')
+        filedata = filedata.replace('<controlaccess>\n<head>Corporate Names:</head>\n</controlaccess>\n','')
+        filedata = filedata.replace('<controlaccess>\n<head>Subjects (Persons):</head>\n</controlaccess>\n','')
+        filedata = filedata.replace('<controlaccess>\n<head>Subjects (Families):</head>\n</controlaccess>\n','')
+        filedata = filedata.replace('<controlaccess>\n<head>Subjects (Organizations):</head>\n</controlaccess>\n','')
+        filedata = filedata.replace('<controlaccess>\n<head>Subjects:</head>\n</controlaccess>\n','')
+        filedata = filedata.replace('<controlaccess>\n<head>Places:</head>\n</controlaccess>\n','')
+        filedata = filedata.replace('<controlaccess>\n<head>Document Types:</head>\n</controlaccess>\n','')
+        filedata = filedata.replace('<controlaccess>\n<head>Titles:</head>\n</controlaccess>\n','')
+        filedata = filedata.replace('<controlaccess>\n<head>Functions:</head>\n</controlaccess>\n','')
+        filedata = filedata.replace('<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>','')
+        filedata = filedata.replace('<controlaccess>\n</controlaccess>\n','').replace(" , ",", ").replace(", </unitdate>, ","</unitdate>, ").replace(",</unitdate>, ","</unitdate>, ").replace(", </emph>, ", "</emph>, ").replace(",</emph>, ","</emph>, ").replace(" </unitdate>, ","</unitdate>, ")
+        filedata = filedata.replace("</unitdate>, </unittitle>\n<physdesc>",", </unitdate></unittitle>\n<physdesc>")
+        if 'xmlns="urn:isbn:1-931666-22-9" xsi:' in filedata and 'relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">' in filedata:
+            filedata = filedata.replace('relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">','>')
+        filedata = filedata.replace("[[","[").replace("]]","]").replace("[ [", "[").replace("] ]","]").replace(",</emph>\n, </unitdate>","</emph>, </unitdate>")
+        filedata = filedata.replace("\n<unittitle>, </unittitle>","")
+        filedata = filedata.replace('<container type="box">','<container type="Box">').replace('Texas-digital-archive', 'Texas-Digital-Archive')
+        filedata = filedata.replace('<container type="folder">','<container type="Folder">').replace("&lt;","<").replace("&gt;",">")
+        filedata = filedata.replace("English.</langusage>", '<language langcode="eng" scriptcode="Latn">English</language>.</langusage>')
+        # removed a few blank items i think, appears to create a problem so removing for now
+        #filedata = filedata.replace("\n<?xm-replace_text (be sure level attribute is correct)?>","")
+        #filedata = filedata.replace('\n<change>\n<date era="ce" calendar="gregorian">\n<?xm-replace_text {date}?>\n</date>\n<item>\n<?xm-replace_text {item}?>\n</item>\n</change>','')
+        #filedata = filedata.replace('<unitdate era="ce" calendar="gregorian" normal="0000/0000" type="inclusive">\n<?xm-replace_text {date}?>\n</unitdate>\n','')
+        #filedata = filedata.replace('\n<note>\n<p>\n<emph render="italic">\n<?xm-replace_text {Notes, if desired}?>\n</emph>\n</p>\n</note>','')
+        #filedata = filedata.replace('\n<unittitle>\n<?xm-replace_text {title}?>, </unittitle>','')
+        filedata = filedata.replace('\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->','')
+        donkeykong = re.findall(']</physdesc>\n<unitdate *.*, </unitdate>\n</did>', filedata)
+        if donkeykong:
+            for item in donkeykong:
+                item = str(item)
+                dittykong = item.replace(", </unitdate>"," </unitdate>")
+                filedata = filedata.replace(item,dittykong)
+        donkeykong = re.findall(r'\n*.*<\?*.*xml-stylesheet*.*\?>*.*', filedata)
+        if donkeykong:
+            for item in donkeykong:
+                filedata = filedata.replace(item,"")
+        donkeykong = re.findall(r'\n*.*Remove the ead*.*xsl and ead*.*.css statements*.*>\n',filedata)
+        if donkeykong:
+            for item in donkeykong:
+                item = str(item)
+                filedata = filedata.replace(item,"")
+        if ' xmlns="urn:isbn:1-931666-22-9" ' in filedata and ' xmlns="urn:isbn:1-931666-22-9">' in filedata:
+            filedata = filedata.replace('xmlns="urn:isbn:1-931666-22-9">','>')
+        filedata = filedata.replace('xsi:schemaLocation="urn:isbn:1-931666-22-9 ead.xsd" xmlns="urn:isbn:1-931666-22-9"','xsi:schemaLocation="urn:isbn:1-931666-22-9 ead.xsd"')
+    with open(finished_product, "w") as w:
+        w.write('<?xml version="1.0" encoding="UTF-8"?>\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->\n<!-- <?xml-stylesheet type="text/xsl" href="ead.xsl"?> <?xml-stylesheet type="text/css" href="ead.css"?> -->\n' + filedata)
+    w.close()
+    switch = True
+    if switch is True:
+        try:
+            dom3 = ET.parse(finished_product)
+        except:
+            print(unitid_text, "has a xml tag problem, check it for errors. We suggest using a web browser at minimum.")
+    if flag > 0:
+        print("potential subject term issue in",unitid_text,"check it manually")
+        switch = False
+    print(f'{unitid_text} finished')
+    print("all done!")
 
+Sg.theme('DarkGreen')
+layout = [[
+    Sg.Push(),
+    Sg.Text("EAD file"),
+    Sg.In(size=(50, 1), enable_events=True, key="-EAD-"),
+    Sg.FileBrowse(file_types=(("xml text files only", "*.xml"),)),],
+    [
+        Sg.Push(),
+        Sg.Button("Execute", tooltip="This will start the program running"),
+        Sg.Push()
+    ],
+    [
+        Sg.Button("Close", tooltip="Close this window. Won't work while XML is being processed", bind_return_key=True)
+    ]
+]
+
+window = Sg.Window(
+    "TARO EAD processor",
+    layout,
+    icon = my_icon
+)
+
+event, values = window.read()
+while True:
+    event, values = window.read()
+    my_xml = values['-EAD-']
+    if event == "Execute":
+        processor(my_xml)
+    if event == "Close" or event == Sg.WIN_CLOSED:
+        break
+window.close()
