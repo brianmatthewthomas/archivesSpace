@@ -130,7 +130,8 @@ def timeturner (dateify):
             item = str(item)
             dittykong = datetime.datetime.strptime(item, "%Y-%m-%d")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window["-OUTPUT-"].update(dittykong, append=True)
+            #print(dittykong)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{4}-\d{2}-\d{1}', dateify)
     if donkeykong:
@@ -139,7 +140,8 @@ def timeturner (dateify):
             dittykong = item[:-1] + "0" + item[-1:]
             dittykong = datetime.datetime.strptime(dittykong, "%Y-%m-%d")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window["-OUTPUT-"].update(dittykong)
+            #print(dittykong)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{4}-\d{1}-\d{2}', dateify)
     if donkeykong:
@@ -148,7 +150,8 @@ def timeturner (dateify):
             dittykong = item[:5] + "0" + item[5:]
             dittykong = datetime.datetime.strptime(dittykong, "%Y-%m-%d")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window["-OUTPUT-"].update(dittykong)
+            #print(dittykong)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{4}-\d{1}-\d{1}', dateify)
     if donkeykong:
@@ -157,7 +160,8 @@ def timeturner (dateify):
             dittykong = item[:5] + "0" + item[5:7] + "0" + item[-1:]
             dittykong = datetime.datetime.strptime(dittykong, "%Y-%m-%d")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window["-OUTPUT-"].update(dittykong)
+            #print(dittykong)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{2}/\d{2}/\d{4}', dateify)
     if donkeykong:
@@ -165,7 +169,8 @@ def timeturner (dateify):
             item = str(item)
             dittykong = datetime.datetime.strptime(item, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window["-OUTPUT-"].update(dittykong)
+            #print(dittykong)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{2}-\d{2}-\d{4}', dateify)
     if donkeykong:
@@ -173,7 +178,8 @@ def timeturner (dateify):
             item = str(item)
             dittykong = datetime.datetime.strptime(item, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window["-OUTPUT-"].update(dittykong)
+            #print(dittykong)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{2}/\d{1}/\d{4}', dateify)
     if donkeykong:
@@ -182,7 +188,7 @@ def timeturner (dateify):
             dittykong = item[:3] + "0" + item[3:-5] + item[-5:]
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{2}-\d{1}-\d{4}', dateify)
     if donkeykong:
@@ -191,7 +197,7 @@ def timeturner (dateify):
             dittykong = item[:3] + "0" + item[3:-5] + item[-5:]
             dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{1}-\d{2}-\d{4}', dateify)
     if donkeykong:
@@ -200,7 +206,7 @@ def timeturner (dateify):
             dittykong = "0" + item
             dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{1}/\d{2}/\d{4}', dateify)
     if donkeykong:
@@ -209,7 +215,7 @@ def timeturner (dateify):
             dittykong = "0" + item
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{1}/\d{1}/\d{4}', dateify)
     if donkeykong:
@@ -218,7 +224,7 @@ def timeturner (dateify):
             dittykong = "0" + item[:2] + "0" + item[2:-5] + item[-5:]
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{1}-\d{1}-\d{4}', dateify)
     if donkeykong:
@@ -227,7 +233,7 @@ def timeturner (dateify):
             dittykong = "0" + item[:2] + "0" + item[2:-5] + item[-5:]
             dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{2}/\d{2}/\d{2}', dateify)
     if donkeykong:
@@ -236,7 +242,7 @@ def timeturner (dateify):
             dittykong = item[:-2] + "19" + item[-2:]
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{2}-\d{2}-\d{2}', dateify)
     if donkeykong:
@@ -246,7 +252,7 @@ def timeturner (dateify):
                 dittykong = item[:-2] + "19" + item[-2:]
                 dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
                 dittykong = dittykong.strftime("%B %d, %Y")
-                print(dittykong)
+                window['-OUTPUT-'].update("\n" + dittykong, append=True)
                 dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{1}/\d{2}/\d{2}', dateify)
     if donkeykong:
@@ -255,7 +261,7 @@ def timeturner (dateify):
             dittykong = "0" + item[:-2] + "19" + item[-2:]
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{1}-\d{2}-\d{2}', dateify)
     if donkeykong:
@@ -264,7 +270,7 @@ def timeturner (dateify):
             dittykong = "0" + item[:-2] + "19" + item[-2:]
             dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{2}/\d{1}/\d{2}', dateify)
     if donkeykong:
@@ -273,7 +279,7 @@ def timeturner (dateify):
             dittykong = item[:3] + "0" + item[3:-2] + "19" + item[-2:]
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{2}-\d{1}-\d{2}', dateify)
     if donkeykong:
@@ -282,7 +288,7 @@ def timeturner (dateify):
             dittykong = item[:3] + "0" + item[3:-2] + "19" + item[-2:]
             dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{1}/\d{1}/\d{2}', dateify)
     if donkeykong:
@@ -291,7 +297,7 @@ def timeturner (dateify):
             dittykong = "0" + item[:2] + "0" + item[2:-2] + "19" + item[-2:]
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.findall(r'\d{1}-\d{1}-\d{2}', dateify)
     if donkeykong:
@@ -300,7 +306,7 @@ def timeturner (dateify):
             dittykong = "0" + item[:2] + "0" + item[2:-2] + "19" + item[-2:]
             dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(item,dittykong)
     donkeykong = re.search(r'FY \d{4}-\d{4}', dateify)
     if donkeykong:
@@ -309,7 +315,7 @@ def timeturner (dateify):
         year1 = int(placeholder[0][-4:]) - 1
         year2 = placeholder[1][-4:]
         dittykong = 'September 1, ' + str(year1) + " - August 31, " + year2
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'FY \d{4} - FY \d{4}', dateify)
     if donkeykong:
@@ -318,42 +324,42 @@ def timeturner (dateify):
         year1 = int(placeholder[0][-4:]) - 1
         year2 = placeholder[1][-4:]
         dittykong = 'September 1, ' + str(year1) + " - August 31, " + year2
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'FY \d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = int(donkeykong[-4:]) - 1
         dittykong = 'September 1, ' + str(dittykong) + " - August 31, " + donkeykong[-4:]
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'FY\d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = int(donkeykong[-4:]) - 1
         dittykong = 'September 1, ' + str(dittykong) + " - August 31, " + donkeykong[-4:]
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'FY \d{2}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = int(donkeykong[-2:]) + 1899
         dittykong = 'September 1, ' + str(dittykong) + " - August 31, 19" + donkeykong[-2:]
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'FY\d{2}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = int(donkeykong[-2:]) + 1899
         dittykong = 'September 1, ' + str(dittykong) + " - August 31, 19" + donkeykong[-2:]
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'\d{4}-\d{2}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         if dateify.startswith(donkeykong + ",") or dateify.startswith(donkeykong + " ") or dateify.endswith(donkeykong):
             dittykong = donkeykong[:5] + donkeykong[:2] + donkeykong[-2:]
-            print(dittykong)
+            window['-OUTPUT-'].update("\n" + dittykong, append=True)
             dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'd{2}/\d{4}', dateify)
     if donkeykong:
@@ -361,7 +367,7 @@ def timeturner (dateify):
         dittykong = donkeykong
         dittykong = datetime.datetime.strptime(dittykong, "%m/%Y")
         dittykong = dittykong.strftime("%B, %Y")
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'd{1}/\d{4}', dateify)
     if donkeykong:
@@ -369,51 +375,51 @@ def timeturner (dateify):
         dittykong = "0" + donkeykong
         dittykong = datetime.datetime.strptime(dittykong, "%m/%Y")
         dittykong = dittykong.strftime("%B, %Y")
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong,dittykong)
     dateify = dateify.replace("Summer, ","Summer ").replace("Spring, ","Spring ").replace("Fall, ","Fall ").replace("Winter, ","Winter ")
     donkeykong = re.search(r'Spring \d{4}', dateify, re.IGNORECASE)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = "March 1, " + donkeykong[-4:] + " to May 31, " + donkeykong[-4:]
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'Summer \d{4}', dateify, re.IGNORECASE)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = "June 1, " + donkeykong[-4:] + " to August 31, " + donkeykong[-4:]
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'Fall \d{4}', dateify, re.IGNORECASE)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = "September 1, " + donkeykong[-4:] + " to October 31, " + donkeykong[-4:]
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'Winter \d{4}', dateify, re.IGNORECASE)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = "November 1, " + donkeykong[-4:] + " to December 31, " + donkeykong[-4:]
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'before \d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = int(donkeykong[-4:]) - 1
         dittykong = "January 1, 0000 - December 31, " + str(dittykong)
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'after \d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = donkeykong[-4:] + "-" + donkeykong[-4:-2] + "99"
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong,dittykong)
     donkeykong = re.search(r'\d{4} \d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = donkeykong[:4] + "-" + donkeykong[-4:]
-        print(dittykong)
+        window['-OUTPUT-'].update("\n" + dittykong, append=True)
         dateify = dateify.replace(donkeykong,dittykong)
     dateify.strip()
     while dateify.endswith(".") or dateify.endswith(". "):
@@ -428,8 +434,8 @@ def timeturner (dateify):
         dateify = dateify[1:]
     date_normal = ""
     try:
-        print("made it this far")
-        #print(dateify)
+        window['-OUTPUT-'].update("\n" + "made it this far", append=True)
+        #window['-OUTPUT-'].update("\n" + dateify)
         #temp_value = daterangeparser.parse(dateify)
         if "-" in dateify:
             start, end = daterangeparser.parse(dateify)
@@ -444,7 +450,7 @@ def timeturner (dateify):
                 date_normal += start + "/" + end + "/"
             else:
                 date_normal += start + "/" + start + "/"
-        # print(dateify)
+        # window['-OUTPUT-'].update("\n" + dateify)
     except:
         listy = dateify.split(",")
         for item in listy:
@@ -487,8 +493,8 @@ def timeturner (dateify):
                     elif len(splity) == 2 and len(splity[0]) == 4 and len(splity[-1]) == 4:
                         date_normal = splity[0] + "-01-01/" + splity[-1] + "-12-31/"
                     else:
-                        print(dateify2)
-                        print(item)
+                        window['-OUTPUT-'].update("\n" + dateify2, append=True)
+                        window['-OUTPUT-'].update("\n" + item, append=True)
                         newDate = input("manually enter date normal attribute above using YYYY-MM-DD/YYYY-MM-DD: ")
                         if not newDate.endswith("/"):
                             newDate += "/"
@@ -2886,8 +2892,8 @@ nsmap = {'xmlns': 'urn:isbn:1-931666-22-9',
 def processor(my_xml):
     #parse as xslt for application below
     transform = ET.XSLT(catalyst)
-    print("this is supposed to fix a bunch of minor issues related to TARO 2.0 normalization, check output for correctness")
-    print("file will be spit out as its original name in a processed folder")
+    window["-OUTPUT-"].update("\nthis is supposed to fix a bunch of minor issues related to TARO 2.0 normalization, check output for correctness", append=True)
+    #window['-OUTPUT-'].update("\n" + "this is supposed to fix a bunch of minor issues related to TARO 2.0 normalization, check output for correctness", append=True)
     temp1 = my_xml.split("/")[-1].split(".")[0]
     temp2 = f"{temp1}-done"
     finished_product = my_xml.replace(temp1, temp2)
@@ -2959,7 +2965,7 @@ def processor(my_xml):
             else:
                 date.attrib['type'] = ""
         if date.attrib['type'] == "":
-            print(dateify)
+            window['-OUTPUT-'].update("\n" + dateify, append=True)
             date.attrib['type'] = input("date type missing, inclusive or bulk: ")
         if 'era' not in date.attrib:
             date.attrib['era'] = 'ce'
@@ -2982,7 +2988,7 @@ def processor(my_xml):
             else:
                 date.attrib['type'] = ""
         if date.attrib['type'] == "":
-            print(dateify)
+            window['-OUTPUT-'].update("\n" + dateify, append=True)
             placeholder = ""
             while placeholder != "inclusive" and placeholder != "bulk":
                 placeholder = input("date type missing, inclusive or bulk: ")
@@ -3137,17 +3143,17 @@ def processor(my_xml):
         container_type = set()
         containers = container_did.xpath("ead:container", namespaces=nsmap)
         for container in containers:
-            print(container.text)
+            window['-OUTPUT-'].update("\n" + container.text, append=True)
             container_type.add(container.attrib['type'])
         container_type = list(container_type)
         for item in container_type:
-            print(item)
+            window['-OUTPUT-'].update("\n" + item, append=True)
             container_list = []
             container_count = 0
             containers = container_did.xpath(f"ead:container[@type='{item}']", namespaces=nsmap)
             for container in containers:
                 container_count += 1
-            print(len(containers))
+            window['-OUTPUT-'].update(f"\n{len(containers)}", append=True)
             if len(containers) > 1:
                 for container in containers:
                     container_list.append(container.text)
@@ -3163,13 +3169,13 @@ def processor(my_xml):
                             bottom = temp
                     container_text = container_list[0].split("-")[0] + f"-{str(top)} thru {str(bottom)}"
                 except:
-                    print(f"problem with {container_list[0]}, fix that and try again")
+                    window['-OUTPUT-'].update("\n" + f"problem with {container_list[0]}, fix that and try again", append=True)
                     sys.exit()
-                print(container_text)
+                window['-OUTPUT-'].update("\n" + container_text, append=True)
                 containers[0].text = container_text
                 containers = containers[1:]
                 for container in containers:
-                    print("removing",container.text)
+                    window['-OUTPUT-'].update("\n" + "removing",container.text, append=True)
                     container.getparent().remove(container)
     langs = dom2.xpath("//ead:langmaterial", namespaces=nsmap)
     for lang in langs:
@@ -3185,7 +3191,7 @@ def processor(my_xml):
             extent.text = temp
             other_tag.getparent().remove(other_tag)
     #now process in the brackets for physdesc inner content
-    print("on the languages")
+    window['-OUTPUT-'].update("\n" + "on the languages", append=True)
     extent_types ={'45 rpm records': '45 rpm record',
                    '78 rpm records': '78 rpm record',
                    '8-track cartridges': '8-track cartridge',
@@ -3398,7 +3404,7 @@ def processor(my_xml):
                 for paragraph in paragraphs:
                     emphasis = paragraph.xpath("./ead:emph", namespaces=nsmap)
                     if emphasis != []:
-                        print("manual fix to scopenote needed")
+                        window['-OUTPUT-'].update("\n" + "manual fix to scopenote needed", append=True)
                     else:
                         myText = paragraph.text
                         emphatic = ET.SubElement(paragraph,'emph')
@@ -3408,14 +3414,14 @@ def processor(my_xml):
             else:
                 emphasis = scopenote.xpath("./ead:emph", namespaces=nsmap)
                 if emphasis != []:
-                    print("manual fix to scopenote needed")
+                    window['-OUTPUT-'].update("\n" + "manual fix to scopenote needed", append=True)
                 else:
                     myText = scopenote.text
                     emphatic = ET.SubElement(scopenote,'emph')
                     emphatic.attrib['render'] = 'italic'
                     emphatic.text = myText
                     scopenote.text = ""
-                print(scopenote.text)
+                window['-OUTPUT-'].update("\n" + scopenote.text, append=True)
     notes = dom2.xpath(".//ead:note", namespaces=nsmap)
     for note in notes:
         parent = note.getparent()
@@ -3427,7 +3433,7 @@ def processor(my_xml):
                     for paragraph in paragraphs:
                         emphasis = paragraph.xpath("./ead:emph", namespaces=nsmap)
                         if emphasis != []:
-                            print("manual fix to note needed")
+                            window['-OUTPUT-'].update("\n" + "manual fix to note needed", append=True)
                         else:
                             myText = paragraph.text
                             emphatic = ET.SubElement(paragraph,'emph')
@@ -3437,14 +3443,14 @@ def processor(my_xml):
                 else:
                     emphasis = note.xpath("./ead:emph", namespaces=nsmap)
                     if emphasis != []:
-                        print("manual fix to note needed")
+                        window['-OUTPUT-'].update("\n" + "manual fix to note needed", append=True)
                     else:
                         myText = scopenote.text
                         emphatic = ET.SubElement(scopenote,'emph')
                         emphatic.attrib['render'] = 'italic'
                         emphatic.text = myText
                         scopenote.text = ""
-                    print(scopenote.text)
+                    window['-OUTPUT-'].update("\n" + scopenote.text, append=True)
     extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
     for extent in extents:
         parent = extent.getparent().getparent().getparent()
@@ -3458,7 +3464,7 @@ def processor(my_xml):
             if 'altrender' in extent.attrib:
                 if extent.attrib['altrender'] == "materialtype spaceoccupied":
                     del extent.attrib['altrender']
-            #print(parent.attrib['level'])
+            #window['-OUTPUT-'].update("\n" + parent.attrib['level'], append=True)
             if physfacet != None:
                 physfacet.text = "[" + physfacet.text + "]"
             if dimension != None:
@@ -3469,11 +3475,11 @@ def processor(my_xml):
         tempstring = extent.text
         if "[" in tempstring:
             tempstring = tempstring[1:-1]
-            print(tempstring)
+            window['-OUTPUT-'].update("\n" + tempstring, append=True)
         var = tempstring.split(" ")[0]
         if var == "1":
             tempstring = tempstring.replace("1 ","")
-            print(tempstring)
+            window['-OUTPUT-'].update("\n" + tempstring, append=True)
             tempy = extent.text
             tempy = tempy.replace(tempstring, extent_types[tempstring])
             extent.text = tempy
@@ -3582,12 +3588,12 @@ def processor(my_xml):
         try:
             dom3 = ET.parse(finished_product)
         except:
-            print(unitid_text, "has a xml tag problem, check it for errors. We suggest using a web browser at minimum.")
+            window['-OUTPUT-'].update("\n" + unitid_text, "has a xml tag problem, check it for errors. We suggest using a web browser at minimum.", append=True)
     if flag > 0:
-        print("potential subject term issue in",unitid_text,"check it manually")
+        window['-OUTPUT-'].update("\n" + f"potential subject term issue in {unitid_text} check it manually", append=True)
         switch = False
-    print(f'{unitid_text} finished')
-    print("all done!")
+    window['-OUTPUT-'].update("\n" + f'{unitid_text} finished', append=True)
+    window['-OUTPUT-'].update("\n" + "all done!", append=True)
 
 Sg.theme('DarkGreen')
 layout = [[
@@ -3602,6 +3608,11 @@ layout = [[
     ],
     [
         Sg.Button("Close", tooltip="Close this window. Won't work while XML is being processed", bind_return_key=True)
+    ],
+    [
+        Sg.Multiline(default_text="Look here for information about various data points as the file processes. Your processes file will end in '-done'",
+                     size=(70, 5), auto_refresh=True, reroute_stdout=False, key="-OUTPUT-", autoscroll=True,
+                     border_width=5)
     ]
 ]
 
