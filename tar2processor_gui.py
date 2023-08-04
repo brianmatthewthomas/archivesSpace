@@ -493,12 +493,9 @@ def timeturner (dateify):
                     elif len(splity) == 2 and len(splity[0]) == 4 and len(splity[-1]) == 4:
                         date_normal = splity[0] + "-01-01/" + splity[-1] + "-12-31/"
                     else:
-                        window['-OUTPUT-'].update("\n" + dateify2, append=True)
-                        window['-OUTPUT-'].update("\n" + item, append=True)
-                        newDate = input("manually enter date normal attribute above using YYYY-MM-DD/YYYY-MM-DD: ")
-                        if not newDate.endswith("/"):
-                            newDate += "/"
-                        date_normal += newDate
+                        window['-OUTPUT-'].update(f"\nfind and fix date at: {dateify2}", append=True)
+                        window['-OUTPUT-'].update(f"\nfind and fix date at: {item}", append=True)
+
     date_normal = date_normal[:-1]
     if date_normal.startswith("/"):
         date_normal = date_normal[1:]
@@ -2966,7 +2963,7 @@ def processor(my_xml):
                 date.attrib['type'] = ""
         if date.attrib['type'] == "":
             window['-OUTPUT-'].update("\n" + dateify, append=True)
-            date.attrib['type'] = input("date type missing, inclusive or bulk: ")
+            date.attrib['type'] = "inclusive"
         if 'era' not in date.attrib:
             date.attrib['era'] = 'ce'
         if date.attrib['era'] == "":
@@ -2989,10 +2986,7 @@ def processor(my_xml):
                 date.attrib['type'] = ""
         if date.attrib['type'] == "":
             window['-OUTPUT-'].update("\n" + dateify, append=True)
-            placeholder = ""
-            while placeholder != "inclusive" and placeholder != "bulk":
-                placeholder = input("date type missing, inclusive or bulk: ")
-                date.attrib['type'] = placeholder
+            date.attrib['type'] = "inclusive"
         if 'era' not in date.attrib:
             date.attrib['era'] = 'ce'
         if date.attrib['era'] == "":
@@ -3191,7 +3185,6 @@ def processor(my_xml):
             extent.text = temp
             other_tag.getparent().remove(other_tag)
     #now process in the brackets for physdesc inner content
-    window['-OUTPUT-'].update("\n" + "on the languages", append=True)
     extent_types ={'45 rpm records': '45 rpm record',
                    '78 rpm records': '78 rpm record',
                    '8-track cartridges': '8-track cartridge',
@@ -3404,22 +3397,26 @@ def processor(my_xml):
                 for paragraph in paragraphs:
                     emphasis = paragraph.xpath("./ead:emph", namespaces=nsmap)
                     if emphasis != []:
-                        window['-OUTPUT-'].update("\n" + "manual fix to scopenote needed", append=True)
+                        continue
                     else:
                         myText = paragraph.text
                         emphatic = ET.SubElement(paragraph,'emph')
                         emphatic.attrib['render'] = 'italic'
                         emphatic.text = myText
+                        window['-OUTPUT-'].update("\nmanual fix to scopenote is needed in ArchivesSpace", append=True)
+                        window['-OUTPUT-'].update(f"\ncheck text around: {paragraph.text[0:50]}", append=True)
                         paragraph.text = ""
             else:
                 emphasis = scopenote.xpath("./ead:emph", namespaces=nsmap)
                 if emphasis != []:
-                    window['-OUTPUT-'].update("\n" + "manual fix to scopenote needed", append=True)
+                    continue
                 else:
                     myText = scopenote.text
                     emphatic = ET.SubElement(scopenote,'emph')
                     emphatic.attrib['render'] = 'italic'
                     emphatic.text = myText
+                    window['-OUTPUT-'].update("\nmanual fix to scopenote may be needed", append=True)
+                    window['-OUTPUT-'].update(f"\ncheck text around: {scopenote.text[0:50]}", append=True)
                     scopenote.text = ""
                 window['-OUTPUT-'].update("\n" + scopenote.text, append=True)
     notes = dom2.xpath(".//ead:note", namespaces=nsmap)
@@ -3433,22 +3430,26 @@ def processor(my_xml):
                     for paragraph in paragraphs:
                         emphasis = paragraph.xpath("./ead:emph", namespaces=nsmap)
                         if emphasis != []:
-                            window['-OUTPUT-'].update("\n" + "manual fix to note needed", append=True)
+                            continue
                         else:
                             myText = paragraph.text
                             emphatic = ET.SubElement(paragraph,'emph')
                             emphatic.attrib['render'] = 'italic'
                             emphatic.text = myText
+                            window['-OUTPUT-'].update("\nmanual fix to note may be needed", append=True)
+                            window['-OUTPUT-'].update(f"\ncheck text around: {paragraph.text[0:50]}", append=True)
                             paragraph.text = ""
                 else:
                     emphasis = note.xpath("./ead:emph", namespaces=nsmap)
                     if emphasis != []:
-                        window['-OUTPUT-'].update("\n" + "manual fix to note needed", append=True)
+                        continue
                     else:
-                        myText = scopenote.text
+                        myText = note.text
                         emphatic = ET.SubElement(scopenote,'emph')
                         emphatic.attrib['render'] = 'italic'
                         emphatic.text = myText
+                        window['-OUTPUT-'].update("\nmanual fix to note may be needed", append=True)
+                        window['-OUTPUT-'].update(f"\ncheck text around: {note.text[0:50]}", append=True)
                         scopenote.text = ""
                     window['-OUTPUT-'].update("\n" + scopenote.text, append=True)
     extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
@@ -3610,7 +3611,7 @@ layout = [[
         Sg.Button("Close", tooltip="Close this window. Won't work while XML is being processed", bind_return_key=True)
     ],
     [
-        Sg.Multiline(default_text="Look here for information about various data points as the file processes. Your processes file will end in '-done'",
+        Sg.Multiline(default_text="Look here for information about various data points as the file processes. Your processed file will end in '-done'",
                      size=(70, 5), auto_refresh=True, reroute_stdout=False, key="-OUTPUT-", autoscroll=True,
                      border_width=5)
     ]
