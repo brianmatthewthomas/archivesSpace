@@ -58,17 +58,19 @@ my_icon = b'iVBORw0KGgoAAAANSUhEUgAAAHgAAABsCAQAAAALKr7UAAAAAmJLR0QAAKqNIzIAAAAJ
           b'bWFudWZhY3R1cmVyAHNSR0IgSUVDNjE5NjYtMi4xa5wU+QAAABt0RVh0aWNjOm1vZGVsAHNSR0IgSUVDNjE5NjYtMi4xhWT+PAAAAA' \
           b'BJRU5ErkJggg=='
 
-def subjectspace (subject):
+
+def subjectspace(subject):
     while subject.startswith(" "):
         subject = subject[1:]
     while subject.endswith(" "):
         subject = subject[:-1]
     if subject.endswith("."):
         subject = subject[:-1]
-    subject = subject.replace(" -- ","--")
+    subject = subject.replace(" -- ", "--")
     return subject
 
-def subarea (subject):
+
+def subarea(subject):
     placeholder = subject.split(". ")
     placeholder2 = placeholder[0]
     if len(placeholder) != 1:
@@ -78,16 +80,22 @@ def subarea (subject):
                 item = item[1:]
             placeholder2 = placeholder2 + "<subarea>" + item + ".</subarea> "
         placeholder2 = placeholder2[:-12] + "</subarea>"
-    placeholder2 = placeholder2.replace("..",".")
+    placeholder2 = placeholder2.replace("..", ".")
     return placeholder2
 
-def timeturner (dateify):
+
+def timeturner(dateify):
     dateify2 = dateify
     if dateify == "undated" or dateify == "undated," or dateify == "undated, " or dateify == 'n.d.' or dateify == "Undated" or dateify == 'date unknown':
         dateify = "2021"
-    dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated","").replace(":","").replace(" part II", "").replace(" part I","")
-    dateify = dateify.replace("about", "").replace("\n", '').replace("[", '').replace("]", '').replace("ca.",'').replace('week of','').replace(";",'').replace("thru","-")
-    dateify = dateify.replace("and", "-").replace("primarily", "").replace(" or ", "-").replace("(?),", "").replace("(?)", "").replace("(", '').replace(")",'').replace("?","").replace("filmed on ",'')
+    dateify = dateify.replace("bulk", "").replace("(not inclusive)", "").replace("and undated", "").replace("undated",
+                                                                                                            "").replace(
+        ":", "").replace(" part II", "").replace(" part I", "")
+    dateify = dateify.replace("about", "").replace("\n", '').replace("[", '').replace("]", '').replace("ca.",
+                                                                                                       '').replace(
+        'week of', '').replace(";", '').replace("thru", "-")
+    dateify = dateify.replace("and", "-").replace("primarily", "").replace(" or ", "-").replace("(?),", "").replace(
+        "(?)", "").replace("(", '').replace(")", '').replace("?", "").replace("filmed on ", '')
     if dateify.endswith(" - 1944"):
         dateify = dateify.replace(" - 1944", "1944")
     if dateify.endswith(" '46") or dateify.endswith(" '44"):
@@ -105,18 +113,44 @@ def timeturner (dateify):
     J = "October"
     K = "November"
     L = "December"
-    dateify = dateify.replace(A+", "+B,A+"-"+B).replace(A+", "+C,A+"-"+C).replace(A+", "+D,A+"-"+D).replace(A+", "+E,A+"-"+E).replace(A+", "+F,A+"-"+F).replace(A+", "+G,A+"-"+G).replace(A+", "+H,A+"-"+H).replace(A+", "+I,A+"-"+I).replace(A+", "+J,A+"-"+J).replace(A+", "+K,A+"-"+K).replace(A+", "+L,A+"-"+L)
-    dateify = dateify.replace(B+", "+C,B+"-"+C).replace(B+", "+D,B+"-"+D).replace(B+", "+E,B+"-"+E).replace(B+", "+F,B+"-"+F).replace(B+", "+G,B+"-"+G).replace(B+", "+H,B+"-"+H).replace(B+", "+I,B+"-"+I).replace(B+", "+J,B+"-"+J).replace(B+", "+K,B+"-"+K).replace(B+", "+L,B+"-"+L)
-    dateify = dateify.replace(C+", "+D,B+"-"+D).replace(C+", "+E,B+"-"+E).replace(C+", "+F,B+"-"+F).replace(C+", "+G,B+"-"+G).replace(C+", "+H,B+"-"+H).replace(C+", "+I,B+"-"+I).replace(C+", "+J,B+"-"+J).replace(C+", "+K,B+"-"+K).replace(C+", "+L,B+"-"+L)
-    dateify = dateify.replace(D+", "+E,D+"-"+E).replace(D+", "+F,D+"-"+F).replace(D+", "+G,D+"-"+G).replace(D+", "+H,D+"-"+H).replace(D+", "+I,D+"-"+I).replace(D+", "+J,D+"-"+J).replace(D+", "+K,D+"-"+K).replace(D+", "+L,D+"-"+L)
-    dateify = dateify.replace(E+", "+F,E+"-"+F).replace(E+", "+G,E+"-"+G).replace(E+", "+H,E+"-"+H).replace(E+", "+I,E+"-"+I).replace(E+", "+J,E+"-"+J).replace(E+", "+K,E+"-"+K).replace(E+", "+L,E+"-"+L)
-    dateify = dateify.replace(F+", "+G,F+"-"+G).replace(F+", "+H,F+"-"+H).replace(F+", "+I,F+"-"+I).replace(F+", "+J,F+"-"+J).replace(F+", "+K,F+"-"+K).replace(F+", "+L,F+"-"+L)
-    dateify = dateify.replace(G+", "+H,G+"-"+H).replace(G+", "+I,G+"-"+I).replace(G+", "+J,G+"-"+J).replace(G+", "+K,G+"-"+K).replace(G+", "+L,G+"-"+L)
-    dateify = dateify.replace(H+", "+I,H+"-"+I).replace(H+", "+J,H+"-"+J).replace(H+", "+K,H+"-"+K).replace(H+", "+L,H+"-"+L)
-    dateify = dateify.replace(I+", "+J,I+"-"+J).replace(I+", "+K,I+"-"+K).replace(I+", "+L,I+"-"+L)
-    dateify = dateify.replace(J+", "+K,J+"-"+K).replace(J+", "+L,J+"-"+L)
-    dateify = dateify.replace(K+", "+L,K+"-"+L)
-    dateify = dateify.replace("-"+A+"-","-").replace("-"+B+"-","-").replace("-"+C+"-","-").replace("-"+D+"-","-").replace("-"+E+"-","-").replace("-"+F+"-","-").replace("-"+G+"-","-").replace("-"+H+"-","-").replace("-"+I+"-","-").replace("-"+J+"-","-").replace("-"+K+"-","-")
+    dateify = dateify.replace(A + ", " + B, A + "-" + B).replace(A + ", " + C, A + "-" + C).replace(A + ", " + D,
+                                                                                                    A + "-" + D).replace(
+        A + ", " + E, A + "-" + E).replace(A + ", " + F, A + "-" + F).replace(A + ", " + G, A + "-" + G).replace(
+        A + ", " + H, A + "-" + H).replace(A + ", " + I, A + "-" + I).replace(A + ", " + J, A + "-" + J).replace(
+        A + ", " + K, A + "-" + K).replace(A + ", " + L, A + "-" + L)
+    dateify = dateify.replace(B + ", " + C, B + "-" + C).replace(B + ", " + D, B + "-" + D).replace(B + ", " + E,
+                                                                                                    B + "-" + E).replace(
+        B + ", " + F, B + "-" + F).replace(B + ", " + G, B + "-" + G).replace(B + ", " + H, B + "-" + H).replace(
+        B + ", " + I, B + "-" + I).replace(B + ", " + J, B + "-" + J).replace(B + ", " + K, B + "-" + K).replace(
+        B + ", " + L, B + "-" + L)
+    dateify = dateify.replace(C + ", " + D, B + "-" + D).replace(C + ", " + E, B + "-" + E).replace(C + ", " + F,
+                                                                                                    B + "-" + F).replace(
+        C + ", " + G, B + "-" + G).replace(C + ", " + H, B + "-" + H).replace(C + ", " + I, B + "-" + I).replace(
+        C + ", " + J, B + "-" + J).replace(C + ", " + K, B + "-" + K).replace(C + ", " + L, B + "-" + L)
+    dateify = dateify.replace(D + ", " + E, D + "-" + E).replace(D + ", " + F, D + "-" + F).replace(D + ", " + G,
+                                                                                                    D + "-" + G).replace(
+        D + ", " + H, D + "-" + H).replace(D + ", " + I, D + "-" + I).replace(D + ", " + J, D + "-" + J).replace(
+        D + ", " + K, D + "-" + K).replace(D + ", " + L, D + "-" + L)
+    dateify = dateify.replace(E + ", " + F, E + "-" + F).replace(E + ", " + G, E + "-" + G).replace(E + ", " + H,
+                                                                                                    E + "-" + H).replace(
+        E + ", " + I, E + "-" + I).replace(E + ", " + J, E + "-" + J).replace(E + ", " + K, E + "-" + K).replace(
+        E + ", " + L, E + "-" + L)
+    dateify = dateify.replace(F + ", " + G, F + "-" + G).replace(F + ", " + H, F + "-" + H).replace(F + ", " + I,
+                                                                                                    F + "-" + I).replace(
+        F + ", " + J, F + "-" + J).replace(F + ", " + K, F + "-" + K).replace(F + ", " + L, F + "-" + L)
+    dateify = dateify.replace(G + ", " + H, G + "-" + H).replace(G + ", " + I, G + "-" + I).replace(G + ", " + J,
+                                                                                                    G + "-" + J).replace(
+        G + ", " + K, G + "-" + K).replace(G + ", " + L, G + "-" + L)
+    dateify = dateify.replace(H + ", " + I, H + "-" + I).replace(H + ", " + J, H + "-" + J).replace(H + ", " + K,
+                                                                                                    H + "-" + K).replace(
+        H + ", " + L, H + "-" + L)
+    dateify = dateify.replace(I + ", " + J, I + "-" + J).replace(I + ", " + K, I + "-" + K).replace(I + ", " + L,
+                                                                                                    I + "-" + L)
+    dateify = dateify.replace(J + ", " + K, J + "-" + K).replace(J + ", " + L, J + "-" + L)
+    dateify = dateify.replace(K + ", " + L, K + "-" + L)
+    dateify = dateify.replace("-" + A + "-", "-").replace("-" + B + "-", "-").replace("-" + C + "-", "-").replace(
+        "-" + D + "-", "-").replace("-" + E + "-", "-").replace("-" + F + "-", "-").replace("-" + G + "-", "-").replace(
+        "-" + H + "-", "-").replace("-" + I + "-", "-").replace("-" + J + "-", "-").replace("-" + K + "-", "-")
 
     # next steps
     donkeykong = re.search(r'\d{2}-\d{2},', dateify)
@@ -131,8 +165,8 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(item, "%Y-%m-%d")
             dittykong = dittykong.strftime("%B %d, %Y")
             window["-OUTPUT-"].update(dittykong, append=True)
-            #print(dittykong)
-            dateify = dateify.replace(item,dittykong)
+            # print(dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{4}-\d{2}-\d{1}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -141,8 +175,8 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%Y-%m-%d")
             dittykong = dittykong.strftime("%B %d, %Y")
             window["-OUTPUT-"].update(dittykong)
-            #print(dittykong)
-            dateify = dateify.replace(item,dittykong)
+            # print(dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{4}-\d{1}-\d{2}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -151,8 +185,8 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%Y-%m-%d")
             dittykong = dittykong.strftime("%B %d, %Y")
             window["-OUTPUT-"].update(dittykong)
-            #print(dittykong)
-            dateify = dateify.replace(item,dittykong)
+            # print(dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{4}-\d{1}-\d{1}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -161,8 +195,8 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%Y-%m-%d")
             dittykong = dittykong.strftime("%B %d, %Y")
             window["-OUTPUT-"].update(dittykong)
-            #print(dittykong)
-            dateify = dateify.replace(item,dittykong)
+            # print(dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{2}/\d{2}/\d{4}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -170,8 +204,8 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(item, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window["-OUTPUT-"].update(dittykong)
-            #print(dittykong)
-            dateify = dateify.replace(item,dittykong)
+            # print(dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{2}-\d{2}-\d{4}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -179,8 +213,8 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(item, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window["-OUTPUT-"].update(dittykong)
-            #print(dittykong)
-            dateify = dateify.replace(item,dittykong)
+            # print(dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{2}/\d{1}/\d{4}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -189,7 +223,7 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(item,dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{2}-\d{1}-\d{4}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -198,7 +232,7 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(item,dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{1}-\d{2}-\d{4}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -207,7 +241,7 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(item,dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{1}/\d{2}/\d{4}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -216,7 +250,7 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(item,dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{1}/\d{1}/\d{4}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -225,7 +259,7 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(item,dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{1}-\d{1}-\d{4}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -234,7 +268,7 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(item,dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{2}/\d{2}/\d{2}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -243,7 +277,7 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(item,dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{2}-\d{2}-\d{2}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -253,7 +287,7 @@ def timeturner (dateify):
                 dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
                 dittykong = dittykong.strftime("%B %d, %Y")
                 window['-OUTPUT-'].update("\n" + dittykong, append=True)
-                dateify = dateify.replace(item,dittykong)
+                dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{1}/\d{2}/\d{2}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -262,7 +296,7 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(item,dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{1}-\d{2}-\d{2}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -271,7 +305,7 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(item,dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{2}/\d{1}/\d{2}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -280,7 +314,7 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(item,dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{2}-\d{1}-\d{2}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -289,7 +323,7 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(item,dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{1}/\d{1}/\d{2}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -298,7 +332,7 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%m/%d/%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(item,dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.findall(r'\d{1}-\d{1}-\d{2}', dateify)
     if donkeykong:
         for item in donkeykong:
@@ -307,7 +341,7 @@ def timeturner (dateify):
             dittykong = datetime.datetime.strptime(dittykong, "%m-%d-%Y")
             dittykong = dittykong.strftime("%B %d, %Y")
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(item,dittykong)
+            dateify = dateify.replace(item, dittykong)
     donkeykong = re.search(r'FY \d{4}-\d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
@@ -316,7 +350,7 @@ def timeturner (dateify):
         year2 = placeholder[1][-4:]
         dittykong = 'September 1, ' + str(year1) + " - August 31, " + year2
         window['-OUTPUT-'].update("\n" + dittykong, append=True)
-        dateify = dateify.replace(donkeykong,dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'FY \d{4} - FY \d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
@@ -325,42 +359,42 @@ def timeturner (dateify):
         year2 = placeholder[1][-4:]
         dittykong = 'September 1, ' + str(year1) + " - August 31, " + year2
         window['-OUTPUT-'].update("\n" + dittykong, append=True)
-        dateify = dateify.replace(donkeykong,dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'FY \d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = int(donkeykong[-4:]) - 1
         dittykong = 'September 1, ' + str(dittykong) + " - August 31, " + donkeykong[-4:]
         window['-OUTPUT-'].update("\n" + dittykong, append=True)
-        dateify = dateify.replace(donkeykong,dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'FY\d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = int(donkeykong[-4:]) - 1
         dittykong = 'September 1, ' + str(dittykong) + " - August 31, " + donkeykong[-4:]
         window['-OUTPUT-'].update("\n" + dittykong, append=True)
-        dateify = dateify.replace(donkeykong,dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'FY \d{2}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = int(donkeykong[-2:]) + 1899
         dittykong = 'September 1, ' + str(dittykong) + " - August 31, 19" + donkeykong[-2:]
         window['-OUTPUT-'].update("\n" + dittykong, append=True)
-        dateify = dateify.replace(donkeykong,dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'FY\d{2}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = int(donkeykong[-2:]) + 1899
         dittykong = 'September 1, ' + str(dittykong) + " - August 31, 19" + donkeykong[-2:]
         window['-OUTPUT-'].update("\n" + dittykong, append=True)
-        dateify = dateify.replace(donkeykong,dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'\d{4}-\d{2}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         if dateify.startswith(donkeykong + ",") or dateify.startswith(donkeykong + " ") or dateify.endswith(donkeykong):
             dittykong = donkeykong[:5] + donkeykong[:2] + donkeykong[-2:]
             window['-OUTPUT-'].update("\n" + dittykong, append=True)
-            dateify = dateify.replace(donkeykong,dittykong)
+            dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'd{2}/\d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
@@ -368,7 +402,7 @@ def timeturner (dateify):
         dittykong = datetime.datetime.strptime(dittykong, "%m/%Y")
         dittykong = dittykong.strftime("%B, %Y")
         window['-OUTPUT-'].update("\n" + dittykong, append=True)
-        dateify = dateify.replace(donkeykong,dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'd{1}/\d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
@@ -376,14 +410,15 @@ def timeturner (dateify):
         dittykong = datetime.datetime.strptime(dittykong, "%m/%Y")
         dittykong = dittykong.strftime("%B, %Y")
         window['-OUTPUT-'].update("\n" + dittykong, append=True)
-        dateify = dateify.replace(donkeykong,dittykong)
-    dateify = dateify.replace("Summer, ","Summer ").replace("Spring, ","Spring ").replace("Fall, ","Fall ").replace("Winter, ","Winter ")
+        dateify = dateify.replace(donkeykong, dittykong)
+    dateify = dateify.replace("Summer, ", "Summer ").replace("Spring, ", "Spring ").replace("Fall, ", "Fall ").replace(
+        "Winter, ", "Winter ")
     donkeykong = re.search(r'Spring \d{4}', dateify, re.IGNORECASE)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = "March 1, " + donkeykong[-4:] + " to May 31, " + donkeykong[-4:]
         window['-OUTPUT-'].update("\n" + dittykong, append=True)
-        dateify = dateify.replace(donkeykong,dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'Summer \d{4}', dateify, re.IGNORECASE)
     if donkeykong:
         donkeykong = str(donkeykong[0])
@@ -414,13 +449,13 @@ def timeturner (dateify):
         donkeykong = str(donkeykong[0])
         dittykong = donkeykong[-4:] + "-" + donkeykong[-4:-2] + "99"
         window['-OUTPUT-'].update("\n" + dittykong, append=True)
-        dateify = dateify.replace(donkeykong,dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
     donkeykong = re.search(r'\d{4} \d{4}', dateify)
     if donkeykong:
         donkeykong = str(donkeykong[0])
         dittykong = donkeykong[:4] + "-" + donkeykong[-4:]
         window['-OUTPUT-'].update("\n" + dittykong, append=True)
-        dateify = dateify.replace(donkeykong,dittykong)
+        dateify = dateify.replace(donkeykong, dittykong)
     dateify.strip()
     while dateify.endswith(".") or dateify.endswith(". "):
         dateify = dateify[:-1]
@@ -435,8 +470,8 @@ def timeturner (dateify):
     date_normal = ""
     try:
         window['-OUTPUT-'].update("\n" + "made it this far", append=True)
-        #window['-OUTPUT-'].update("\n" + dateify)
-        #temp_value = daterangeparser.parse(dateify)
+        # window['-OUTPUT-'].update("\n" + dateify)
+        # temp_value = daterangeparser.parse(dateify)
         if "-" in dateify:
             start, end = daterangeparser.parse(dateify)
             start = start.strftime("%Y-%m-%d")
@@ -512,8 +547,9 @@ def timeturner (dateify):
     if "January 1, 0000" in dateify:
         donkeykong = re.search(r'\d{4}-\d{2}-\d{2}/', date_normal)
         donkeykong = str(donkeykong[0])
-        date_normal = date_normal.replace(donkeykong,"0000/")
+        date_normal = date_normal.replace(donkeykong, "0000/")
     return date_normal
+
 
 catalyst = ET.XML('''
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ead="urn:isbn:1-931666-22-9" xmlns:xlink="http://www.w3.org/1999/xlink" exclude-result-prefixes="xs" version="1.0">
@@ -1913,832 +1949,7 @@ insert proper attributes in the date and keep just the date and not the whole UT
 		<xsl:apply-templates/>
 	</xsl:element>
 </xsl:template>
-<!-- add trailing comma and space to unittitle when a date or physdesc but not when it is empty -->
-<xsl:template match="//ead:c01/ead:did/ead:unittitle">
-	<xsl:choose>
-		<xsl:when test="text()[. = '']">
-			<xsl:apply-templates/>
-		</xsl:when>
-		<xsl:when test="../ead:physdesc">
-			<xsl:choose>
-				<xsl:when test="../ead:physdesc/text()[. = '[empty folder]']">
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-					</xsl:element>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-						<xsl:text>, </xsl:text>
-					</xsl:element>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="../ead:unitdate">
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- add trailing comma to unitdate if a physdesc is present -->
-<xsl:template match="//ead:c01/ead:did/ead:unitdate">
-	<xsl:choose>
-		<xsl:when test="../ead:physdesc">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- c02 mods -->
-<!-- add trailing comma and space to unittitle when a date or physdesc but not when it is empty -->
-<xsl:template match="//ead:c02/ead:did/ead:unittitle">
-	<xsl:choose>
-		<xsl:when test="text()[. = '']">
-			<xsl:apply-templates/>
-		</xsl:when>
-		<xsl:when test="../ead:physdesc">
-			<xsl:choose>
-				<xsl:when test="../ead:physdesc/text()[. = '[empty folder]']">
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-					</xsl:element>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-						<xsl:text>, </xsl:text>
-					</xsl:element>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="../ead:unitdate">
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- add trailing comma to unitdate if a physdesc is present or the next element is a unitdate -->
-<xsl:template match="//ead:c02/ead:did/ead:unitdate">
-	<xsl:choose>
-		<xsl:when test="../ead:physdesc">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:if test="not(ancestor::ead:c02[@level='file'])">
-				<xsl:text>, </xsl:text></xsl:if>
-			</xsl:element>
-		</xsl:when>
-		<xsl:when test="following-sibling::ead:unitdate">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- c03 mods -->
-<!-- add trailing comma and space to unittitle when a date or physdesc but not when it is empty -->
-<xsl:template match="//ead:c03/ead:did/ead:unittitle">
-	<xsl:choose>
-		<xsl:when test="text()[. = '']">
-			<xsl:apply-templates/>
-		</xsl:when>
-		<xsl:when test="../ead:physdesc">
-			<xsl:choose>
-				<xsl:when test="../ead:physdesc/text()[. = '[empty folder]']">
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-					</xsl:element>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-						<xsl:text>, </xsl:text>
-					</xsl:element>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="../ead:unitdate">
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- add trailing comma to unitdate if a physdesc is present or the next element is a unitdate -->
-<xsl:template match="//ead:c03/ead:did/ead:unitdate">
-	<xsl:choose>
-		<xsl:when test="../ead:physdesc">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:if test="not(ancestor::ead:c03[@level='file'])">
-				<xsl:text>, </xsl:text></xsl:if>
-			</xsl:element>
-		</xsl:when>
-		<xsl:when test="following-sibling::ead:unitdate">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- c04 mods -->
-<!-- add trailing comma and space to unittitle when a date or physdesc but not when it is empty -->
-<xsl:template match="//ead:c04/ead:did/ead:unittitle">
-	<xsl:choose>
-		<xsl:when test="text()[. = '']">
-			<xsl:apply-templates/>
-		</xsl:when>
-		<xsl:when test="../ead:physdesc">
-			<xsl:choose>
-				<xsl:when test="../ead:physdesc/text()[. = '[empty folder]']">
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-					</xsl:element>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-						<xsl:text>, </xsl:text>
-					</xsl:element>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="../ead:unitdate">
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- add trailing comma to unitdate if a physdesc is present or the next element is a unitdate -->
-<xsl:template match="//ead:c04/ead:did/ead:unitdate">
-	<xsl:choose>
-		<xsl:when test="../ead:physdesc">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:if test="not(ancestor::ead:c04[@level='file'])">
-				<xsl:text>, </xsl:text></xsl:if>
-			</xsl:element>
-		</xsl:when>
-		<xsl:when test="following-sibling::ead:unitdate">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- c05 mods -->
-<!-- add trailing comma and space to unittitle when a date or physdesc but not when it is empty -->
-<xsl:template match="//ead:c05/ead:did/ead:unittitle">
-	<xsl:choose>
-		<xsl:when test="text()[. = '']">
-			<xsl:apply-templates/>
-		</xsl:when>
-		<xsl:when test="../ead:physdesc">
-			<xsl:choose>
-				<xsl:when test="../ead:physdesc/text()[. = '[empty folder]']">
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-					</xsl:element>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-						<xsl:text>, </xsl:text>
-					</xsl:element>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="../ead:unitdate">
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- add trailing comma to unitdate if a physdesc is present or the next element is a unitdate -->
-<xsl:template match="//ead:c05/ead:did/ead:unitdate">
-	<xsl:choose>
-		<xsl:when test="../ead:physdesc">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:if test="not(ancestor::ead:c05[@level='file'])">
-				<xsl:text>, </xsl:text></xsl:if>
-			</xsl:element>
-		</xsl:when>
-		<xsl:when test="following-sibling::ead:unitdate">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- c06 mods -->
-<!-- add trailing comma and space to unittitle when a date or physdesc but not when it is empty -->
-<xsl:template match="//ead:c06/ead:did/ead:unittitle">
-	<xsl:choose>
-		<xsl:when test="text()[. = '']">
-			<xsl:apply-templates/>
-		</xsl:when>
-		<xsl:when test="../ead:physdesc">
-			<xsl:choose>
-				<xsl:when test="../ead:physdesc/text()[. = '[empty folder]']">
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-					</xsl:element>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-						<xsl:text>, </xsl:text>
-					</xsl:element>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="../ead:unitdate">
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- add trailing comma to unitdate if a physdesc is present or the next element is a unitdate -->
-<xsl:template match="//ead:c06/ead:did/ead:unitdate">
-	<xsl:choose>
-		<xsl:when test="../ead:physdesc">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:if test="not(ancestor::ead:c06[@level='file'])">
-				<xsl:text>, </xsl:text></xsl:if>
-			</xsl:element>
-		</xsl:when>
-		<xsl:when test="following-sibling::ead:unitdate">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- c07 mods -->
-<!-- add trailing comma and space to unittitle when a date or physdesc but not when it is empty -->
-<xsl:template match="//ead:c07/ead:did/ead:unittitle">
-	<xsl:choose>
-		<xsl:when test="text()[. = '']">
-			<xsl:apply-templates/>
-		</xsl:when>
-		<xsl:when test="../ead:physdesc">
-			<xsl:choose>
-				<xsl:when test="../ead:physdesc/text()[. = '[empty folder]']">
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-					</xsl:element>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-						<xsl:text>, </xsl:text>
-					</xsl:element>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="../ead:unitdate">
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- add trailing comma to unitdate if a physdesc is present or the next element is a unitdate -->
-<xsl:template match="//ead:c07/ead:did/ead:unitdate">
-	<xsl:choose>
-		<xsl:when test="../ead:physdesc">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:if test="not(ancestor::ead:c07[@level='file'])">
-				<xsl:text>, </xsl:text></xsl:if>
-			</xsl:element>
-		</xsl:when>
-		<xsl:when test="following-sibling::ead:unitdate">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- c08 mods -->
-<!-- add trailing comma and space to unittitle when a date or physdesc but not when it is empty -->
-<xsl:template match="//ead:c08/ead:did/ead:unittitle">
-	<xsl:choose>
-		<xsl:when test="text()[. = '']">
-			<xsl:apply-templates/>
-		</xsl:when>
-		<xsl:when test="../ead:physdesc">
-			<xsl:choose>
-				<xsl:when test="../ead:physdesc/text()[. = '[empty folder]']">
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-					</xsl:element>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-						<xsl:text>, </xsl:text>
-					</xsl:element>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="../ead:unitdate">
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- add trailing comma to unitdate if a physdesc is present or the next element is a unitdate -->
-<xsl:template match="//ead:c08/ead:did/ead:unitdate">
-	<xsl:choose>
-		<xsl:when test="../ead:physdesc">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:if test="not(ancestor::ead:c08[@level='file'])">
-				<xsl:text>, </xsl:text></xsl:if>
-			</xsl:element>
-		</xsl:when>
-		<xsl:when test="following-sibling::ead:unitdate">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- c09 mods -->
-<!-- add trailing comma and space to unittitle when a date or physdesc but not when it is empty -->
-<xsl:template match="//ead:c09/ead:did/ead:unittitle">
-	<xsl:choose>
-		<xsl:when test="text()[. = '']">
-			<xsl:apply-templates/>
-		</xsl:when>
-		<xsl:when test="../ead:physdesc">
-			<xsl:choose>
-				<xsl:when test="../ead:physdesc/text()[. = '[empty folder]']">
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-					</xsl:element>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:element name="ead:unittitle">
-						<xsl:apply-templates/>
-						<xsl:text>, </xsl:text>
-					</xsl:element>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="../ead:unitdate">
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unittitle">
-			<xsl:apply-templates/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-<!-- add trailing comma to unitdate if a physdesc is present or the next element is a unitdate -->
-<xsl:template match="//ead:c09/ead:did/ead:unitdate">
-	<xsl:choose>
-		<xsl:when test="../ead:physdesc">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:if test="not(ancestor::ead:c09[@level='file'])">
-				<xsl:text>, </xsl:text></xsl:if>
-			</xsl:element>
-		</xsl:when>
-		<xsl:when test="following-sibling::ead:unitdate">
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:text>, </xsl:text>
-			</xsl:element>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:element name="ead:unitdate">
-				<xsl:if test="@era">
-					<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@calendar">
-					<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@normal">
-					<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-				</xsl:if>
-				<xsl:if test="@type">
-					<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-			</xsl:element>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
+
 
 <!-- add some attributes to the archdesc tag -->
 <!-- add a overview head tag to the top level did -->
@@ -2886,20 +2097,24 @@ insert proper attributes in the date and keep just the date and not the whole UT
 nsmap = {'xmlns': 'urn:isbn:1-931666-22-9',
          'ead': 'urn:isbn:1-931666-22-9',
          'xlink': 'http://www.w3.org/1999/xlink'}
+
+
 def processor(my_xml):
-    #parse as xslt for application below
+    # parse as xslt for application below
     transform = ET.XSLT(catalyst)
-    window["-OUTPUT-"].update("\nthis is supposed to fix a bunch of minor issues related to TARO 2.0 normalization, check output for correctness", append=True)
-    #window['-OUTPUT-'].update("\n" + "this is supposed to fix a bunch of minor issues related to TARO 2.0 normalization, check output for correctness", append=True)
+    window["-OUTPUT-"].update(
+        "\nthis is supposed to fix a bunch of minor issues related to TARO 2.0 normalization, check output for correctness",
+        append=True)
+    # window['-OUTPUT-'].update("\n" + "this is supposed to fix a bunch of minor issues related to TARO 2.0 normalization, check output for correctness", append=True)
     temp1 = my_xml.split("/")[-1].split(".")[0]
     temp2 = f"{temp1}-done"
     finished_product = my_xml.replace(temp1, temp2)
-    with open(my_xml, "r") as r:
+    with open(my_xml, "r", encoding='utf-8') as r:
         filedata = r.read()
         if "xmlns:ead" not in filedata:
-            filedata = filedata.replace('xmlns="','xmlns:ead="urn:isbn:1-931666-22-9" xmlns="')
-        #filedata = filedata.replace("ead:","ead:")
-        with open(my_xml, "w") as w:
+            filedata = filedata.replace('xmlns="', 'xmlns:ead="urn:isbn:1-931666-22-9" xmlns="')
+        # filedata = filedata.replace("ead:","ead:")
+        with open(my_xml, "w", encoding='utf-8') as w:
             w.write(filedata)
         w.close()
     dom = ET.parse(my_xml)
@@ -2911,48 +2126,107 @@ def processor(my_xml):
     newdom = transform(dom)
     newdom.write(finished_product, pretty_print=True)
 
-    with open(finished_product, "r") as r:
+    with open(finished_product, "r", encoding='utf-8') as r:
         filedata = r.read()
         if "unitid>" not in filedata:
             if "abstract>" in filedata:
-                filedata = filedata.replace("abstract>","abstract>\n<ead:unitid label='TSLAC Control No.:' countrycode='US' repositorycode='US-tx' encodinganalog='099'></ead:unitid>")
+                filedata = filedata.replace("abstract>",
+                                            "abstract>\n<ead:unitid label='TSLAC Control No.:' countrycode='US' repositorycode='US-tx' encodinganalog='099'></ead:unitid>")
             else:
-                filedata = filedata.replace('origination>',"origination>\n<ead:unitid label='TSLAC Control No.:' countrycode='US' repositorycode='US-tx' encodinganalog='099'></ead:unitid>")
-        filedata = filedata.replace(' xmlns:xlink="http://www.w3.org/1999/xlink"',"")
-        filedata = filedata.replace(' xlink:actuate="onLoad"',"")
-        filedata = filedata.replace(' xlink:actuate="onRequest"',"")
-        filedata = filedata.replace(' xlink:show="embed"','')
-        filedata = filedata.replace(' xlink:show="new"','')
-        filedata = filedata.replace(' xlink:href',' href')
-        filedata = filedata.replace(' xlink:type="simple"','')
-        filedata = filedata.replace(' xlink:role=""','')
-        filedata = filedata.replace(' href=""','')
-        filedata = filedata.replace('<ead:unitdate era="ce" calendar="gregorian"/>','').replace("<unitdate/>",'').replace('<unitdate><?xm-replace_text {date}?></unitdate>','')
-        filedata = filedata.replace('xmlns=""','')
-        filedata = filedata.replace("\t",'')
-        filedata = filedata.replace("\n"," ")
-        #filedata = filedata.replace("> <",">\n<")
-        filedata = filedata.replace("><",">\n<")
+                filedata = filedata.replace('origination>',
+                                            "origination>\n<ead:unitid label='TSLAC Control No.:' countrycode='US' repositorycode='US-tx' encodinganalog='099'></ead:unitid>")
+        filedata = filedata.replace(' xmlns:xlink="http://www.w3.org/1999/xlink"', "")
+        filedata = filedata.replace(' xlink:actuate="onLoad"', "")
+        filedata = filedata.replace(' xlink:actuate="onRequest"', "")
+        filedata = filedata.replace(' xlink:show="embed"', '')
+        filedata = filedata.replace(' xlink:show="new"', '')
+        filedata = filedata.replace(' xlink:href', ' href')
+        filedata = filedata.replace(' xlink:type="simple"', '')
+        filedata = filedata.replace(' xlink:role=""', '')
+        filedata = filedata.replace(' href=""', '')
+        filedata = filedata.replace('<ead:unitdate era="ce" calendar="gregorian"/>', '').replace("<unitdate/>",
+                                                                                                 '').replace(
+            '<unitdate><?xm-replace_text {date}?></unitdate>', '')
+        filedata = filedata.replace('xmlns=""', '')
+        filedata = filedata.replace("\t", '')
+        filedata = filedata.replace("\n", " ")
+        # filedata = filedata.replace("> <",">\n<")
+        filedata = filedata.replace("><", ">\n<")
         while "  " in filedata:
-            filedata = filedata.replace("  "," ")
-        filedata = filedata.replace(",, ",", ")
-    with open(finished_product, "w") as w:
+            filedata = filedata.replace("  ", " ")
+        filedata = filedata.replace(",, ", ", ")
+    with open(finished_product, "w", encoding='utf-8') as w:
         w.write(filedata)
     w.close()
     unitid_text = temp1
     dom2 = ET.parse(finished_product)
-    create_date = dom2.find("//ead:publicationstmt/ead:date", namespaces=nsmap)
+    root = dom2.getroot()
+    # fix creation date issues
+    create_date = root.find(".//ead:publicationstmt/ead:date", namespaces=nsmap)
     create_date_text = create_date.text
-    creation = dom2.find("//ead:creation", namespaces=nsmap)
+    creation = root.find(".//ead:creation", namespaces=nsmap)
     creation_text = creation.text
-    creation_text = creation_text.replace(create_date_text, f'<date calendar="gregorian" era="ce">{create_date.text}</date>')
+    creation_text = creation_text.replace(create_date_text,
+                                          f'<date calendar="gregorian" era="ce">{create_date.text}</date>')
     creation.text = creation_text
-    dates = dom2.xpath("//ead:unitdate/ead:emph", namespaces=nsmap)
-    screwballs = []
-    flag = 0
+    # fix unittitle issues
+    # remove trailing commas in nested ead:emph
+    titles = root.xpath(".//ead:unittitle/ead:emph", namespaces=nsmap)
+    if titles is not None:
+        for title in titles:
+            titliest = title.text
+            while titliest.endswith(" "):
+                titliest = titliest[:-1]
+            while titliest.endswith(","):
+                titliest = titliest[:-1]
+            title.text = titliest
+    # now check for and insert trailing comma where appropriate
+    titles = root.xpath(".//ead:unittitle", namespaces=nsmap)
+    if titles is not None:
+        for title in titles:
+            parent = title.getparent()
+            dates = parent.xpath('./ead:unitdate', namespaces=nsmap)
+            window['-OUTPUT-'].update(f"\n{title.text}", append=True)
+            if dates is not None:
+                if len(dates) > 0:
+                    emphatic = title.xpath('./ead:emph', namespaces=nsmap)
+                    if emphatic is not None:
+                        if len(emphatic) > 0:
+                            window['-OUTPUT-'].update("\nemphasis being dealth with", append=True)
+                            emphatic[-1].tail = f'{emphatic[-1].tail},'
+                        else:
+                            title.text = f"{title.text},"
+                    else:
+                        #my_title = title.text_content()
+                        your_title = title.text
+                        title.text = f'{title.text},'
 
+    # fix date issues
+    dates = root.xpath("//ead:unitdate/ead:emph", namespaces=nsmap)
     for date in dates:
         dateify = date.text
+        dateify = dateify.replace("\n", ' ')
+        while dateify.endswith(" "):
+            dateify = dateify[:-1]
+        while '  ' in dateify:
+            dateify = dateify.replace('  ', ' ')
+        date.text = dateify
+        nexty = date.getparent().getnext()
+        if nexty is not None:
+            if nexty.tag == '{urn:isbn:1-931666-22-9}unitdate':
+                if not dateify.endswith(","):
+                    dateify = f"{dateify},"
+        my_children = date.getparent().getparent().getchildren()
+        my_children_flag = False
+        if my_children is not None:
+            for my_child in my_children:
+                if my_child.tag == '{urn:isbn:1-931666-22-9}physdesc':
+                    my_children_flag = True
+        if my_children_flag is True:
+            dateify = f"{dateify},"
+        if dateify.endswith(","):
+            dateify = f"{dateify} "
+        date.text = dateify
         date = date.getparent()
         if "normal" not in date.attrib:
             date.attrib['normal'] = timeturner(dateify)
@@ -2972,11 +2246,33 @@ def processor(my_xml):
             date.attrib['calendar'] = 'gregorian'
         if date.attrib['calendar'] == "":
             date.attrib['calendar'] = 'gregorian'
-    dates = dom2.xpath("//ead:unitdate", namespaces=nsmap)
+    dates = root.xpath("//ead:unitdate", namespaces=nsmap)
     screwballs = []
     flag = 0
     for date in dates:
         dateify = date.text
+        dateify = dateify.replace("\n", ' ')
+        while dateify.endswith(" "):
+            dateify = dateify[:-1]
+        while '  ' in dateify:
+            dateify = dateify.replace('  ', ' ')
+        date.text = dateify
+        nexty = date.getnext()
+        if nexty is not None:
+            if nexty.tag == '{urn:isbn:1-931666-22-9}unitdate':
+                if not dateify.endswith(","):
+                    dateify = f"{dateify},"
+        my_children = date.getparent().getchildren()
+        my_children_flag = False
+        if my_children is not None:
+            for my_child in my_children:
+                if my_child.tag == '{urn:isbn:1-931666-22-9}physdesc':
+                    my_children_flag = True
+        if my_children_flag is True:
+            dateify = f"{dateify},"
+        if dateify.endswith(","):
+            dateify = f"{dateify} "
+        date.text = dateify
         if "normal" not in date.attrib:
             date.attrib['normal'] = timeturner(dateify)
         if "type" not in date.attrib:
@@ -2995,14 +2291,14 @@ def processor(my_xml):
             date.attrib['calendar'] = 'gregorian'
         if date.attrib['calendar'] == "":
             date.attrib['calendar'] = 'gregorian'
-    dates = dom2.xpath("//ead:date", namespaces=nsmap)
+    dates = root.xpath("//ead:date", namespaces=nsmap)
     for date in dates:
         date.attrib['calendar'] = "gregorian"
         date.attrib['era'] = "ce"
-    notes = dom2.xpath("//ead:note/ead:head", namespaces=nsmap)
+    notes = root.xpath("//ead:note/ead:head", namespaces=nsmap)
     for note in notes:
         note.getparent().remove(note)
-    subjects = dom2.xpath("//ead:subject", namespaces=nsmap)
+    subjects = root.xpath("//ead:subject", namespaces=nsmap)
     subjectlist = []
     for subject in subjects:
         subjective = subject.text
@@ -3013,7 +2309,7 @@ def processor(my_xml):
             subjectlist.append(subject.text)
         if subject.attrib['source'] == "local":
             flag += 1
-    subjects = dom2.xpath("//ead:controlaccess/ead:genreform", namespaces=nsmap)
+    subjects = root.xpath("//ead:controlaccess/ead:genreform", namespaces=nsmap)
     for subject in subjects:
         subjective = subject.text
         subject.text = subjectspace(subjective)
@@ -3023,7 +2319,7 @@ def processor(my_xml):
             subjectlist.append(subject.text)
         if subject.attrib['source'] == "local":
             flag += 1
-    subjects = dom2.xpath("//ead:geogname", namespaces=nsmap)
+    subjects = root.xpath("//ead:geogname", namespaces=nsmap)
     for subject in subjects:
         subjective = subject.text
         subject.text = subjectspace(subjective)
@@ -3033,7 +2329,7 @@ def processor(my_xml):
             subjectlist.append(subject.text)
         if subject.attrib['source'] == "local":
             flag += 1
-    subjects = dom2.xpath("//ead:function", namespaces=nsmap)
+    subjects = root.xpath("//ead:function", namespaces=nsmap)
     subjectlist = []
     for subject in subjects:
         subjective = subject.text
@@ -3044,7 +2340,7 @@ def processor(my_xml):
             subject.getparent().remove(subject)
         else:
             subjectlist.append(subject.text)
-    subjects = dom2.xpath("//ead:persname", namespaces=nsmap)
+    subjects = root.xpath("//ead:persname", namespaces=nsmap)
     subjectlist = []
     for subject in subjects:
         subjective = subject.text
@@ -3055,7 +2351,7 @@ def processor(my_xml):
             subjectlist.append(subject.text)
         if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
             flag += 1
-    subjects = dom2.xpath("//ead:famname", namespaces=nsmap)
+    subjects = root.xpath("//ead:famname", namespaces=nsmap)
     subjectlist = []
     for subject in subjects:
         subjective = subject.text
@@ -3066,7 +2362,7 @@ def processor(my_xml):
             subjectlist.append(subject.text)
         if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
             flag += 1
-    subjects = dom2.xpath("//ead:corpname", namespaces=nsmap)
+    subjects = root.xpath("//ead:corpname", namespaces=nsmap)
     subjectlist = []
     for subject in subjects:
         subjective = subject.text
@@ -3085,18 +2381,18 @@ def processor(my_xml):
         if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
             flag += 1
     # sorts subjects, but causes head to sort into the middle so adding a preceding space to get it sort on top, then removing afterwards
-    subjects = dom2.xpath("//ead:head", namespaces=nsmap)
+    subjects = root.xpath("//ead:head", namespaces=nsmap)
     for subject in subjects:
         subject.text = " " + subject.text
-    for node in dom2.xpath("//ead:controlaccess/ead:controlaccess", namespaces=nsmap):
+    for node in root.xpath("//ead:controlaccess/ead:controlaccess", namespaces=nsmap):
         if node.tag == "head":
             node.text = " " + node.text
         node[:] = sorted(node, key=lambda ch: ch.text)
-    subjects = dom2.xpath("//ead:head", namespaces=nsmap)
+    subjects = root.xpath("//ead:head", namespaces=nsmap)
     for subject in subjects:
         subjective = subject.text
         subject.text = subjectspace(subjective)
-    header = dom2.xpath("//ead:eadheader", namespaces=nsmap)
+    header = root.xpath("//ead:eadheader", namespaces=nsmap)
     for item in header:
         item.attrib['langencoding'] = "iso639-2b"
         item.attrib['audience'] = "internal"
@@ -3107,7 +2403,7 @@ def processor(my_xml):
         item.attrib['countryencoding'] = "iso3166-1"
         if 'id' in item.attrib:
             item.attrib = item.attrib.pop('id')
-    header = dom2.xpath("//ead:eadid", namespaces=nsmap)
+    header = root.xpath("//ead:eadid", namespaces=nsmap)
     for item in header:
         if 'encodinganalog' in item.attrib:
             item.attrib = item.attrib.pop('encodinganalog')
@@ -3115,14 +2411,14 @@ def processor(my_xml):
             item.attrib = item.attrib.pop('publicid')
         item.attrib['countrycode'] = 'US'
         item.attrib['mainagencycode'] = 'US-tx'
-    header = dom2.xpath("//ead:ead", namespaces=nsmap)
+    header = root.xpath("//ead:ead", namespaces=nsmap)
     for item in header:
         if 'xmlns:ead' in item.attrib:
             item.attrib = item.attrib.pop('xmlns:ead')
         if 'xmlns' not in item.attrib:
             item.attrib['xmlns'] = "urn:isbn:1-931666-22-9"
         item.attrib['relatedencoding'] = "MARC21"
-    containers = dom2.xpath(".//ead:container", namespaces=nsmap)
+    containers = root.xpath(".//ead:container", namespaces=nsmap)
     for container in containers:
         type = container.attrib['type']
         container.attrib['type'] = type.capitalize()
@@ -3132,7 +2428,7 @@ def processor(my_xml):
             while container_temp.startswith("0"):
                 container_temp = container_temp[1:]
             container.text = container_text.split("-")[0] + "-" + container_temp
-    container_dids = dom2.xpath(".//ead:did", namespaces=nsmap)
+    container_dids = root.xpath(".//ead:did", namespaces=nsmap)
     for container_did in container_dids:
         container_type = set()
         containers = container_did.xpath("ead:container", namespaces=nsmap)
@@ -3163,20 +2459,21 @@ def processor(my_xml):
                             bottom = temp
                     container_text = container_list[0].split("-")[0] + f"-{str(top)} thru {str(bottom)}"
                 except:
-                    window['-OUTPUT-'].update("\n" + f"problem with {container_list[0]}, fix that and try again", append=True)
+                    window['-OUTPUT-'].update("\n" + f"problem with {container_list[0]}, fix that and try again",
+                                              append=True)
                     sys.exit()
                 window['-OUTPUT-'].update("\n" + container_text, append=True)
                 containers[0].text = container_text
                 containers = containers[1:]
                 for container in containers:
-                    window['-OUTPUT-'].update("\n" + "removing",container.text, append=True)
+                    window['-OUTPUT-'].update("\n" + "removing", container.text, append=True)
                     container.getparent().remove(container)
-    langs = dom2.xpath("//ead:langmaterial", namespaces=nsmap)
+    langs = root.xpath("//ead:langmaterial", namespaces=nsmap)
     for lang in langs:
         lang_text = lang.text
         if lang_text.startswith("<![CDATA"):
-            lang.text = lang_text.replace("<![CDATA[","").replace("]]>","")
-    extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
+            lang.text = lang_text.replace("<![CDATA[", "").replace("]]>", "")
+    extents = root.xpath(".//ead:extent", namespaces=nsmap)
     for extent in extents:
         temp = extent.text
         other_tag = extent.getnext()
@@ -3184,210 +2481,211 @@ def processor(my_xml):
             temp = temp + other_tag.text
             extent.text = temp
             other_tag.getparent().remove(other_tag)
-    #now process in the brackets for physdesc inner content
-    extent_types ={'45 rpm records': '45 rpm record',
-                   '78 rpm records': '78 rpm record',
-                   '8-track cartridges': '8-track cartridge',
-                   'Beta (Betamax)': 'Beta (Metamax)',
-                   'Betacam (TM)': 'Betacam (TM)',
-                   'Betacam-SP': 'Betacam-SP',
-                   'DVDs': 'DVD',
-                   'Digital Betacam (TM)': 'Digital Betacam (TM)',
-                   'GB': 'GB',
-                   'KB': 'KB',
-                   'MB': 'MB',
-                   'Mini-DV': 'Mini-DV',
-                   'Super-VHS (TM)': 'Super-VHS (TM)',
-                   'TB': 'TB',
-                   'VHS': 'VHS',
-                   'advertising cards': 'advertising card',
-                   'aerial photographs': 'aerial photograph',
-                   'albumen prints': 'albumen prints',
-                   'aluminum discs': 'aluminum disc',
-                   'ambrotypes (photographs)': 'ambrotype (photograph)',
-                   'architectural drawings (visual works)': 'architectural drawing (visual work)',
-                   'architectural models': 'architectural model',
-                   'artifacts (object genre)': 'artifact (object genre)',
-                   'audiocassettes': 'audiocassette',
-                   'audiotapes': 'audiotape',
-                   'black-and-white negatives': 'black-and-white negative',
-                   'black-and-white photographs': 'black-and-white photograph',
-                   'black-and-white prints (prints on paper)': 'black-and-white print (prints on paper)',
-                   'black-and-white slides': 'black-and-white slide',
-                   'black-and-white transparencies': 'black-and-white transparency',
-                   'blueline prints': 'blueline print',
-                   'blueprints (reprographic copies)': 'blueprint (reprographic copy)',
-                   'booklets': 'booklet',
-                   'books': 'book',
-                   'boudoir photographs': 'boudoir photograph',
-                   'broadsides (notices)': 'broadside (notice)',
-                   'brochures': 'brochure',
-                   'building plans': 'build plan',
-                   'cabinet photographs': 'cabinet photograph',
-                   'cartes-de-visite (card photographs)': 'cartes-de-visite (card photograph)',
-                   'cartoons (humorous images)': 'cartton (humorous image)',
-                   'charcoal drawings': 'charoal drawing',
-                   'charts (graphic documents)': 'chart (graphic docuent)',
-                   'chromogenic color prints': 'chromogenic color print',
-                   'chromolithographs': 'chromolithograph',
-                   'clippings (information artifacts)': 'clipping (informtation artifact)',
-                   'collodion prints': 'collodion print',
-                   'collodion transfers': 'collodion transfer',
-                   'collotypes (prints)': 'collotype (print)',
-                   'color negatives': 'color negative',
-                   'color photographs': 'color photograph',
-                   'color slides': 'color slide',
-                   'color transparencies': 'color transparency',
-                   'compact discs': 'compact disc',
-                   'composite photographs': 'composite photograph',
-                   'contact sheets': 'contact sheet',
-                   'contour maps': 'contour map',
-                   'copy prints': 'copy print',
-                   'crystoleums (photographs)': 'crystoleums (photograph)',
-                   'cubic ft.': 'cubic ft.',
-                   'cyanotypes (photographic prints)': 'cyanotype (photographic print)',
-                   'cylinders (sound recordings)': 'cylinder (sound recording)',
-                   'daguerreotypes (photographs)': 'daguerreotype (photograph)',
-                   'data cards': 'data card',
-                   'design drawings': 'design drawing',
-                   'detail drawings (drawings)': 'detail drawing (drawing)',
-                   'diaries': 'diary',
-                   'diazotypes (copies)': 'diazotype (copy)',
-                   'dictation belt': 'dictation belt',
-                   'diffusion transfer prints': 'diffusion transfer print',
-                   'digital audio tapes': 'digital audio tapes',
-                   'digital images': 'digitam image',
-                   'digital photographs': 'digital photograph',
-                   'drawings (visual works)': 'drawing (visual work)',
-                   'dry collodion negatives': 'dry collodion negative',
-                   'dye transfer prints': 'dye transfer print',
-                   'electrical drawings': 'electrical drawing',
-                   'electrical plans': 'electrical plan',
-                   'electronic files': 'electronic file',
-                   'engravings (prints)': 'engraving (print)',
-                   'envelopes': 'envelope',
-                   'etchings (prints)': 'etchings (print)',
-                   'filmstrips': 'filmstrip',
-                   'fire insurance maps': 'fire insurance map',
-                   'flags': 'flag',
-                   'flash drives': 'flash drive',
-                   'floppy disks': 'floppy disk',
-                   'folders': 'folder',
-                   'gelatin silver negatives': 'gelatin silver negative',
-                   'gelatin silver prints': 'gelatin silver print',
-                   'gelatin silver transparencies': 'gelatin silver transparency',
-                   'gem photographs': 'gen photograph',
-                   'geological maps': 'geological map',
-                   'glass plate negatives': 'glass plate negative',
-                   'greeting cards': 'greeting card',
-                   'hard drives': 'hard drive',
-                   'historical maps': 'historical map',
-                   'identifying cards': 'identifying card',
-                   'images': 'image',
-                   'imperial photographs': 'imperial photograph',
-                   'index maps': 'index map',
-                   'inkjet prints': 'inkjet print',
-                   'instantaneous recordings': 'instantaneous recording',
-                   'internegatives': 'internegative',
-                   'isoline maps': 'isoline map',
-                   'issues': 'issue',
-                   'items': 'item',
-                   'lacquer discs': 'lacquer disc',
-                   'land surveys': 'land survey',
-                   'land use maps': 'land use maps',
-                   'lantern slides': 'lantern slide',
-                   'laser prints': 'laser print',
-                   'leaves': 'leaf',
-                   'ledgers (account books)': 'ledger (account book)',
-                   'letter books': 'letter book',
-                   'letterpress copybooks': 'letterpress copybook',
-                   'linear ft.': 'linear ft.',
-                   'lithographs': 'lithograph',
-                   'long-playing records': 'long-playing record',
-                   'magazines_(periodicals)': 'magazine (periodical)',
-                   'magnetic disks': 'magnetic disk',
-                   'magnetic tapes': 'magnetic tape',
-                   'manuscript maps': 'manuscript map',
-                   'maps (documents)': 'map (document)',
-                   'mechanical drawings (building systems drawings)': 'mechanical drawing (building systems drawing)',
-                   'microcassettes': 'microcassette',
-                   'microfiche': 'microfiche',
-                   'microfilms': 'microfilm',
-                   'military maps': 'military map',
-                   'mineral resource maps': 'mineral resource map',
-                   'miniatures (paintings)': 'miniature (painting)',
-                   'motion picture components': 'motion picture component',
-                   'motion pictures (visual works)': 'motion picture (visual work)',
-                   'moving images': 'moving image',
-                   'muster rolls': 'muster roll',
-                   'national maps': 'national map',
-                   'offset lithographs': 'offset lithograph',
-                   'open reel audiotapes': 'open reel audiotape',
-                   'optical disks': 'optical disk',
-                   'paintings (visual works)': 'painting (visual work)',
-                   'panel photographs': 'panel photograph',
-                   'panoramas (visual works)': 'panorama (visual work)',
-                   'panoramic photographs': 'panoramic photograph',
-                   'pastels (visual works)': 'pastel (visual work)',
-                   'pen and ink drawings': 'pen and ink drawing',
-                   'photocopies': 'photocopy',
-                   'photoengravings (prints)': 'photoengraving',
-                   'photograph albums': 'photograph album',
-                   'photographic postcards': 'photographic postcard',
-                   'photographic prints': 'photographic print',
-                   'photographs': 'photograph',
-                   'photogravures (prints)': 'photogravure (print)',
-                   'photomechanical prints': 'photomechanical print',
-                   'picture postcards': 'picture postcard',
-                   'plans (maps)': 'plan (map)',
-                   'plats (maps)': 'plat (map)',
-                   'population maps': 'population map',
-                   'postcards': 'postcard',
-                   'posters': 'poster',
-                   'presentation drawings (proposals)': 'presentation drawing (proposal)',
-                   'prints (visual works)': 'print (visual work)',
-                   'promenade midget photographs': 'promenade midget photograph',
-                   'promenade photographs': 'promenade photograph',
-                   'public utility maps': 'public utility map',
-                   'quadrangle maps': 'quadrangle map',
-                   'reels': 'reel',
-                   'regional maps': 'regional map',
-                   'relief halftones (prints)': 'relief halftone',
-                   'reports': 'report',
-                   'road maps': 'road map',
-                   'scrapbooks': 'scrapbook',
-                   'sheets (paper artifacts)': 'sheet (paper artifact)',
-                   'ships plans': 'ships plan',
-                   'sketchbooks': 'sketchbook',
-                   'sound recordings': 'sound recording',
-                   'sound tracks': 'sound track',
-                   'stained glass (visual works)': 'stained glass',
-                   'stats (copies)': 'stat (copy)',
-                   'steel engravings (visual works)': 'steel engraving (visual work)',
-                   'stereographs': 'stereograph',
-                   'street maps': 'street map',
-                   'structural drawings': 'structural drawing',
-                   'tintypes (prints)': 'tintype (print)',
-                   'topographic maps': 'topographic map',
-                   'topographic surveys': 'topographic survey',
-                   'transportation maps': 'transportation map',
-                   'victoria cards (photographs)': 'victoria card (photograph)',
-                   'videocassettes': 'videocassette',
-                   'videotapes': 'videotape',
-                   'volumes': 'volume',
-                   'wallets': 'wallet',
-                   'watercolors (paintings)': 'watercolor (painting)',
-                   'watershed maps': 'watershed map',
-                   'wet collodion negatives': 'wet collodion negative',
-                   'wire recordings': 'wire recording',
-                   'wood engravings (prints)': 'wood engraving (print)',
-                   'woodcuts (prints)': 'woodcut (print)',
-                   'working drawings': 'working drawing',
-                   'works of art': 'work of art',
-                   'zoning maps': 'zoning map'}
+    # now process in the brackets for physdesc inner content
+    extent_types = {'45 rpm records': '45 rpm record',
+                    '78 rpm records': '78 rpm record',
+                    '8-track cartridges': '8-track cartridge',
+                    'Beta (Betamax)': 'Beta (Betamax)',
+                    'Betacam (TM)': 'Betacam (TM)',
+                    'Betacam-SP': 'Betacam-SP',
+                    'DVDs': 'DVD',
+                    'Digital Betacam (TM)': 'Digital Betacam (TM)',
+                    'GB': 'GB',
+                    'KB': 'KB',
+                    'MB': 'MB',
+                    'Mini-DV': 'Mini-DV',
+                    'Super-VHS (TM)': 'Super-VHS (TM)',
+                    'TB': 'TB',
+                    'VHS': 'VHS',
+                    'advertising cards': 'advertising card',
+                    'aerial photographs': 'aerial photograph',
+                    'albumen prints': 'albumen prints',
+                    'aluminum discs': 'aluminum disc',
+                    'ambrotypes (photographs)': 'ambrotype (photograph)',
+                    'architectural drawings (visual works)': 'architectural drawing (visual work)',
+                    'architectural models': 'architectural model',
+                    'artifacts (object genre)': 'artifact (object genre)',
+                    'artifacts_(object_genres)': "artifact (object genre)",
+                    'audiocassettes': 'audiocassette',
+                    'audiotapes': 'audiotape',
+                    'black-and-white negatives': 'black-and-white negative',
+                    'black-and-white photographs': 'black-and-white photograph',
+                    'black-and-white prints (prints on paper)': 'black-and-white print (prints on paper)',
+                    'black-and-white slides': 'black-and-white slide',
+                    'black-and-white transparencies': 'black-and-white transparency',
+                    'blueline prints': 'blueline print',
+                    'blueprints (reprographic copies)': 'blueprint (reprographic copy)',
+                    'booklets': 'booklet',
+                    'books': 'book',
+                    'boudoir photographs': 'boudoir photograph',
+                    'broadsides (notices)': 'broadside (notice)',
+                    'brochures': 'brochure',
+                    'building plans': 'build plan',
+                    'cabinet photographs': 'cabinet photograph',
+                    'cartes-de-visite (card photographs)': 'cartes-de-visite (card photograph)',
+                    'cartoons (humorous images)': 'cartton (humorous image)',
+                    'charcoal drawings': 'charoal drawing',
+                    'charts (graphic documents)': 'chart (graphic docuent)',
+                    'chromogenic color prints': 'chromogenic color print',
+                    'chromolithographs': 'chromolithograph',
+                    'clippings (information artifacts)': 'clipping (informtation artifact)',
+                    'collodion prints': 'collodion print',
+                    'collodion transfers': 'collodion transfer',
+                    'collotypes (prints)': 'collotype (print)',
+                    'color negatives': 'color negative',
+                    'color photographs': 'color photograph',
+                    'color slides': 'color slide',
+                    'color transparencies': 'color transparency',
+                    'compact discs': 'compact disc',
+                    'composite photographs': 'composite photograph',
+                    'contact sheets': 'contact sheet',
+                    'contour maps': 'contour map',
+                    'copy prints': 'copy print',
+                    'crystoleums (photographs)': 'crystoleums (photograph)',
+                    'cubic ft.': 'cubic ft.',
+                    'cyanotypes (photographic prints)': 'cyanotype (photographic print)',
+                    'cylinders (sound recordings)': 'cylinder (sound recording)',
+                    'daguerreotypes (photographs)': 'daguerreotype (photograph)',
+                    'data cards': 'data card',
+                    'design drawings': 'design drawing',
+                    'detail drawings (drawings)': 'detail drawing (drawing)',
+                    'diaries': 'diary',
+                    'diazotypes (copies)': 'diazotype (copy)',
+                    'dictation belt': 'dictation belt',
+                    'diffusion transfer prints': 'diffusion transfer print',
+                    'digital audio tapes': 'digital audio tapes',
+                    'digital images': 'digitam image',
+                    'digital photographs': 'digital photograph',
+                    'drawings (visual works)': 'drawing (visual work)',
+                    'dry collodion negatives': 'dry collodion negative',
+                    'dye transfer prints': 'dye transfer print',
+                    'electrical drawings': 'electrical drawing',
+                    'electrical plans': 'electrical plan',
+                    'electronic files': 'electronic file',
+                    'engravings (prints)': 'engraving (print)',
+                    'envelopes': 'envelope',
+                    'etchings (prints)': 'etchings (print)',
+                    'filmstrips': 'filmstrip',
+                    'fire insurance maps': 'fire insurance map',
+                    'flags': 'flag',
+                    'flash drives': 'flash drive',
+                    'floppy disks': 'floppy disk',
+                    'folders': 'folder',
+                    'gelatin silver negatives': 'gelatin silver negative',
+                    'gelatin silver prints': 'gelatin silver print',
+                    'gelatin silver transparencies': 'gelatin silver transparency',
+                    'gem photographs': 'gen photograph',
+                    'geological maps': 'geological map',
+                    'glass plate negatives': 'glass plate negative',
+                    'greeting cards': 'greeting card',
+                    'hard drives': 'hard drive',
+                    'historical maps': 'historical map',
+                    'identifying cards': 'identifying card',
+                    'images': 'image',
+                    'imperial photographs': 'imperial photograph',
+                    'index maps': 'index map',
+                    'inkjet prints': 'inkjet print',
+                    'instantaneous recordings': 'instantaneous recording',
+                    'internegatives': 'internegative',
+                    'isoline maps': 'isoline map',
+                    'issues': 'issue',
+                    'items': 'item',
+                    'lacquer discs': 'lacquer disc',
+                    'land surveys': 'land survey',
+                    'land use maps': 'land use maps',
+                    'lantern slides': 'lantern slide',
+                    'laser prints': 'laser print',
+                    'leaves': 'leaf',
+                    'ledgers (account books)': 'ledger (account book)',
+                    'letter books': 'letter book',
+                    'letterpress copybooks': 'letterpress copybook',
+                    'linear ft.': 'linear ft.',
+                    'lithographs': 'lithograph',
+                    'long-playing records': 'long-playing record',
+                    'magazines_(periodicals)': 'magazine (periodical)',
+                    'magnetic disks': 'magnetic disk',
+                    'magnetic tapes': 'magnetic tape',
+                    'manuscript maps': 'manuscript map',
+                    'maps (documents)': 'map (document)',
+                    'mechanical drawings (building systems drawings)': 'mechanical drawing (building systems drawing)',
+                    'microcassettes': 'microcassette',
+                    'microfiche': 'microfiche',
+                    'microfilms': 'microfilm',
+                    'military maps': 'military map',
+                    'mineral resource maps': 'mineral resource map',
+                    'miniatures (paintings)': 'miniature (painting)',
+                    'motion picture components': 'motion picture component',
+                    'motion pictures (visual works)': 'motion picture (visual work)',
+                    'moving images': 'moving image',
+                    'muster rolls': 'muster roll',
+                    'national maps': 'national map',
+                    'offset lithographs': 'offset lithograph',
+                    'open reel audiotapes': 'open reel audiotape',
+                    'optical disks': 'optical disk',
+                    'paintings (visual works)': 'painting (visual work)',
+                    'panel photographs': 'panel photograph',
+                    'panoramas (visual works)': 'panorama (visual work)',
+                    'panoramic photographs': 'panoramic photograph',
+                    'pastels (visual works)': 'pastel (visual work)',
+                    'pen and ink drawings': 'pen and ink drawing',
+                    'photocopies': 'photocopy',
+                    'photoengravings (prints)': 'photoengraving',
+                    'photograph albums': 'photograph album',
+                    'photographic postcards': 'photographic postcard',
+                    'photographic prints': 'photographic print',
+                    'photographs': 'photograph',
+                    'photogravures (prints)': 'photogravure (print)',
+                    'photomechanical prints': 'photomechanical print',
+                    'picture postcards': 'picture postcard',
+                    'plans (maps)': 'plan (map)',
+                    'plats (maps)': 'plat (map)',
+                    'population maps': 'population map',
+                    'postcards': 'postcard',
+                    'posters': 'poster',
+                    'presentation drawings (proposals)': 'presentation drawing (proposal)',
+                    'prints (visual works)': 'print (visual work)',
+                    'promenade midget photographs': 'promenade midget photograph',
+                    'promenade photographs': 'promenade photograph',
+                    'public utility maps': 'public utility map',
+                    'quadrangle maps': 'quadrangle map',
+                    'reels': 'reel',
+                    'regional maps': 'regional map',
+                    'relief halftones (prints)': 'relief halftone',
+                    'reports': 'report',
+                    'road maps': 'road map',
+                    'scrapbooks': 'scrapbook',
+                    'sheets (paper artifacts)': 'sheet (paper artifact)',
+                    'ships plans': 'ships plan',
+                    'sketchbooks': 'sketchbook',
+                    'sound recordings': 'sound recording',
+                    'sound tracks': 'sound track',
+                    'stained glass (visual works)': 'stained glass',
+                    'stats (copies)': 'stat (copy)',
+                    'steel engravings (visual works)': 'steel engraving (visual work)',
+                    'stereographs': 'stereograph',
+                    'street maps': 'street map',
+                    'structural drawings': 'structural drawing',
+                    'tintypes (prints)': 'tintype (print)',
+                    'topographic maps': 'topographic map',
+                    'topographic surveys': 'topographic survey',
+                    'transportation maps': 'transportation map',
+                    'victoria cards (photographs)': 'victoria card (photograph)',
+                    'videocassettes': 'videocassette',
+                    'videotapes': 'videotape',
+                    'volumes': 'volume',
+                    'wallets': 'wallet',
+                    'watercolors (paintings)': 'watercolor (painting)',
+                    'watershed maps': 'watershed map',
+                    'wet collodion negatives': 'wet collodion negative',
+                    'wire recordings': 'wire recording',
+                    'wood engravings (prints)': 'wood engraving (print)',
+                    'woodcuts (prints)': 'woodcut (print)',
+                    'working drawings': 'working drawing',
+                    'works of art': 'work of art',
+                    'zoning maps': 'zoning map'}
     exceptions = ['class', 'collection', 'fonds', 'otherlevel', 'recordgrp', 'series', 'subfonds', 'subgrp',
                   'subseries', 'Sub-Series', 'Sub-Group', 'Series']
-    scopenotes = dom2.xpath(".//ead:scopecontent", namespaces=nsmap)
+    scopenotes = root.xpath(".//ead:scopecontent", namespaces=nsmap)
     for scopenote in scopenotes:
         parent = scopenote.getparent()
         parent_attrib = parent.attrib['level']
@@ -3400,7 +2698,7 @@ def processor(my_xml):
                         continue
                     else:
                         myText = paragraph.text
-                        emphatic = ET.SubElement(paragraph,'emph')
+                        emphatic = ET.SubElement(paragraph, 'emph')
                         emphatic.attrib['render'] = 'italic'
                         emphatic.text = myText
                         window['-OUTPUT-'].update("\nmanual fix to scopenote is needed in ArchivesSpace", append=True)
@@ -3412,14 +2710,14 @@ def processor(my_xml):
                     continue
                 else:
                     myText = scopenote.text
-                    emphatic = ET.SubElement(scopenote,'emph')
+                    emphatic = ET.SubElement(scopenote, 'emph')
                     emphatic.attrib['render'] = 'italic'
                     emphatic.text = myText
                     window['-OUTPUT-'].update("\nmanual fix to scopenote may be needed", append=True)
                     window['-OUTPUT-'].update(f"\ncheck text around: {scopenote.text[0:50]}", append=True)
                     scopenote.text = ""
                 window['-OUTPUT-'].update("\n" + scopenote.text, append=True)
-    notes = dom2.xpath(".//ead:note", namespaces=nsmap)
+    notes = root.xpath(".//ead:note", namespaces=nsmap)
     for note in notes:
         parent = note.getparent()
         if "level" in parent.attrib:
@@ -3433,7 +2731,7 @@ def processor(my_xml):
                             continue
                         else:
                             myText = paragraph.text
-                            emphatic = ET.SubElement(paragraph,'emph')
+                            emphatic = ET.SubElement(paragraph, 'emph')
                             emphatic.attrib['render'] = 'italic'
                             emphatic.text = myText
                             window['-OUTPUT-'].update("\nmanual fix to note may be needed", append=True)
@@ -3445,14 +2743,14 @@ def processor(my_xml):
                         continue
                     else:
                         myText = note.text
-                        emphatic = ET.SubElement(scopenote,'emph')
+                        emphatic = ET.SubElement(scopenote, 'emph')
                         emphatic.attrib['render'] = 'italic'
                         emphatic.text = myText
                         window['-OUTPUT-'].update("\nmanual fix to note may be needed", append=True)
                         window['-OUTPUT-'].update(f"\ncheck text around: {note.text[0:50]}", append=True)
                         scopenote.text = ""
                     window['-OUTPUT-'].update("\n" + scopenote.text, append=True)
-    extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
+    extents = root.xpath(".//ead:extent", namespaces=nsmap)
     for extent in extents:
         parent = extent.getparent().getparent().getparent()
         physfacet = extent.find("../ead:physfacet", namespaces=nsmap)
@@ -3465,13 +2763,13 @@ def processor(my_xml):
             if 'altrender' in extent.attrib:
                 if extent.attrib['altrender'] == "materialtype spaceoccupied":
                     del extent.attrib['altrender']
-            #window['-OUTPUT-'].update("\n" + parent.attrib['level'], append=True)
+            # window['-OUTPUT-'].update("\n" + parent.attrib['level'], append=True)
             if physfacet != None:
                 physfacet.text = "[" + physfacet.text + "]"
             if dimension != None:
                 dimension.text = "[" + dimension.text + "]"
-    #process the singularity of extents
-    extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
+    # process the singularity of extents
+    extents = root.xpath(".//ead:extent", namespaces=nsmap)
     for extent in extents:
         tempstring = extent.text
         if "[" in tempstring:
@@ -3479,13 +2777,13 @@ def processor(my_xml):
             window['-OUTPUT-'].update("\n" + tempstring, append=True)
         var = tempstring.split(" ")[0]
         if var == "1":
-            tempstring = tempstring.replace("1 ","")
+            tempstring = tempstring.replace("1 ", "")
             window['-OUTPUT-'].update("\n" + tempstring, append=True)
             tempy = extent.text
             tempy = tempy.replace(tempstring, extent_types[tempstring])
             extent.text = tempy
-    #process partial extents as 'includes'
-    extents = dom2.xpath(".//ead:extent", namespaces=nsmap)
+    # process partial extents as 'includes'
+    extents = root.xpath(".//ead:extent", namespaces=nsmap)
     for extent in extents:
         tempstring = extent.text
         parental = extent.getparent()
@@ -3497,111 +2795,149 @@ def processor(my_xml):
                     extent.text = tempstring
 
     # pull out access restrict with audience = internal if still there
-    restrictions = dom2.xpath("//ead:accessrestrict[@audience = 'internal']", namespaces=nsmap)
+    restrictions = root.xpath("//ead:accessrestrict[@audience = 'internal']", namespaces=nsmap)
     if restrictions is not None:
         for restriction in restrictions:
             restriction.getparent().remove(restriction)
     dom2.write(finished_product)
-    with open(finished_product, "r") as r:
+    with open(finished_product, "r", encoding='utf-8') as r:
         filedata = r.read()
-        filedata = filedata.replace('<extptr href','<extptr xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onLoad" xlink:show="embed" xlink:type="simple" xlink:href')
-        filedata = filedata.replace('<ead:extref href','<ead:extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
-        filedata = filedata.replace('<ead:archref href','<ead:archref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
-        filedata = filedata.replace('<ead:bibref href','<ead:bibref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
-        filedata = filedata.replace('label="Quantity"','label="Quantity:"')
-        filedata = filedata.replace('label="Creator"','label="Creator:"')
-        filedata = filedata.replace('label="Collector"','label="Collector:"')
-        filedata = filedata.replace('label="Title"','label="Title:"')
-        filedata = filedata.replace('label="Dates"','label="Dates:"')
-        filedata = filedata.replace('label="Abstract"','label="Abstract:"')
-        filedata = filedata.replace(", , <",", <")
-        filedata = filedata.replace("..",".").replace(". .",".")
-        filedata = filedata.replace("\n<ead:descgrp>\n<head>Administrative Information</head>","")
-        filedata = filedata.replace('\n<ead:descgrp type="admininfo">\n<head>Administrative Information</head>','')
-        filedata = filedata.replace("\n<ead:descgrp>","")
-        filedata = filedata.replace('\n<ead:descgrp type="admininfo">','')
-        filedata = filedata.replace("\n</ead:descgrp>","")
-        filedata = filedata.replace("ead:","")
-        filedata = filedata.replace("\n<physfacet>","<physfacet>").replace("\n<dimensions>","<dimensions>").replace("\n</physdesc>","</physdesc>")
-        filedata = filedata.replace("<extent>[","[<extent>").replace("]</extent>","</extent>]")
-        filedata = filedata.replace("<physfacet>[","[<physfacet>, ").replace("]</physfacet>","</physfacet>]")
-        filedata = filedata.replace("<dimensions>[","[<dimensions>, ").replace("]</dimensions>","</dimensions>]")
-        filedata = filedata.replace("][<physfacet>","<physfacet>").replace("][<dimensions>","<dimensions>")
-        filedata = filedata.replace('\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive.</emph>\n</p>','')
-        filedata = filedata.replace('\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive. </emph>\n</p>','')
-        filedata = filedata.replace("\n</relatedmaterial>\n</relatedmaterial>\n</relatedmaterial>","\n</relatedmaterial>\n</relatedmaterial>")
-        filedata = filedata.replace('\n<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>','')
+        filedata = filedata.replace('<extptr href',
+                                    '<extptr xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onLoad" xlink:show="embed" xlink:type="simple" xlink:href')
+        filedata = filedata.replace('<ead:extref href',
+                                    '<ead:extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
+        filedata = filedata.replace('<ead:archref href',
+                                    '<ead:archref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
+        filedata = filedata.replace('<ead:bibref href',
+                                    '<ead:bibref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
+        filedata = filedata.replace('label="Quantity"', 'label="Quantity:"')
+        filedata = filedata.replace('label="Creator"', 'label="Creator:"')
+        filedata = filedata.replace('label="Collector"', 'label="Collector:"')
+        filedata = filedata.replace('label="Title"', 'label="Title:"')
+        filedata = filedata.replace('label="Dates"', 'label="Dates:"')
+        filedata = filedata.replace('label="Abstract"', 'label="Abstract:"')
+        filedata = filedata.replace(", , <", ", <")
+        filedata = filedata.replace("..", ".").replace(". .", ".")
+        filedata = filedata.replace("\n<ead:descgrp>\n<head>Administrative Information</head>", "")
+        filedata = filedata.replace('\n<ead:descgrp type="admininfo">\n<head>Administrative Information</head>', '')
+        filedata = filedata.replace("\n<ead:descgrp>", "")
+        filedata = filedata.replace('\n<ead:descgrp type="admininfo">', '')
+        filedata = filedata.replace("\n</ead:descgrp>", "")
+        filedata = filedata.replace("ead:", "")
+        filedata = filedata.replace("\n<physfacet>", "<physfacet>").replace("\n<dimensions>", "<dimensions>").replace(
+            "\n</physdesc>", "</physdesc>")
+        filedata = filedata.replace("<extent>[", "[<extent>").replace("]</extent>", "</extent>]")
+        filedata = filedata.replace("<physfacet>[", "[<physfacet>, ").replace("]</physfacet>", "</physfacet>]")
+        filedata = filedata.replace("<dimensions>[", "[<dimensions>, ").replace("]</dimensions>", "</dimensions>]")
+        filedata = filedata.replace("][<physfacet>", "<physfacet>").replace("][<dimensions>", "<dimensions>")
+        filedata = filedata.replace(
+            '\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive.</emph>\n</p>',
+            '')
+        filedata = filedata.replace(
+            '\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive. </emph>\n</p>',
+            '')
+        filedata = filedata.replace("\n</relatedmaterial>\n</relatedmaterial>\n</relatedmaterial>",
+                                    "\n</relatedmaterial>\n</relatedmaterial>")
+        filedata = filedata.replace(
+            '\n<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>',
+            '')
         if "852$a" not in filedata:
-            filedata = filedata.replace("</abstract>",'</abstract>\n<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.texas.gov/arc/index.html">Texas State Archives</extref>\n</repository>')
-        filedata = filedata.replace('<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.texas.gov/arc/index.html">Texas State Archives</extref>\n</repository>\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>\n','')
-        filedata = filedata.replace('\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>','')
-        filedata = filedata.replace('<controlaccess>\n<head>Personal Names:</head>\n</controlaccess>\n','')
-        filedata = filedata.replace('<controlaccess>\n<head>Family Names:</head>\n</controlaccess>\n','')
-        filedata = filedata.replace('<controlaccess>\n<head>Corporate Names:</head>\n</controlaccess>\n','')
-        filedata = filedata.replace('<controlaccess>\n<head>Subjects (Persons):</head>\n</controlaccess>\n','')
-        filedata = filedata.replace('<controlaccess>\n<head>Subjects (Families):</head>\n</controlaccess>\n','')
-        filedata = filedata.replace('<controlaccess>\n<head>Subjects (Organizations):</head>\n</controlaccess>\n','')
-        filedata = filedata.replace('<controlaccess>\n<head>Subjects:</head>\n</controlaccess>\n','')
-        filedata = filedata.replace('<controlaccess>\n<head>Places:</head>\n</controlaccess>\n','')
-        filedata = filedata.replace('<controlaccess>\n<head>Document Types:</head>\n</controlaccess>\n','')
-        filedata = filedata.replace('<controlaccess>\n<head>Titles:</head>\n</controlaccess>\n','')
-        filedata = filedata.replace('<controlaccess>\n<head>Functions:</head>\n</controlaccess>\n','')
-        filedata = filedata.replace('<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>','')
-        filedata = filedata.replace('<controlaccess>\n</controlaccess>\n','').replace(" , ",", ").replace(", </unitdate>, ","</unitdate>, ").replace(",</unitdate>, ","</unitdate>, ").replace(", </emph>, ", "</emph>, ").replace(",</emph>, ","</emph>, ").replace(" </unitdate>, ","</unitdate>, ")
-        filedata = filedata.replace("</unitdate>, </unittitle>\n<physdesc>",", </unitdate></unittitle>\n<physdesc>")
+            filedata = filedata.replace("</abstract>",
+                                        '</abstract>\n<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.texas.gov/arc/index.html">Texas State Archives</extref>\n</repository>')
+        filedata = filedata.replace(
+            '<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.texas.gov/arc/index.html">Texas State Archives</extref>\n</repository>\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>\n',
+            '')
+        filedata = filedata.replace(
+            '\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>',
+            '')
+        filedata = filedata.replace('<controlaccess>\n<head>Personal Names:</head>\n</controlaccess>\n', '')
+        filedata = filedata.replace('<controlaccess>\n<head>Family Names:</head>\n</controlaccess>\n', '')
+        filedata = filedata.replace('<controlaccess>\n<head>Corporate Names:</head>\n</controlaccess>\n', '')
+        filedata = filedata.replace('<controlaccess>\n<head>Subjects (Persons):</head>\n</controlaccess>\n', '')
+        filedata = filedata.replace('<controlaccess>\n<head>Subjects (Families):</head>\n</controlaccess>\n', '')
+        filedata = filedata.replace('<controlaccess>\n<head>Subjects (Organizations):</head>\n</controlaccess>\n', '')
+        filedata = filedata.replace('<controlaccess>\n<head>Subjects:</head>\n</controlaccess>\n', '')
+        filedata = filedata.replace('<controlaccess>\n<head>Places:</head>\n</controlaccess>\n', '')
+        filedata = filedata.replace('<controlaccess>\n<head>Document Types:</head>\n</controlaccess>\n', '')
+        filedata = filedata.replace('<controlaccess>\n<head>Titles:</head>\n</controlaccess>\n', '')
+        filedata = filedata.replace('<controlaccess>\n<head>Functions:</head>\n</controlaccess>\n', '')
+        filedata = filedata.replace(
+            '<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>',
+            '')
+        filedata = filedata.replace('<controlaccess>\n</controlaccess>\n', '').replace(" , ", ", ").replace(
+            ", </unitdate>, ", "</unitdate>, ").replace(",</unitdate>, ", "</unitdate>, ").replace(", </emph>, ",
+                                                                                                   "</emph>, ").replace(
+            ",</emph>, ", "</emph>, ").replace(" </unitdate>, ", "</unitdate>, ")
+        filedata = filedata.replace("</unitdate>, </unittitle>\n<physdesc>", ", </unitdate></unittitle>\n<physdesc>")
         if 'xmlns="urn:isbn:1-931666-22-9" xsi:' in filedata and 'relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">' in filedata:
-            filedata = filedata.replace('relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">','>')
-        filedata = filedata.replace("[[","[").replace("]]","]").replace("[ [", "[").replace("] ]","]").replace(",</emph>\n, </unitdate>","</emph>, </unitdate>")
-        filedata = filedata.replace("\n<unittitle>, </unittitle>","")
-        filedata = filedata.replace('<container type="box">','<container type="Box">').replace('Texas-digital-archive', 'Texas-Digital-Archive')
-        filedata = filedata.replace('<container type="folder">','<container type="Folder">').replace("&lt;","<").replace("&gt;",">")
-        filedata = filedata.replace("English.</langusage>", '<language langcode="eng" scriptcode="Latn">English</language>.</langusage>')
+            filedata = filedata.replace('relatedencoding="MARC21" xmlns="urn:isbn:1-931666-22-9">', '>')
+        filedata = filedata.replace("[[", "[").replace("]]", "]").replace("[ [", "[").replace("] ]", "]").replace(
+            ",</emph>\n, </unitdate>", "</emph>, </unitdate>")
+        filedata = filedata.replace("\n<unittitle>, </unittitle>", "")
+        filedata = filedata.replace('<container type="box">', '<container type="Box">').replace('Texas-digital-archive',
+                                                                                                'Texas-Digital-Archive')
+        filedata = filedata.replace('<container type="folder">', '<container type="Folder">').replace("&lt;",
+                                                                                                      "<").replace(
+            "&gt;", ">")
+        filedata = filedata.replace("English.</langusage>",
+                                    '<language langcode="eng" scriptcode="Latn">English</language>.</langusage>')
+        filedata = filedata.replace('type="inclusive">, <emph', 'type="inclusive"><emph').replace('type="bulk">, <emph',
+                                                                                                  'type="bulk"><emph')
+        filedata = filedata.replace('list type="ordered">', 'list>')
         # removed a few blank items i think, appears to create a problem so removing for now
-        #filedata = filedata.replace("\n<?xm-replace_text (be sure level attribute is correct)?>","")
-        #filedata = filedata.replace('\n<change>\n<date era="ce" calendar="gregorian">\n<?xm-replace_text {date}?>\n</date>\n<item>\n<?xm-replace_text {item}?>\n</item>\n</change>','')
-        #filedata = filedata.replace('<unitdate era="ce" calendar="gregorian" normal="0000/0000" type="inclusive">\n<?xm-replace_text {date}?>\n</unitdate>\n','')
-        #filedata = filedata.replace('\n<note>\n<p>\n<emph render="italic">\n<?xm-replace_text {Notes, if desired}?>\n</emph>\n</p>\n</note>','')
-        #filedata = filedata.replace('\n<unittitle>\n<?xm-replace_text {title}?>, </unittitle>','')
-        filedata = filedata.replace('\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->','')
+        # filedata = filedata.replace("\n<?xm-replace_text (be sure level attribute is correct)?>","")
+        # filedata = filedata.replace('\n<change>\n<date era="ce" calendar="gregorian">\n<?xm-replace_text {date}?>\n</date>\n<item>\n<?xm-replace_text {item}?>\n</item>\n</change>','')
+        # filedata = filedata.replace('<unitdate era="ce" calendar="gregorian" normal="0000/0000" type="inclusive">\n<?xm-replace_text {date}?>\n</unitdate>\n','')
+        # filedata = filedata.replace('\n<note>\n<p>\n<emph render="italic">\n<?xm-replace_text {Notes, if desired}?>\n</emph>\n</p>\n</note>','')
+        # filedata = filedata.replace('\n<unittitle>\n<?xm-replace_text {title}?>, </unittitle>','')
+        filedata = filedata.replace(
+            '\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->', '')
         donkeykong = re.findall(']</physdesc>\n<unitdate *.*, </unitdate>\n</did>', filedata)
         if donkeykong:
             for item in donkeykong:
                 item = str(item)
-                dittykong = item.replace(", </unitdate>"," </unitdate>")
-                filedata = filedata.replace(item,dittykong)
+                dittykong = item.replace(", </unitdate>", " </unitdate>")
+                filedata = filedata.replace(item, dittykong)
         donkeykong = re.findall(r'\n*.*<\?*.*xml-stylesheet*.*\?>*.*', filedata)
         if donkeykong:
             for item in donkeykong:
-                filedata = filedata.replace(item,"")
-        donkeykong = re.findall(r'\n*.*Remove the ead*.*xsl and ead*.*.css statements*.*>\n',filedata)
+                filedata = filedata.replace(item, "")
+        donkeykong = re.findall(r'\n*.*Remove the ead*.*xsl and ead*.*.css statements*.*>\n', filedata)
         if donkeykong:
             for item in donkeykong:
                 item = str(item)
-                filedata = filedata.replace(item,"")
+                filedata = filedata.replace(item, "")
         if ' xmlns="urn:isbn:1-931666-22-9" ' in filedata and ' xmlns="urn:isbn:1-931666-22-9">' in filedata:
-            filedata = filedata.replace('xmlns="urn:isbn:1-931666-22-9">','>')
-        filedata = filedata.replace('xsi:schemaLocation="urn:isbn:1-931666-22-9 ead.xsd" xmlns="urn:isbn:1-931666-22-9"','xsi:schemaLocation="urn:isbn:1-931666-22-9 ead.xsd"')
-    with open(finished_product, "w") as w:
-        w.write('<?xml version="1.0" encoding="UTF-8"?>\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->\n<!-- <?xml-stylesheet type="text/xsl" href="ead.xsl"?> <?xml-stylesheet type="text/css" href="ead.css"?> -->\n' + filedata)
+            filedata = filedata.replace('xmlns="urn:isbn:1-931666-22-9">', '>')
+        filedata = filedata.replace(
+            'xsi:schemaLocation="urn:isbn:1-931666-22-9 ead.xsd" xmlns="urn:isbn:1-931666-22-9"',
+            'xsi:schemaLocation="urn:isbn:1-931666-22-9 ead.xsd"')
+    with open(finished_product, "w", encoding='utf-8') as w:
+        w.write(
+            '<?xml version="1.0" encoding="UTF-8"?>\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->\n<!-- <?xml-stylesheet type="text/xsl" href="ead.xsl"?> <?xml-stylesheet type="text/css" href="ead.css"?> -->\n' + filedata)
     w.close()
     switch = True
     if switch is True:
         try:
             dom3 = ET.parse(finished_product)
         except:
-            window['-OUTPUT-'].update("\n" + unitid_text, "has a xml tag problem, check it for errors. We suggest using a web browser at minimum.", append=True)
+            window['-OUTPUT-'].update("\n" + unitid_text,
+                                      "has a xml tag problem, check it for errors. We suggest using a web browser at minimum.",
+                                      append=True)
     if flag > 0:
-        window['-OUTPUT-'].update("\n" + f"potential subject term issue in {unitid_text} check it manually", append=True)
+        window['-OUTPUT-'].update("\n" + f"potential subject term issue in {unitid_text} check it manually",
+                                  append=True)
         switch = False
     window['-OUTPUT-'].update("\n" + f'{unitid_text} finished', append=True)
     window['-OUTPUT-'].update("\n" + "all done!", append=True)
+
 
 Sg.theme('DarkGreen')
 layout = [[
     Sg.Push(),
     Sg.Text("EAD file"),
     Sg.In(size=(50, 1), enable_events=True, key="-EAD-"),
-    Sg.FileBrowse(file_types=(("xml text files only", "*.xml"),)),],
+    Sg.FileBrowse(file_types=(("xml text files only", "*.xml"),)), ],
     [
         Sg.Push(),
         Sg.Button("Execute", tooltip="This will start the program running"),
@@ -3611,16 +2947,17 @@ layout = [[
         Sg.Button("Close", tooltip="Close this window. Won't work while XML is being processed", bind_return_key=True)
     ],
     [
-        Sg.Multiline(default_text="Look here for information about various data points as the file processes. Your processed file will end in '-done'",
-                     size=(70, 5), auto_refresh=True, reroute_stdout=False, key="-OUTPUT-", autoscroll=True,
-                     border_width=5)
+        Sg.Multiline(
+            default_text="Look here for information about various data points as the file processes. Your processed file will end in '-done'",
+            size=(70, 5), auto_refresh=True, reroute_stdout=False, key="-OUTPUT-", autoscroll=True,
+            border_width=5)
     ]
 ]
 
 window = Sg.Window(
     "TARO EAD processor",
     layout,
-    icon = my_icon
+    icon=my_icon
 )
 
 event, values = window.read()
