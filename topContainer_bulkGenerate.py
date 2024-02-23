@@ -64,9 +64,9 @@ baseline = {'jsonmodel_type': 'top_container',
                   'restricted': 'false',
                   'container_profile': {'ref': ''},
                   'container_locations': [{'ref': '', 'jsonmodel_type': 'container_location', 'status': 'current', 'start_date': '2021-11-09'}]}
-df1 = PD.read_excel("//media/sf_G_DRIVE/research/archivespace/2021047_EG_topContainer_csv_zavala.xlsx", sheet_name="Sheet1", dtype=object)
+df1 = PD.read_excel("/media/sf_Z_DRIVE/Working/research/archivespace/2024-025 top container bulk import.xlsx", sheet_name="Sheet1", dtype=object)
 print(df1[:5])
-df2 = PD.read_csv("/media/sf_G_DRIVE/research/archivespace/locations_list2.csv", dtype=object)
+df2 = PD.read_csv("/media/sf_Z_DRIVE/Working/research/archivespace/locations_list2.csv", dtype=object)
 print(df2[:5])
 df3 = df1.merge(df2, how='left', on=['structure_name','location_label_1_text','location_label_2_text','coordinate_1_label','coordinate_1_text','coordinate_2_label','coordinate_2_text','coordinate_3_label','coordinate_3_text'])
 print(df3[:])

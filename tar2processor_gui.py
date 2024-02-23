@@ -2094,7 +2094,8 @@ insert proper attributes in the date and keep just the date and not the whole UT
 <xsl:template match="//ead:accessrestrict[@ audience='internal']"/>
 <xsl:template match="//ead:c01/ead:scopecontent/ead:head|//ead:c02/ead:scopecontent/ead:head|//ead:c03/ead:scopecontent/ead:head|//ead:c04/ead:scopecontent/ead:head|//ead:c05/ead:scopecontent/ead:head|//ead:c06/ead:scopecontent/ead:head|//ead:c07/ead:scopecontent/ead:head|//ead:c07/ead:scopecontent/ead:head|//ead:c08/ead:scopecontent/ead:head|//ead:c09/ead:scopecontent/ead:head"/>
 </xsl:stylesheet>''')
-html_transform = ET.XML('''<!-- EAD 2002 print stylesheet for the Texas State Archives, Nancy Enneking, January 2003-->
+html_transform = ET.XML('''
+<!-- EAD 2002 print stylesheet for the Texas State Archives, Nancy Enneking, January 2003-->
 <!--  This stylesheet generates Style 4 which is intended to produce print output.  -->
 
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
@@ -6121,6 +6122,7 @@ html_transform = ET.XML('''<!-- EAD 2002 print stylesheet for the Texas State Ar
 
 
 </xsl:stylesheet>
+
 ''')
 nsmap = {'xmlns': 'urn:isbn:1-931666-22-9',
          'ead': 'urn:isbn:1-931666-22-9',
@@ -6986,10 +6988,17 @@ def processor(my_xml):
         w.write(
             '<?xml version="1.0" encoding="UTF-8"?>\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->\n<!-- <?xml-stylesheet type="text/xsl" href="ead.xsl"?> <?xml-stylesheet type="text/css" href="ead.css"?> -->\n' + filedata)
     w.close()
+    html_file = f"{finished_product[:-3]}html"
     my_html = ET.XSLT(html_transform)
     dom = ET.parse(finished_product)
     newdom = my_html(dom)
-    newdom.write(f"{finished_product[:-3]}html", pretty_print=True)
+    newdom.write(html_file, pretty_print=True)
+    with open(html_file, "r") as r:
+        filedata = r.read()
+        filedata = filedata.replace("<b/>", "")
+        with open(html_file, "w") as w:
+            w.write(filedata)
+        w.close()
     switch = True
     if switch is True:
         try:
