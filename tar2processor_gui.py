@@ -6821,7 +6821,8 @@ def processor(my_xml):
             parent_part = parental.attrib['altrender']
             if "part" in parent_part:
                 if not tempstring.startswith("("):
-                    tempstring = f"(includes {tempstring})"
+                    tempstring = f"includes {tempstring}"
+                    tempstring = tempstring.replace("includes [", "includes ")
                     extent.text = tempstring
     # reprocess header stuff
     title = root.find(".//ead:archdesc/ead:did/ead:unittitle", namespaces=nsmap)
