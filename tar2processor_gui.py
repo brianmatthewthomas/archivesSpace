@@ -4,6 +4,7 @@ import datetime
 import lxml.etree as ET
 import re
 import PySimpleGUI as Sg
+import traceback
 
 my_icon = b'iVBORw0KGgoAAAANSUhEUgAAAHgAAABsCAQAAAALKr7UAAAAAmJLR0QAAKqNIzIAAAAJcEhZcwAALEsAACxLAaU9lqkAAAAHdElNRQ' \
           b'fmAhQHBBtCNNv6AAANwUlEQVR42u2ca3hV5ZXHf0lObgRz4WK4WmpAEFFHFBTkMQWUoTyoiIpDrajcpGOFWsaOtCqgraIdO8pDp7VF' \
@@ -6140,6 +6141,7 @@ def processor(my_xml):
     temp1 = my_xml.split("/")[-1].split(".")[0]
     temp2 = f"{temp1}-done"
     finished_product = my_xml.replace(temp1, temp2)
+    error_log = finished_product.replace(f"{temp2}.xml", "error_log.txt")
     with open(my_xml, "r", encoding='utf-8') as r:
         filedata = r.read()
         if "xmlns:ead" not in filedata:
@@ -6468,9 +6470,46 @@ def processor(my_xml):
         container_type = list(container_type)
         for item in container_type:
             window['-OUTPUT-'].update("\n" + item, append=True)
-            container_list = []
+            container_list = {}
+            container_set = set()
             container_count = 0
             containers = container_did.xpath(f"ead:container[@type='{item}']", namespaces=nsmap)
+            for container in containers:
+                container_text = container.text
+                container_prefix = container_text.split("-")[0]
+                container_set.add(container_prefix)
+            container_set = list(container_set)
+            container_set.sort()
+            for my_container in container_set:
+                container_list[my_container] = list()
+            for container in containers:
+                container_text = container.text
+                container_text = container_text.split("-")
+                if len(container_text) > 1:
+                    container_list[container_text[0]].append(container_text[-1])
+            for key in container_list.keys():
+                top = 0
+                bottom = 10000
+                my_list = container_list[key]
+                if len(my_list) > 1:
+                    my_list.sort()
+                    for integer in my_list:
+                        if int(integer) >= top:
+                            top = int(integer)
+                        if int(integer) <= bottom:
+                            bottom = int(integer)
+                    container_text = f"{key}-{str(bottom)} thru {str(top)}"
+                    for container in containers:
+                        temp = container.text
+                        if temp.startswith(key):
+                            container.text = container_text
+            container_list = []
+            for container in containers:
+                if container.text not in container_list:
+                    container_list.append(container.text)
+                else:
+                    container.getparent().remove(container)
+            '''
             for container in containers:
                 container_count += 1
             window['-OUTPUT-'].update(f"\n{len(containers)}", append=True)
@@ -6491,6 +6530,9 @@ def processor(my_xml):
                 except:
                     window['-OUTPUT-'].update("\n" + f"problem with {container_list[0]}, fix that and try again",
                                               append=True)
+                    with open(error_log, "a") as x:
+                        x.write(f"problem with {container_list[0]}, fix that and try again\n")
+                    x.close()
                     sys.exit()
                 window['-OUTPUT-'].update("\n" + container_text, append=True)
                 containers[0].text = container_text
@@ -6498,6 +6540,7 @@ def processor(my_xml):
                 for container in containers:
                     window['-OUTPUT-'].update("\n" + "removing", container.text, append=True)
                     container.getparent().remove(container)
+            '''
     langs = root.xpath("//ead:langmaterial", namespaces=nsmap)
     for lang in langs:
         lang_text = lang.text
@@ -6991,7 +7034,14 @@ def processor(my_xml):
     w.close()
     html_file = f"{finished_product[:-3]}html"
     my_html = ET.XSLT(html_transform)
-    dom = ET.parse(finished_product)
+    try:
+        dom = ET.parse(finished_product)
+    except Exception as e:
+        with open(error_log, "w") as x:
+            x.write(str(e))
+            x.write(traceback.format_exc())
+        x.close()
+        sys.exit()
     newdom = my_html(dom)
     newdom.write(html_file, pretty_print=True)
     with open(html_file, "r") as r:
@@ -7008,6 +7058,9 @@ def processor(my_xml):
             window['-OUTPUT-'].update("\n" + unitid_text,
                                       "has a xml tag problem, check it for errors. We suggest using a web browser at minimum.",
                                       append=True)
+            with open(error_log, "a") as x:
+                x.write(f"{unitid_text} has a xml tag problem, check it for errors. We suggest using a web browser at minimum.")
+            x.close()
     if flag > 0:
         window['-OUTPUT-'].update("\n" + f"potential subject term issue in {unitid_text} check it manually",
                                   append=True)

@@ -16,29 +16,14 @@ with open("/home/brian/itemlog.txt", "r") as r:
         itemlog.append(line[:-1])
 client = ASnakeClient()
 counter = 0
-changes = {'advertising_cards':['advertising_cards]s','advertising cards'],
-           'artifacts_(object_genre)':['artifacts_(object_genres)'],
-           'black-and-white_photographs':['black-and-white_photographs s','black-and-white-photographs_s','black-and-white_photographs_s','black-and-white_photograph s','black_and_white_photographs','black-and-white_Rotographs'],
-           'cabinet_photographs':['cabinet_photographs_s'],
-           'color_photographs':['color_photographs_s'],
-           'cubic_feet':['cubic ft.','cubic_ft._s','cubic_ft._(1473_items)','cubic_ft.,_s','cubic_feet0.58 cubic_feet','cubic_feet0.25 cubic_feet','cubic_feet0.12 cubic_feet','cubic_feet0.63 cubic_feet','cubic_feet1.6 cubic_feet','cubic_feet0.75 cubic_feet'],
-           'cartes-de-visite_(card_photographs)':['cartes-de-visites_(card_photographs)'],
-           'daguerreotypes_(photographs)':['daguerreotypes_(photographs)_s'],
-           'drawings_(visual_works)':['drawings_(visual_works)_s'],
-           'electronic_files':['electronic files','files','files)'],
-           'folders':['folders]s'],
-           'greeting_cards':['greeting_cards]s'],
-           'imperial_photographs':['imperial_photographs_s'],
-           'megabytes':['MB_s'],
-           'offset_lithographs':['offset_lithographs s','offset lithographs','offset_lithographs_s'],
-           'panel_photographs':['panel_photographs_s'],
-           'photographic_postcards':['photographic_postcards]s'],
-           'photomechanical_prints':['photomechanical_prints]s','photomechanical_prints s','photomechanical prints'],
-           'postcards':['postcards_s','postcards s'],
-           'promenade_midget_photographs':['promenade_midget_photographs_s'],
-           'tintypes_(prints)':['tintype_(prints)']
-           }
 
+changes = {'cubic_feet': ['staging'],
+           'blueprints_(reprographic_copies)': ['staging2'],
+           'architectural_drawings_(visual_works)': ['staging3'],
+           'folders': ['staging4'],
+           'electronic_files': ['staging5'],
+           'daguerreotypes_(photographs)': ['staging6']
+           }
 
 def extent_changer(resource_records, repo_number, type):
     found_records = set([])
@@ -53,25 +38,20 @@ def extent_changer(resource_records, repo_number, type):
             listy = []
             for ext_index, extent in enumerate(extents):
                 #print(extent['extent_type'])
-                if extent['extent_type'] in changes:
-                    print(extent['extent_type'])
-                    keymaster = extent['extent_type']
-                    gozer = changes[keymaster][0]
-                    second_value = changes[keymaster][1]
-                    second_type = changes[keymaster][2]
-                    updated_record['extents'][ext_index]['extent_type'] = gozer
-                    template = {"number": f"{second_value}",
-                                "portion": "part",
-                                "extent_type": f"{second_type}",
-                                "jsonmodel_type": "extent"}
-                    updated_record['extents'].append(template)
-                    with open("log2.csv", "a") as w:
-                        w.write(res_record['title'] + "|" + res_record['uri'] + "|" + extent['extent_type'] + "\n")
-                    w.close()
-                    Flag = False
+                for key in changes.keys():
+                    new_list = changes[key]
+                    if extent['extent_type'] in new_list:
+                        print(extent['extent_type'])
+                        keymaster = extent['extent_type']
+                        updated_record['extents'][ext_index]['extent_type'] = key
+                        with open("log2.csv", "a") as w:
+                            w.write(res_record['title'] + "|" + res_record['uri'] + "|" + extent['extent_type'] + "\n")
+                        w.close()
+                        Flag = False
             if Flag is False:
                 print(updated_record['extents'])
                 response = client.post(rec_uri, json=updated_record)
+                print(response)
                 if response.status_code == 200:
                     logger.info('Extent change successfully pushed', rec=record, response=response)
                     found_records.add(record)
@@ -101,8 +81,18 @@ archival_objects = (client.get("repositories/12/archival_objects", params={'all_
 print('\nchecking archival objects in review')
 extent_changer(archival_objects, "12", "archival_objects")
 accessions = (client.get("repositories/12/accessions", params={'all_ids': True})).json()
-print('\nchecking accessions in review')
+print('\nchecking accessions in legislative')
 extent_changer(accessions, "12", "accessions")
+'''
+resource_records = (client.get('repositories/13/resources', params={'all_ids': True})).json()
+print("\nchecking resources in review")
+extent_changer(resource_records, "13", "resources")
+archival_objects = (client.get("repositories/13/archival_objects", params={'all_ids': True})).json()
+print('\nchecking archival objects in review')
+extent_changer(archival_objects, "13", "archival_objects")
+accessions = (client.get("repositories/13/accessions", params={'all_ids': True})).json()
+print('\nchecking accessions in review')
+extent_changer(accessions, "13", "accessions")
 resource_records = (client.get('repositories/2/resources', params={'all_ids': True})).json()
 print("\nchecking resources in Zavala")
 extent_changer(resource_records, "2", "resources")
@@ -112,4 +102,5 @@ extent_changer(archival_objects, "2", "archival_objects")
 accessions = (client.get("repositories/2/accessions", params={'all_ids': True})).json()
 print('\nchecking accessions in Zavala')
 extent_changer(accessions, "2", "accessions")
+'''
 print(counter)
