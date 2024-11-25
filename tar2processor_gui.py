@@ -6142,6 +6142,8 @@ def processor(my_xml):
     temp2 = f"{temp1}-done"
     finished_product = my_xml.replace(temp1, temp2)
     error_log = finished_product.replace(f"{temp2}.xml", "error_log.txt")
+    # start a rolling text of changes to periodically write to the error log file
+    error_text = ""
     with open(my_xml, "r", encoding='utf-8') as r:
         filedata = r.read()
         if "xmlns:ead" not in filedata:
@@ -6158,7 +6160,7 @@ def processor(my_xml):
         boss.append(item)
     newdom = transform(dom)
     newdom.write(finished_product, pretty_print=True)
-
+    error_text += f"initial xsl transform applied to {temp2} and saved\n"
     with open(finished_product, "r", encoding='utf-8') as r:
         filedata = r.read()
         if "unitid>" not in filedata:
@@ -6191,19 +6193,30 @@ def processor(my_xml):
     with open(finished_product, "w", encoding='utf-8') as w:
         w.write(filedata)
     w.close()
+    error_text += f"initial manual text replacements applied, lxml started\n"
+    with open(error_log, "w") as w:
+        w.write(error_text)
+    w.close()
     unitid_text = temp1
     dom2 = ET.parse(finished_product)
     root = dom2.getroot()
-    # fix creation date issues
+    # fix finding aid creation date issues
     create_date = root.find(".//ead:publicationstmt/ead:date", namespaces=nsmap)
     create_date_text = create_date.text
     creation = root.find(".//ead:creation", namespaces=nsmap)
     creation_text = creation.text
+    creation.text = ""
+    creation_date = ET.SubElement(creation, "ead:date")
+    creation_date.attrib["calendar"] = "gregorian"
+    creation_date.attrib["era"] = "ce"
+    creation_date.text = create_date.text
     creation_text = creation_text.replace(create_date_text,
                                           f'<date calendar="gregorian" era="ce">{create_date.text}</date>')
     creation.text = creation_text
+    error_text += f"changed ead:creation text to have a subtag and to match publication statement date\n"
     # fix unittitle issues
     # remove trailing commas in nested ead:emph
+    error_text += f"Titles fixed:\n"
     titles = root.xpath(".//ead:unittitle/ead:emph", namespaces=nsmap)
     if titles is not None:
         for title in titles:
@@ -6212,6 +6225,8 @@ def processor(my_xml):
                 titliest = titliest[:-1]
             while titliest.endswith(","):
                 titliest = titliest[:-1]
+            if titliest != title.text:
+                error_text += f"\t{titliest} punctuation updated\n"
             title.text = titliest
     # now check for and insert trailing comma where appropriate
     titles = root.xpath(".//ead:unittitle", namespaces=nsmap)
@@ -6229,13 +6244,19 @@ def processor(my_xml):
                             emphatic[-1].tail = f'{emphatic[-1].tail},'
                         else:
                             title.text = f"{title.text},"
+                            error_text += f"\ttrailing comma added to {title.text}\n"
                     else:
                         #my_title = title.text_content()
                         your_title = title.text
                         title.text = f'{title.text},'
     # fix date issues
+    with open(error_log, "w") as w:
+        w.write(error_text)
+    w.close()
+    error_text += f"Date issues addressed:\n"
     dates = root.xpath("//ead:unitdate/ead:emph", namespaces=nsmap)
     for date in dates:
+        # strip out unnecessary trailing spaces
         dateify = date.text
         dateify = dateify.replace("\n", ' ')
         while dateify.endswith(" "):
@@ -6258,6 +6279,8 @@ def processor(my_xml):
             dateify = f"{dateify},"
         if dateify.endswith(","):
             dateify = f"{dateify} "
+        if date.text != dateify:
+            error_text += f"\t{date.text} updated to {dateify}"
         date.text = dateify
         date = date.getparent()
         if "normal" not in date.attrib:
@@ -6435,6 +6458,7 @@ def processor(my_xml):
         item.attrib['countryencoding'] = "iso3166-1"
         if 'id' in item.attrib:
             item.attrib = item.attrib.pop('id')
+    error_text += f"eadheader attributes fixed\n"
     header = root.xpath("//ead:eadid", namespaces=nsmap)
     for item in header:
         if 'encodinganalog' in item.attrib:
@@ -6443,6 +6467,7 @@ def processor(my_xml):
             item.attrib = item.attrib.pop('publicid')
         item.attrib['countrycode'] = 'US'
         item.attrib['mainagencycode'] = 'US-tx'
+    error_text += f"eadid attributes fixed\n"
     header = root.xpath("//ead:ead", namespaces=nsmap)
     for item in header:
         if 'xmlns:ead' in item.attrib:
@@ -6450,7 +6475,15 @@ def processor(my_xml):
         if 'xmlns' not in item.attrib:
             item.attrib['xmlns'] = "urn:isbn:1-931666-22-9"
         item.attrib['relatedencoding'] = "MARC21"
+    error_text += f"ead:ead tag attributes addressed\n"
+    # log the actions taken thus far
+    with open(error_loh, "w") as w:
+        w.write(error_text)
+    w.close()
+    # deal with containers
+    error_text += f"Containers dealth with:\n"
     containers = root.xpath(".//ead:container", namespaces=nsmap)
+    ## strip leading zeros from individual box numbers
     for container in containers:
         type = container.attrib['type']
         container.attrib['type'] = type.capitalize()
@@ -6460,93 +6493,89 @@ def processor(my_xml):
             while container_temp.startswith("0"):
                 container_temp = container_temp[1:]
             container.text = container_text.split("-")[0] + "-" + container_temp
+    # target containers on a per-did basis
     container_dids = root.xpath(".//ead:did", namespaces=nsmap)
     for container_did in container_dids:
         container_type = set()
         containers = container_did.xpath("ead:container", namespaces=nsmap)
+        # get container types so like types get handled together
         for container in containers:
             window['-OUTPUT-'].update("\n" + container.text, append=True)
             container_type.add(container.attrib['type'])
         container_type = list(container_type)
+        # handle containers by type
         for item in container_type:
             window['-OUTPUT-'].update("\n" + item, append=True)
+            # create dictionaries with sets where the key is the accession reference and set is all of the box numbers
             container_list = {}
             container_set = set()
-            container_count = 0
             containers = container_did.xpath(f"ead:container[@type='{item}']", namespaces=nsmap)
+            # create a list of accession references by isolating the box number and removing it from the container text
             for container in containers:
                 container_text = container.text
-                container_prefix = container_text.split("-")[0]
+                container_number = container_text.split("-")[-1].split("/")[-1]
+                container_prefix = container_text.replace(container_number, "")
                 container_set.add(container_prefix)
             container_set = list(container_set)
             container_set.sort()
+            # add accession references to the dictionary as keys
             for my_container in container_set:
                 container_list[my_container] = list()
+            # assign
             for container in containers:
                 container_text = container.text
-                container_text = container_text.split("-")
-                if len(container_text) > 1:
-                    container_list[container_text[0]].append(container_text[-1])
+                # isolate container number
+                container_number = container_text.split("-")[-1].split("/")[-1]
+                container_prefix = container_text.replace(container_number, "")
+                # exclude things like subcontainers by keying on that those won't have / or -
+                if len(container_number) > 1:
+                    container_list[container_prefix].append(container_number)
+            # now that the dictionary exists, process the containers
             for key in container_list.keys():
                 top = 0
                 bottom = 10000
                 my_list = container_list[key]
                 if len(my_list) > 1:
                     my_list.sort()
+                    # isolate first and last box numbers
                     for integer in my_list:
                         if int(integer) >= top:
                             top = int(integer)
                         if int(integer) <= bottom:
                             bottom = int(integer)
-                    container_text = f"{key}-{str(bottom)} thru {str(top)}"
+                    # special handling for only two containers
+                    if len(my_list) == 2:
+                        container_text = f"{key}{str(bottom)} and {str(top)}"
+                    if len(my_list) > 2:
+                        container_text = f"{key}-{str(bottom)} thru {str(top)}"
+                    # set container text to be the full range for every occurence that applies
                     for container in containers:
                         temp = container.text
                         if temp.startswith(key):
                             container.text = container_text
+            # remove second+ instances where the containers are identical, which anything from a given accession should be at this point
             container_list = []
             for container in containers:
                 if container.text not in container_list:
                     container_list.append(container.text)
                 else:
+                    error_text += f"\tseveral containers were merged into {container.text}\n"
                     container.getparent().remove(container)
-            '''
-            for container in containers:
-                container_count += 1
-            window['-OUTPUT-'].update(f"\n{len(containers)}", append=True)
-            if len(containers) > 1:
-                for container in containers:
-                    container_list.append(container.text)
-                container_list.sort()
-                try:
-                    top = int(container_list[0].split("-")[-1])
-                    bottom = int(container_list[0].split("-")[-1])
-                    for item in container_list:
-                        temp = int(item.split("-")[-1])
-                        if temp <= top:
-                            top = temp
-                        if temp >= bottom:
-                            bottom = temp
-                    container_text = container_list[0].split("-")[0] + f"-{str(top)} thru {str(bottom)}"
-                except:
-                    window['-OUTPUT-'].update("\n" + f"problem with {container_list[0]}, fix that and try again",
-                                              append=True)
-                    with open(error_log, "a") as x:
-                        x.write(f"problem with {container_list[0]}, fix that and try again\n")
-                    x.close()
-                    sys.exit()
-                window['-OUTPUT-'].update("\n" + container_text, append=True)
-                containers[0].text = container_text
-                containers = containers[1:]
-                for container in containers:
-                    window['-OUTPUT-'].update("\n" + "removing", container.text, append=True)
-                    container.getparent().remove(container)
-            '''
+    # log container actions
+    with open(error_log, "w") as w:
+        w.write(error_text)
+    w.close()
+    # fix the CDATA issue with ead exports
     langs = root.xpath("//ead:langmaterial", namespaces=nsmap)
     for lang in langs:
         lang_text = lang.text
         if lang_text.startswith("<![CDATA"):
             lang.text = lang_text.replace("<![CDATA[", "").replace("]]>", "")
+            error_text += "CDATA issue addressed in the langmaterial section\n"
+    # work on extents
     extents = root.xpath(".//ead:extent", namespaces=nsmap)
+    error_text += "Extent issues addressed:\n"
+    # if there's an extent and the next tag is genreform assume it is the type of extent and merge the two bits of text into extent
     for extent in extents:
         temp = extent.text
         other_tag = extent.getnext()
@@ -6554,7 +6583,13 @@ def processor(my_xml):
             temp = temp + other_tag.text
             extent.text = temp
             other_tag.getparent().remove(other_tag)
+            error_text += f"\textent and genreform merged to become {temp}\n"
+    # log extent fixes implemented
+    with open(error_log, "w") as w:
+        w.write(error_text)
+    w.close()
     # now process in the brackets for physdesc inner content
+    # set singulars for thins that would be exported as plurals
     extent_types = {'45 rpm records': '45 rpm record',
                     '78 rpm records': '78 rpm record',
                     '8-track cartridges': '8-track cartridge',
@@ -6596,7 +6631,7 @@ def processor(my_xml):
                     'building plans': 'build plan',
                     'cabinet photographs': 'cabinet photograph',
                     'cartes-de-visite (card photographs)': 'cartes-de-visite (card photograph)',
-                    'cartoons (humorous images)': 'cartton (humorous image)',
+                    'cartoons (humorous images)': 'cartoon (humorous image)',
                     'charcoal drawings': 'charoal drawing',
                     'charts (graphic documents)': 'chart (graphic docuent)',
                     'chromogenic color prints': 'chromogenic color print',
@@ -6756,19 +6791,24 @@ def processor(my_xml):
                     'working drawings': 'working drawing',
                     'works of art': 'work of art',
                     'zoning maps': 'zoning map'}
+    # set exceptions to how things are to be handled here on down
     exceptions = ['class', 'collection', 'fonds', 'otherlevel', 'recordgrp', 'series', 'subfonds', 'subgrp',
                   'subseries', 'Sub-Series', 'Sub-Group', 'Series']
+    # begin work on scope notes
     scopenotes = root.xpath(".//ead:scopecontent", namespaces=nsmap)
     for scopenote in scopenotes:
         parent = scopenote.getparent()
         parent_attrib = parent.attrib['level']
+        # if scope note isn't in the exceptions proceed, meant for lower level emphasis of text
         if parent.attrib != None and parent_attrib not in exceptions:
             paragraphs = scopenote.xpath("./ead:p", namespaces=nsmap)
             if paragraphs != None:
                 for paragraph in paragraphs:
                     emphasis = paragraph.xpath("./ead:emph", namespaces=nsmap)
+                    # if the emph wrapper has already been applied skip this one
                     if emphasis != []:
                         continue
+                    # add missing emph tags
                     else:
                         myText = paragraph.text
                         emphatic = ET.SubElement(paragraph, 'emph')
@@ -6776,6 +6816,7 @@ def processor(my_xml):
                         emphatic.text = myText
                         window['-OUTPUT-'].update("\nmanual fix to scopenote is needed in ArchivesSpace", append=True)
                         window['-OUTPUT-'].update(f"\ncheck text around: {paragraph.text[0:50]}", append=True)
+                        error_text += f"manual check of paragraph italicization around this text: {paragraph.text[:50]}\n"
                         paragraph.text = ""
             else:
                 emphasis = scopenote.xpath("./ead:emph", namespaces=nsmap)
@@ -6788,8 +6829,13 @@ def processor(my_xml):
                     emphatic.text = myText
                     window['-OUTPUT-'].update("\nmanual fix to scopenote may be needed", append=True)
                     window['-OUTPUT-'].update(f"\ncheck text around: {scopenote.text[0:50]}", append=True)
+                    error_text += f"manual check of paragraph italicization around this text: {scopenote.text[:50]}\n"
                     scopenote.text = ""
                 window['-OUTPUT-'].update("\n" + scopenote.text, append=True)
+    # log paragraph emph work before moving on
+    with open(error_log, "w") as w:
+        w.write(error_text)
+    w.close()
     notes = root.xpath(".//ead:note", namespaces=nsmap)
     for note in notes:
         parent = note.getparent()
@@ -6809,6 +6855,7 @@ def processor(my_xml):
                             emphatic.text = myText
                             window['-OUTPUT-'].update("\nmanual fix to note may be needed", append=True)
                             window['-OUTPUT-'].update(f"\ncheck text around: {paragraph.text[0:50]}", append=True)
+                            error_text += f"manual check of paragraph italicization around this text: {paragraph.text[:50]}\n"
                             paragraph.text = ""
                 else:
                     emphasis = note.xpath("./ead:emph", namespaces=nsmap)
@@ -6821,9 +6868,11 @@ def processor(my_xml):
                         emphatic.text = myText
                         window['-OUTPUT-'].update("\nmanual fix to note may be needed", append=True)
                         window['-OUTPUT-'].update(f"\ncheck text around: {note.text[0:50]}", append=True)
+                        error_text += f"manual check of paragraph italicization around this text: {scopenote.text[:50]}\n"
                         scopenote.text = ""
                     window['-OUTPUT-'].update("\n" + scopenote.text, append=True)
     extents = root.xpath(".//ead:extent", namespaces=nsmap)
+    error_text += f"Extent physfacet and dimensions addressed:\n"
     for extent in extents:
         parent = extent.getparent().getparent().getparent()
         physfacet = extent.find("../ead:physfacet", namespaces=nsmap)
@@ -6839,9 +6888,16 @@ def processor(my_xml):
             # window['-OUTPUT-'].update("\n" + parent.attrib['level'], append=True)
             if physfacet != None:
                 physfacet.text = "[" + physfacet.text + "]"
+                error_text += f"\tupdated to {physfacet.text}\n"
             if dimension != None:
                 dimension.text = "[" + dimension.text + "]"
+                error_text += f"\tupdated to {dimension.text}\n"
+    # update saved erorr log
+    with open(error_log, "w") as w:
+        w.write(error_text)
+    w.close()
     # process the singularity of extents
+    error_text += f"Singularized the following extents:\n"
     extents = root.xpath(".//ead:extent", namespaces=nsmap)
     for extent in extents:
         tempstring = extent.text
@@ -6855,6 +6911,7 @@ def processor(my_xml):
             tempy = extent.text
             tempy = tempy.replace(tempstring, extent_types[tempstring])
             extent.text = tempy
+            error_text += f"\t{tempy}\n"
     # process partial extents as 'includes'
     extents = root.xpath(".//ead:extent", namespaces=nsmap)
     for extent in extents:
@@ -6912,7 +6969,12 @@ def processor(my_xml):
     if restrictions is not None:
         for restriction in restrictions:
             restriction.getparent().remove(restriction)
+            error_text += f"removed internal accessrestrict notes\n"
     dom2.write(finished_product)
+    # write final bits to error log file
+    with open(error_log, "w") as w:
+        w.write(error_text)
+    w.close()
     # fix the crap that seems to not be fixed via xsl manipulation
     with open(finished_product, "r", encoding='utf-8') as r:
         filedata = r.read()
