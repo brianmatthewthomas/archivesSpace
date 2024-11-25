@@ -6477,7 +6477,7 @@ def processor(my_xml):
         item.attrib['relatedencoding'] = "MARC21"
     error_text += f"ead:ead tag attributes addressed\n"
     # log the actions taken thus far
-    with open(error_loh, "w") as w:
+    with open(error_log, "w") as w:
         w.write(error_text)
     w.close()
     # deal with containers
