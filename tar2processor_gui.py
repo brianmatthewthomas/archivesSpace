@@ -569,26 +569,7 @@ catalyst = ET.XML('''
 		<xsl:apply-templates select="node()|@*"/>
 	</xsl:element>
 </xsl:template>
-<!-- stuff that needs to be weeded out -->
-<xsl:template match="@id"/>
-<xsl:template match="ead:ead/ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper/ead:num"/>
-<xsl:template match="ead:ead/ead:eadheader/ead:filedesc/ead:publicationstmt/ead:address"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:dsc/ead:c01/ead:did/ead:unitid"/>
-<xsl:template match="ead:relatedmaterial/ead:head"/>
-<xsl:template match="ead:extent[@altrender='carrier']"/>
-<!-- update ead header info -->
-<xsl:template match="ead:eadheader">
-	<xsl:element name="ead:eadheader">
-		<xsl:attribute name="countryencoding">iso3166-1</xsl:attribute>
-		<xsl:attribute name="dateencoding">iso8601</xsl:attribute>
-		<xsl:attribute name="langencoding">iso639-2b</xsl:attribute>
-		<xsl:attribute name="repositoryencoding">iso15511</xsl:attribute>
-		<xsl:attribute name="audience">internal</xsl:attribute>
-		<xsl:attribute name="findaidstatus">edited-full-draft</xsl:attribute>
-		<xsl:attribute name="scriptencoding">iso15924</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
+
 <xsl:template match="ead:eadid">
 	<xsl:element name="ead:eadid">
 		<xsl:attribute name="countrycode">US</xsl:attribute>
@@ -6200,253 +6181,19 @@ def processor(my_xml):
     unitid_text = temp1
     dom2 = ET.parse(finished_product)
     root = dom2.getroot()
-    # fix finding aid creation date issues
-    create_date = root.find(".//ead:publicationstmt/ead:date", namespaces=nsmap)
-    create_date_text = create_date.text
-    creation = root.find(".//ead:creation", namespaces=nsmap)
-    creation_text = creation.text
-    creation.text = ""
-    creation_date = ET.SubElement(creation, "ead:date")
-    creation_date.attrib["calendar"] = "gregorian"
-    creation_date.attrib["era"] = "ce"
-    creation_date.text = create_date.text
-    creation_text = creation_text.replace(create_date_text,
-                                          f'<date calendar="gregorian" era="ce">{create_date.text}</date>')
-    creation.text = creation_text
-    error_text += f"changed ead:creation text to have a subtag and to match publication statement date\n"
-    # fix unittitle issues
-    # remove trailing commas in nested ead:emph
-    error_text += f"Titles fixed:\n"
-    titles = root.xpath(".//ead:unittitle/ead:emph", namespaces=nsmap)
-    if titles is not None:
-        for title in titles:
-            titliest = title.text
-            while titliest.endswith(" "):
-                titliest = titliest[:-1]
-            while titliest.endswith(","):
-                titliest = titliest[:-1]
-            if titliest != title.text:
-                error_text += f"\t{titliest} punctuation updated\n"
-            title.text = titliest
-    # now check for and insert trailing comma where appropriate
-    titles = root.xpath(".//ead:unittitle", namespaces=nsmap)
-    if titles is not None:
-        for title in titles:
-            parent = title.getparent()
-            dates = parent.xpath('./ead:unitdate', namespaces=nsmap)
-            window['-OUTPUT-'].update(f"\n{title.text}", append=True)
-            if dates is not None:
-                if len(dates) > 0:
-                    emphatic = title.xpath('./ead:emph', namespaces=nsmap)
-                    if emphatic is not None:
-                        if len(emphatic) > 0:
-                            window['-OUTPUT-'].update("\nemphasis being dealth with", append=True)
-                            emphatic[-1].tail = f'{emphatic[-1].tail},'
-                        else:
-                            title.text = f"{title.text},"
-                            error_text += f"\ttrailing comma added to {title.text}\n"
-                    else:
-                        #my_title = title.text_content()
-                        your_title = title.text
-                        title.text = f'{title.text},'
-    # fix date issues
-    with open(error_log, "w") as w:
-        w.write(error_text)
-    w.close()
-    error_text += f"Date issues addressed:\n"
-    dates = root.xpath("//ead:unitdate/ead:emph", namespaces=nsmap)
-    for date in dates:
-        # strip out unnecessary trailing spaces
-        dateify = date.text
-        dateify = dateify.replace("\n", ' ')
-        while dateify.endswith(" "):
-            dateify = dateify[:-1]
-        while '  ' in dateify:
-            dateify = dateify.replace('  ', ' ')
-        date.text = dateify
-        nexty = date.getparent().getnext()
-        if nexty is not None:
-            if nexty.tag == '{urn:isbn:1-931666-22-9}unitdate':
-                if not dateify.endswith(","):
-                    dateify = f"{dateify},"
-        my_children = date.getparent().getparent().getchildren()
-        my_children_flag = False
-        if my_children is not None:
-            for my_child in my_children:
-                if my_child.tag == '{urn:isbn:1-931666-22-9}physdesc':
-                    my_children_flag = True
-        if my_children_flag is True:
-            dateify = f"{dateify},"
-        if dateify.endswith(","):
-            dateify = f"{dateify} "
-        if date.text != dateify:
-            error_text += f"\t{date.text} updated to {dateify}"
-        date.text = dateify
-        date = date.getparent()
-        if "normal" not in date.attrib:
-            date.attrib['normal'] = timeturner(dateify)
-        if "type" not in date.attrib:
-            if "bulk" not in dateify:
-                date.attrib['type'] = "inclusive"
-            else:
-                date.attrib['type'] = ""
-        if date.attrib['type'] == "":
-            window['-OUTPUT-'].update("\n" + dateify, append=True)
-            date.attrib['type'] = "inclusive"
-        if 'era' not in date.attrib:
-            date.attrib['era'] = 'ce'
-        if date.attrib['era'] == "":
-            date.attrib['era'] = 'ce'
-        if 'calendar' not in date.attrib:
-            date.attrib['calendar'] = 'gregorian'
-        if date.attrib['calendar'] == "":
-            date.attrib['calendar'] = 'gregorian'
-    dates = root.xpath("//ead:unitdate", namespaces=nsmap)
-    screwballs = []
-    flag = 0
-    for date in dates:
-        dateify = date.text
-        dateify = dateify.replace("\n", ' ')
-        while dateify.endswith(" "):
-            dateify = dateify[:-1]
-        while '  ' in dateify:
-            dateify = dateify.replace('  ', ' ')
-        date.text = dateify
-        nexty = date.getnext()
-        if nexty is not None:
-            if nexty.tag == '{urn:isbn:1-931666-22-9}unitdate':
-                if not dateify.endswith(","):
-                    dateify = f"{dateify},"
-        my_children = date.getparent().getchildren()
-        my_children_flag = False
-        if my_children is not None:
-            for my_child in my_children:
-                if my_child.tag == '{urn:isbn:1-931666-22-9}physdesc':
-                    my_children_flag = True
-        if my_children_flag is True:
-            dateify = f"{dateify},"
-        if dateify.endswith(","):
-            dateify = f"{dateify} "
-        date.text = dateify
-        if "normal" not in date.attrib:
-            date.attrib['normal'] = timeturner(dateify)
-        if "type" not in date.attrib:
-            if "bulk" not in dateify:
-                date.attrib['type'] = "inclusive"
-            else:
-                date.attrib['type'] = ""
-        if date.attrib['type'] == "":
-            window['-OUTPUT-'].update("\n" + dateify, append=True)
-            date.attrib['type'] = "inclusive"
-        if 'era' not in date.attrib:
-            date.attrib['era'] = 'ce'
-        if date.attrib['era'] == "":
-            date.attrib['era'] = 'ce'
-        if 'calendar' not in date.attrib:
-            date.attrib['calendar'] = 'gregorian'
-        if date.attrib['calendar'] == "":
-            date.attrib['calendar'] = 'gregorian'
-    dates = root.xpath("//ead:date", namespaces=nsmap)
-    for date in dates:
-        date.attrib['calendar'] = "gregorian"
-        date.attrib['era'] = "ce"
-    notes = root.xpath("//ead:note/ead:head", namespaces=nsmap)
-    for note in notes:
-        note.getparent().remove(note)
-    subjects = root.xpath("//ead:subject", namespaces=nsmap)
-    subjectlist = []
-    for subject in subjects:
-        subjective = subject.text
-        subject.text = subjectspace(subjective)
-        if subject.text in subjectlist:
-            subject.getparent().remove(subject)
-        else:
-            subjectlist.append(subject.text)
-        if subject.attrib['source'] == "local":
-            flag += 1
-    subjects = root.xpath("//ead:controlaccess/ead:genreform", namespaces=nsmap)
-    for subject in subjects:
-        subjective = subject.text
-        subject.text = subjectspace(subjective)
-        if subject.text in subjectlist:
-            subject.getparent().remove(subject)
-        else:
-            subjectlist.append(subject.text)
-        if subject.attrib['source'] == "local":
-            flag += 1
-    subjects = root.xpath("//ead:geogname", namespaces=nsmap)
-    for subject in subjects:
-        subjective = subject.text
-        subject.text = subjectspace(subjective)
-        if subject.text in subjectlist:
-            subject.getparent().remove(subject)
-        else:
-            subjectlist.append(subject.text)
-        if subject.attrib['source'] == "local":
-            flag += 1
-    subjects = root.xpath("//ead:function", namespaces=nsmap)
-    subjectlist = []
-    for subject in subjects:
-        subjective = subject.text
-        while subjective.endswith("."):
-            subjective = subjective[:-1]
-        subject.text = subjectspace(subjective)
-        if subject.text in subjectlist:
-            subject.getparent().remove(subject)
-        else:
-            subjectlist.append(subject.text)
-    subjects = root.xpath("//ead:persname", namespaces=nsmap)
-    subjectlist = []
-    for subject in subjects:
-        subjective = subject.text
-        subject.text = subjectspace(subjective)
-        if subject.text in subjectlist:
-            subject.getparent().remove(subject)
-        else:
-            subjectlist.append(subject.text)
-        if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
-            flag += 1
-    subjects = root.xpath("//ead:famname", namespaces=nsmap)
-    subjectlist = []
-    for subject in subjects:
-        subjective = subject.text
-        subject.text = subjectspace(subjective)
-        if subject.text in subjectlist:
-            subject.getparent().remove(subject)
-        else:
-            subjectlist.append(subject.text)
-        if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
-            flag += 1
-    subjects = root.xpath("//ead:corpname", namespaces=nsmap)
-    subjectlist = []
-    for subject in subjects:
-        subjective = subject.text
-        subject.text = subjectspace(subjective)
-        if 'encodinganalog' in subject.attrib:
-            if subject.attrib['encodinganalog'] == "710":
-                subject.text = subarea(subject.text)
-            if subject.attrib['encodinganalog'] == "110":
-                subject.text = subarea(subject.text)
-            if subject.attrib['encodinganalog'] == "610":
-                subject.text = subarea(subject.text)
-        if subject.text in subjectlist:
-            subject.getparent().remove(subject)
-        else:
-            subjectlist.append(subject.text)
-        if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
-            flag += 1
-    # sorts subjects, but causes head to sort into the middle so adding a preceding space to get it sort on top, then removing afterwards
-    subjects = root.xpath("//ead:head", namespaces=nsmap)
-    for subject in subjects:
-        subject.text = " " + subject.text
-    for node in root.xpath("//ead:controlaccess/ead:controlaccess", namespaces=nsmap):
-        if node.tag == "head":
-            node.text = " " + node.text
-        node[:] = sorted(node, key=lambda ch: ch.text)
-    subjects = root.xpath("//ead:head", namespaces=nsmap)
-    for subject in subjects:
-        subjective = subject.text
-        subject.text = subjectspace(subjective)
+    # remove several things from the output
+    remove_list = ["ead:ead/ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper/ead:num",
+                   "ead:ead/ead:eadheader/ead:filedesc/ead:publicationstmt/ead:address",
+                   "ead:ead/ead:archdesc/ead:dsc/ead:c01/ead:did/ead:unitid",
+                   "ead:relatedmaterial/ead:head",
+                   "ead:extent[@altrender='carrier']"]
+    for item in remove_list:
+        bumps = root.xpath(f".//{item}", namespaces=nsmap)
+        if bumps is not None:
+            for bump in bumps:
+                bump.getparent().remove(bump)
+                error_text += f"removed a {item} from the ead file\n"
+    # handle ead header stuff
     header = root.xpath("//ead:eadheader", namespaces=nsmap)
     for item in header:
         item.attrib['langencoding'] = "iso639-2b"
@@ -6480,8 +6227,326 @@ def processor(my_xml):
     with open(error_log, "w") as w:
         w.write(error_text)
     w.close()
-    # deal with containers
-    error_text += f"Containers dealth with:\n"
+    # fix finding aid creation date issues
+    create_date = root.find(".//ead:publicationstmt/ead:date", namespaces=nsmap)
+    create_date_text = create_date.text
+    creation = root.find(".//ead:creation", namespaces=nsmap)
+    creation_text = creation.text
+    creation.text = ""
+    creation_date = ET.SubElement(creation, "date")
+    creation_date.attrib["calendar"] = "gregorian"
+    creation_date.attrib["era"] = "ce"
+    creation_date.text = create_date.text
+    creation_text = creation_text.replace(create_date_text,
+                                          f'<date calendar="gregorian" era="ce">{create_date.text}</date>')
+    creation.text = creation_text
+    error_text += f"changed ead:creation text to have a subtag and to match publication statement date\n"
+    # fix unittitle issues
+    # remove trailing commas in nested ead:emph
+    error_text += f"Titles fixed:\n"
+    titles = root.xpath(".//ead:unittitle/ead:emph", namespaces=nsmap)
+    if titles is not None:
+        for title in titles:
+            titliest = title.text
+            while titliest.endswith(" "):
+                titliest = titliest[:-1]
+            while titliest.endswith(","):
+                titliest = titliest[:-1]
+            if titliest != title.text:
+                error_text += f"\t{titliest} punctuation updated\n"
+            title.text = titliest
+    # now check for and insert trailing comma where appropriate
+    titles = root.xpath(".//ead:unittitle", namespaces=nsmap)
+    if titles is not None:
+        for title in titles:
+            parent = title.getparent()
+            dates = parent.xpath('./ead:unitdate', namespaces=nsmap)
+            window['-OUTPUT-'].update(f"\n{title.text}", append=True)
+            if dates is not None:
+                if len(dates) > 0:
+                    emphatic = title.xpath('./ead:emph', namespaces=nsmap)
+                    if emphatic is not None:
+                        if len(emphatic) > 0:
+                            window['-OUTPUT-'].update("\nemphasis being dealt with", append=True)
+                            emphatic[-1].tail = f'{emphatic[-1].tail},'
+                        else:
+                            title.text = f"{title.text},"
+                            error_text += f"\ttrailing comma added to {title.text}\n"
+                    else:
+                        #my_title = title.text_content()
+                        your_title = title.text
+                        title.text = f'{title.text},'
+    # fix date issues
+    with open(error_log, "w") as w:
+        w.write(error_text)
+    w.close()
+    error_text += f"Date issues addressed:\n"
+    # handle dates within a unitdate/emph tag
+    dates = root.xpath("//ead:unitdate/ead:emph", namespaces=nsmap)
+    for date in dates:
+        # strip out unnecessary trailing spaces
+        dateify = date.text
+        dateify = dateify.replace("\n", ' ')
+        while dateify.endswith(" "):
+            dateify = dateify[:-1]
+        while '  ' in dateify:
+            dateify = dateify.replace('  ', ' ')
+        date.text = dateify
+        # add trailing comma if next sibling is a unitdate
+        nexty = date.getparent().getnext()
+        if nexty is not None:
+            if nexty.tag == '{urn:isbn:1-931666-22-9}unitdate':
+                if not dateify.endswith(","):
+                    dateify = f"{dateify},"
+                    error_text += f"\ttrailing comma added to {dateify} because of sibling unitdate\n"
+        my_children = date.getparent().getparent().getchildren()
+        # add trailing comma if next sibiling is a physdesc
+        my_children_flag = False
+        if my_children is not None:
+            for my_child in my_children:
+                if my_child.tag == '{urn:isbn:1-931666-22-9}physdesc':
+                    my_children_flag = True
+        if my_children_flag is True:
+            dateify = f"{dateify},"
+            error_text += f"\ttrailing comma added to {dateify} due to sibling physdesc\n"
+        if dateify.endswith(","):
+            dateify = f"{dateify} "
+        # change text of date tag if manipulated date text is different than original
+        if date.text != dateify:
+            error_text += f"\t{date.text} updated to {dateify}"
+        date.text = dateify
+        date = date.getparent()
+        # address date normal attribute specifically
+        if "normal" not in date.attrib:
+            date.attrib['normal'] = timeturner(dateify)
+            error_text += f"\tdate normal attribute added to {date.text}\n"
+        # address missing date type/calendar/era issues
+        if "type" not in date.attrib:
+            if "bulk" not in dateify:
+                date.attrib['type'] = "inclusive"
+                error_text += f"\ttype attribute added to {date.text}\n"
+            else:
+                date.attrib['type'] = ""
+        if date.attrib['type'] == "":
+            window['-OUTPUT-'].update("\n" + dateify, append=True)
+            date.attrib['type'] = "inclusive"
+            error_text += f"\ttype attribute added to {date.text}\n"
+        if 'era' not in date.attrib:
+            date.attrib['era'] = 'ce'
+            error_text += f"\tera attribute added to {date.text}\n"
+        if date.attrib['era'] == "":
+            date.attrib['era'] = 'ce'
+            error_text += f"\tera attribute added to {date.text}\n"
+        if 'calendar' not in date.attrib:
+            date.attrib['calendar'] = 'gregorian'
+            error_text += f"\tcalendar attribute added to {date.text}\n"
+        if date.attrib['calendar'] == "":
+            date.attrib['calendar'] = 'gregorian'
+            error_text += f"\tcalendar attribute added to {date.text}\n"
+    # handle dates without the child emph tag
+    dates = root.xpath("//ead:unitdate", namespaces=nsmap)
+    screwballs = []
+    flag = 0
+    for date in dates:
+        # strip out unnecessary trailing spaces
+        dateify = date.text
+        dateify = dateify.replace("\n", ' ')
+        while dateify.endswith(" "):
+            dateify = dateify[:-1]
+        while '  ' in dateify:
+            dateify = dateify.replace('  ', ' ')
+        # add trailing comma if next sibling is a unitdate
+        date.text = dateify
+        nexty = date.getnext()
+        if nexty is not None:
+            if nexty.tag == '{urn:isbn:1-931666-22-9}unitdate':
+                if not dateify.endswith(","):
+                    dateify = f"{dateify},"
+                    error_text += f"\ttrailing comma added to {dateify} because of sibling unitdate\n"
+        my_children = date.getparent().getchildren()
+        # add trailing comma if next sibling is a physdesc
+        my_children_flag = False
+        if my_children is not None:
+            for my_child in my_children:
+                if my_child.tag == '{urn:isbn:1-931666-22-9}physdesc':
+                    my_children_flag = True
+        if my_children_flag is True:
+            dateify = f"{dateify},"
+            error_text += f"\ttrailing comma added to {dateify} due to sibling physdesc\n"
+        if dateify.endswith(","):
+            dateify = f"{dateify} "
+        # change text of date tag if manipulated date text is different than original
+        if date.text != dateify:
+            error_text += f"\t{date.text} updated to {dateify}"
+        date.text = dateify
+        # address date normal attribute specifically
+        if "normal" not in date.attrib:
+            date.attrib['normal'] = timeturner(dateify)
+            error_text += f"\tdate normal attribute added to {date.text}\n"
+        # address missing date type/calendar/era issues
+        if "type" not in date.attrib:
+            if "bulk" not in dateify:
+                date.attrib['type'] = "inclusive"
+                error_text += f"\ttype attribute added to {date.text}\n"
+            else:
+                date.attrib['type'] = ""
+        if date.attrib['type'] == "":
+            window['-OUTPUT-'].update("\n" + dateify, append=True)
+            date.attrib['type'] = "inclusive"
+            error_text += f"\ttype attribute added to {date.text}\n"
+        if 'era' not in date.attrib:
+            date.attrib['era'] = 'ce'
+            error_text += f"\tera attribute added to {date.text}\n"
+        if date.attrib['era'] == "":
+            date.attrib['era'] = 'ce'
+            error_text += f"\tera attribute added to {date.text}\n"
+        if 'calendar' not in date.attrib:
+            date.attrib['calendar'] = 'gregorian'
+            error_text += f"\tcalendar attribute added to {date.text}\n"
+        if date.attrib['calendar'] == "":
+            date.attrib['calendar'] = 'gregorian'
+            error_text += f"\tcalendar attribute added to {date.text}\n"
+    # address the date tag
+    dates = root.xpath("//ead:date", namespaces=nsmap)
+    for date in dates:
+        date.attrib['calendar'] = "gregorian"
+        date.attrib['era'] = "ce"
+        error_text += f"\tcalendar and era added to ead:date at {date.text}\n"
+    # log changes before moving on
+    with open(error_log, "w") as w:
+        w.write(error_text)
+    w.close()
+    # remove ead:note header if it exists
+    notes = root.xpath("//ead:note/ead:head", namespaces=nsmap)
+    for note in notes:
+        note.getparent().remove(note)
+        error_text += f"an ead:note header was removed\n"
+    # start subjects tags handling
+    error_text += f"Subjects handled:\n"
+    subjects = root.xpath("//ead:subject", namespaces=nsmap)
+    subjectlist = []
+    for subject in subjects:
+        subjective = subject.text
+        # pass subject through subject handler
+        subject.text = subjectspace(subjective)
+        # strip subject from ead if already handled, otherwise add it to a list to be compared with for other subjects
+        error_text += f"\tSubject: {subject.text} normalized\n"
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+        if subject.attrib['source'] == "local":
+            flag += 1
+            error_text += f"\tlocal source attribute in subject {subject.text}\n"
+    # start genreform tags handling
+    subjects = root.xpath("//ead:controlaccess/ead:genreform", namespaces=nsmap)
+    error_text += f"Genreforms handled:\n"
+    for subject in subjects:
+        subjective = subject.text
+        subject.text = subjectspace(subjective)
+        error_text += f"\tGenreform: {subject.text} normalized\n"
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+        if subject.attrib['source'] == "local":
+            flag += 1
+            error_text += f"\tlocal source attribute in genreform {subject.text}\n"
+    # start geogname tags handling
+    subjects = root.xpath("//ead:geogname", namespaces=nsmap)
+    error_text += f"Geognames handled:\n"
+    for subject in subjects:
+        subjective = subject.text
+        subject.text = subjectspace(subjective)
+        error_text += f"\tGeogname: {subject.text} normalized\n"
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+        if subject.attrib['source'] == "local":
+            flag += 1
+            error_text += f"\tlocal source attribute in geogname {subject.text}\n"
+    # start function statement handling
+    subjects = root.xpath("//ead:function", namespaces=nsmap)
+    error_text += f"Function statements handled:\n"
+    subjectlist = []
+    for subject in subjects:
+        subjective = subject.text
+        while subjective.endswith("."):
+            subjective = subjective[:-1]
+        subject.text = subjectspace(subjective)
+        error_text += f"\tfunction: {subject.text} normalized\n"
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+    # start personal name tag handling
+    subjects = root.xpath("//ead:persname", namespaces=nsmap)
+    error_text += f"Personal names handled:\n"
+    subjectlist = []
+    for subject in subjects:
+        subjective = subject.text
+        subject.text = subjectspace(subjective)
+        error_text += f"\tPersonal name: {subject.text} normalized\n"
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+        if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
+            flag += 1
+            error_text += f"\tlocal source or lcsh source attribute in {subject.text}\n"
+    # start family name handling
+    error_text += f"Family names handled:\n"
+    subjects = root.xpath("//ead:famname", namespaces=nsmap)
+    subjectlist = []
+    for subject in subjects:
+        subjective = subject.text
+        subject.text = subjectspace(subjective)
+        error_text += f"\tFamily name: {subject.text} normalized\n"
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+        if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
+            flag += 1
+            error_text += f"\tlocal source or lcsh source attribute in {subject.text}\n"
+    # being corpname handling
+    error_text += f"Corporate names handled:\n"
+    subjects = root.xpath("//ead:corpname", namespaces=nsmap)
+    subjectlist = []
+    for subject in subjects:
+        subjective = subject.text
+        subject.text = subjectspace(subjective)
+        error_text += f"\tcorporate name: {subject.text} normalized\n"
+        if 'encodinganalog' in subject.attrib:
+            corp_analog = ['710', '110', '610']
+            if subject.attrib['encodinganalog'] in corp_analog:
+                subject.text = subarea(subject.text)
+                error_text += f"\tcorporate name: {subject.text} had subarea rules applied to it\n"
+        if subject.text in subjectlist:
+            subject.getparent().remove(subject)
+        else:
+            subjectlist.append(subject.text)
+        if subject.attrib['source'] == "local" or subject.attrib['source'] == "lcsh":
+            flag += 1
+            error_text += f"\tlocal source or lcsh source attribute in {subject.text}\n"
+    # sorts subjects, but causes head to sort into the middle so adding a preceding space to get it sort on top, then removing afterwards
+    subjects = root.xpath("//ead:head", namespaces=nsmap)
+    for subject in subjects:
+        subject.text = " " + subject.text
+    for node in root.xpath("//ead:controlaccess/ead:controlaccess", namespaces=nsmap):
+        if node.tag == "head":
+            node.text = " " + node.text
+        node[:] = sorted(node, key=lambda ch: ch.text)
+    subjects = root.xpath("//ead:head", namespaces=nsmap)
+    for subject in subjects:
+        subjective = subject.text
+        subject.text = subjectspace(subjective)
+    error_text += f"Control access terms sorted alphabetically\n"
+    with open(error_log, "w") as w:
+        w.write(error_text)
+    w.close()
+    error_text += f"Containers dealt with:\n"
     containers = root.xpath(".//ead:container", namespaces=nsmap)
     ## strip leading zeros from individual box numbers
     for container in containers:
@@ -6583,7 +6648,7 @@ def processor(my_xml):
             temp = temp + other_tag.text
             extent.text = temp
             other_tag.getparent().remove(other_tag)
-            error_text += f"\textent and genreform merged to become {temp}\n"
+            error_text += f"\textent and  sibling genreform merged to become {temp}\n"
     # log extent fixes implemented
     with open(error_log, "w") as w:
         w.write(error_text)
@@ -6829,13 +6894,14 @@ def processor(my_xml):
                     emphatic.text = myText
                     window['-OUTPUT-'].update("\nmanual fix to scopenote may be needed", append=True)
                     window['-OUTPUT-'].update(f"\ncheck text around: {scopenote.text[0:50]}", append=True)
-                    error_text += f"manual check of paragraph italicization around this text: {scopenote.text[:50]}\n"
+                    error_text += f"manual check of paragraph italicization needed around this text: {scopenote.text[:50]}\n"
                     scopenote.text = ""
                 window['-OUTPUT-'].update("\n" + scopenote.text, append=True)
     # log paragraph emph work before moving on
     with open(error_log, "w") as w:
         w.write(error_text)
     w.close()
+    # deal with ead:note tags
     notes = root.xpath(".//ead:note", namespaces=nsmap)
     for note in notes:
         parent = note.getparent()
@@ -6871,6 +6937,7 @@ def processor(my_xml):
                         error_text += f"manual check of paragraph italicization around this text: {scopenote.text[:50]}\n"
                         scopenote.text = ""
                     window['-OUTPUT-'].update("\n" + scopenote.text, append=True)
+    # being handling physdesc/extent companion elements if they exist
     extents = root.xpath(".//ead:extent", namespaces=nsmap)
     error_text += f"Extent physfacet and dimensions addressed:\n"
     for extent in extents:
@@ -6892,6 +6959,11 @@ def processor(my_xml):
             if dimension != None:
                 dimension.text = "[" + dimension.text + "]"
                 error_text += f"\tupdated to {dimension.text}\n"
+        # do parenthetical for high level electronic records count in extent
+        if parent_attrib in exceptions:
+            if "electronic files" in extent.text:
+                extent.text = f"({extent.text})"
+                error_text += f"added parenthetical part to {extent.text}\n"
     # update saved erorr log
     with open(error_log, "w") as w:
         w.write(error_text)
@@ -6951,10 +7023,29 @@ def processor(my_xml):
     for level in levels:
         my_dids = root.xpath(f".//ead:{level}/ead:did", namespaces=nsmap)
         for my_did in my_dids:
+            c_tag = my_did.getparent()
+            c_level = c_tag.attrib["level"]
+            if c_level == "Heading":
+                c_tag.attrib['level'] = "otherlevel"
+                c_tag.attrib['otherlevel'] = "Heading"
+                error_text += f"a level of heading was updated to include otherlevel element"
             physdescs = my_did.xpath("./ead:physdesc/ead:extent", namespaces=nsmap)
             if len(physdescs) > 0:
                 for physdesc in physdescs:
                     physdesc_text = physdesc.text
+                    # deal with superfluous altrender and labels in physdesc
+                    parent_phys = physdesc.getparent()
+                    if "altrender" in parent_phys.attrib:
+                        parent_phys.attrib.pop("altrender")
+                        error_text += f"removed altrender from phydesc at {physdesc_text}\n"
+                    if "label" in parent_phys.attrib:
+                        parent_phys.attrib.pop("label")
+                        error_text += f"removed label from physdesc at {physdesc_text}\n"
+                    # deal with altrender on extent
+                    if "altrender" in physdesc.attrib:
+                        physdesc.attrib.pop("altrender")
+                        error_text += f"removed altrender from extent at {physdesc_text}\n"
+                    # deal with trailing punctuation on extent
                     if physdesc_text.startswith('['):
                         unitdates = my_did.xpath("./ead:unitdate", namespaces=nsmap)
                         if len(unitdates) > 0:
@@ -7094,15 +7185,20 @@ def processor(my_xml):
         w.write(
             '<?xml version="1.0" encoding="UTF-8"?>\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->\n<!-- <?xml-stylesheet type="text/xsl" href="ead.xsl"?> <?xml-stylesheet type="text/css" href="ead.css"?> -->\n' + filedata)
     w.close()
+    error_text += f"A number of manual text changes added to the ead file to make it compliant/clean-up before html generation\n"
+    error_text += f"attempting to parse file to make sure the ead is valid\n"
     html_file = f"{finished_product[:-3]}html"
     my_html = ET.XSLT(html_transform)
     try:
         dom = ET.parse(finished_product)
+        error_text += f"parsing of ead file successful\n"
     except Exception as e:
-        with open(error_log, "w") as x:
-            x.write(str(e))
-            x.write(traceback.format_exc())
-        x.close()
+        error_text += f"Parsing failed because of:\n{str(e)}\n"
+        error_text += f"{traceback.format_exc()}\n"
+        error_text += f"try using a web browser to see if there is malformed xml somewhere\n"
+        with open(error_log, "w") as w:
+            w.write(error_text)
+        w.close()
         sys.exit()
     newdom = my_html(dom)
     newdom.write(html_file, pretty_print=True)
@@ -7112,21 +7208,14 @@ def processor(my_xml):
         with open(html_file, "w") as w:
             w.write(filedata)
         w.close()
-    switch = True
-    if switch is True:
-        try:
-            dom3 = ET.parse(finished_product)
-        except:
-            window['-OUTPUT-'].update("\n" + unitid_text,
-                                      "has a xml tag problem, check it for errors. We suggest using a web browser at minimum.",
-                                      append=True)
-            with open(error_log, "a") as x:
-                x.write(f"{unitid_text} has a xml tag problem, check it for errors. We suggest using a web browser at minimum.")
-            x.close()
+    error_text += f"html file generated, done with file"
     if flag > 0:
         window['-OUTPUT-'].update("\n" + f"potential subject term issue in {unitid_text} check it manually",
                                   append=True)
-        switch = False
+        error_text += f"potential subject term issue, check it manually to be sure everything is okay"
+    with open(error_log, "w") as w:
+        w.write(error_text)
+    w.close()
     window['-OUTPUT-'].update("\n" + f'{unitid_text} finished', append=True)
     window['-OUTPUT-'].update("\n" + "all done!", append=True)
 
