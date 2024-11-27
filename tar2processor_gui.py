@@ -6114,6 +6114,11 @@ nsmap = {'xmlns': 'urn:isbn:1-931666-22-9',
 def processor(my_xml):
     # parse as xslt for application below
     levels = ['c01','c02','c03','c04','c05','c06','c07','c08','c09','c10','c11','c12','c13','c14','c15']
+    # set exceptions to how things are to be handled here on down
+    exceptions = ['class', 'collection', 'fonds', 'otherlevel', 'recordgrp', 'series', 'subfonds', 'subgrp',
+                  'subseries', 'Sub-Series', 'Sub-Group', 'Series']
+    high_level = ['collection', 'fonds', 'recordgrp', 'series', 'subfonds', 'subgrp', 'subseries', 'Sub-Series',
+                  'Sub-Group', 'Series']
     transform = ET.XSLT(catalyst)
     window["-OUTPUT-"].update(
         "\nthis is supposed to fix a bunch of minor issues related to TARO 2.0 normalization, check output for correctness",
@@ -6227,6 +6232,63 @@ def processor(my_xml):
     with open(error_log, "w") as w:
         w.write(error_text)
     w.close()
+    #change ead:odd to ead:note
+    odds = root.findall(".//ead:odd", namespaces=nsmap)
+    if odds is not None:
+        for odd in odds:
+            odd.tag = "ead:note"
+            error_text += "changed an ead:off to an ead:note\n"
+    # fix attribute issues with unitid
+    unitids = root.xpath(".//ead:unitid", namespaces=nsmap)
+    if unitids is not None:
+        for unitid in unitids:
+            unitid.attrib['label'] = "TSLAC Control No.:"
+            unitid.attrib['countrycode'] = "US"
+            unitid.attrib['repositorycode'] = "US-tx"
+            unitid.attrib['encodinganalog'] = "099"
+            error_text += f"update attributes for unitid {unitid.text}"
+    # add encodinganalog 245 to high level unittitles
+    unittitles = root.xpath(".//ead:unittitle", namespaces=nsmap)
+    for unittitle in unittitles:
+        title_grandpa = unittitle.getparent().getparent()
+        if "level" in title_grandpa.attrib:
+            if title_grandpa.attrib['level'] in high_level:
+                unittitle.attrib['encodinganalog'] = "245"
+                error_text += f"added encoding analog to {unittitle.text}\n"
+    # add encoding analog and label to top-level unittitle
+    top_titles = root.xpath (".//ead:archdesc/ead:did/ead:unittitle", namespaces=nsmap)
+    for top_title in top_titles:
+        top_title.attrib['encodinganalog'] = "245"
+        top_title.attrib['label'] = "Title:"
+        error_text += f"label and encodinganalog added to top title {top_title.text}\n"
+    # update first origination to compliant formatting
+    origination = root.find(".//ead:origination", namespaces=nsmap)
+    if not "label" in origination.attrib:
+        origination.attrib['label'] = "Creator:"
+    else:
+        origination.attrib['label'] = f"{origination.attrib['label']}:"
+    originator = origination[0]
+    if "source" in originator.attrib:
+        if originator.attrib['source'] == "Library of Congress Subject Headings":
+            originator.attrib['source'] = "lcsh"
+        if originator.attrib['source'] == "naf":
+            originator.attrib['source'] = "lcnaf"
+    else:
+        originator.attrib['source'] = "local"
+    if not originator.text.endswith("."):
+        originator.text = f"{originator.text}."
+    if "corpname" in originator.tag:
+        originator.attrib['encodinganalog'] = "110"
+    if "famname" in originator.tag:
+        originator.attrib['encodinganalog'] = "100"
+    if "persname" in originator.tag:
+        originator.attrib['encodinganalog'] = "100 3"
+        print("something")
+    error_text += "made necessary modifications to first origination entity\n"
+    # fix topest-level dates
+    dates = root.xpath(".//ead:archdesc/ead:did/ead:unitdate")
+    for date in dates:
+        date.attrib['label'] = "Dates:"
     # fix finding aid creation date issues
     create_date = root.find(".//ead:publicationstmt/ead:date", namespaces=nsmap)
     create_date_text = create_date.text
@@ -6856,9 +6918,6 @@ def processor(my_xml):
                     'working drawings': 'working drawing',
                     'works of art': 'work of art',
                     'zoning maps': 'zoning map'}
-    # set exceptions to how things are to be handled here on down
-    exceptions = ['class', 'collection', 'fonds', 'otherlevel', 'recordgrp', 'series', 'subfonds', 'subgrp',
-                  'subseries', 'Sub-Series', 'Sub-Group', 'Series']
     # begin work on scope notes
     scopenotes = root.xpath(".//ead:scopecontent", namespaces=nsmap)
     for scopenote in scopenotes:
