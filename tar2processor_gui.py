@@ -551,6 +551,21 @@ def timeturner(dateify):
         date_normal = date_normal.replace(donkeykong, "0000/")
     return date_normal
 
+def encodinganaloger(taglist, analog):
+    top_list = ['ead:archdesc', 'ead:descgrp']
+    for x in taglist:
+        parent = x.getparent()
+        if parent.tag in top_list:
+            x.attrib['encodinganalog'] = analog
+
+def normalize_source(source):
+    if source == "Library of Congress Cubject Headings":
+        source = "lcsh"
+    if source == "naf":
+        source = "lcnaf"
+    if source == "":
+        source = "lcnaf"
+    return source
 
 catalyst = ET.XML('''
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ead="urn:isbn:1-931666-22-9" xmlns:xlink="http://www.w3.org/1999/xlink" exclude-result-prefixes="xs" version="1.0">
@@ -6186,6 +6201,15 @@ def processor(my_xml):
     unitid_text = temp1
     dom2 = ET.parse(finished_product)
     root = dom2.getroot()
+    # fix the encapsulating ead tag
+    header = root.xpath("//ead:ead", namespaces=nsmap)
+    for item in header:
+        if 'xmlns:ead' in item.attrib:
+            item.attrib = item.attrib.pop('xmlns:ead')
+        if 'xmlns' not in item.attrib:
+            item.attrib['xmlns'] = "urn:isbn:1-931666-22-9"
+        item.attrib['relatedencoding'] = "MARC21"
+    error_text += f"ead:ead tag attributes addressed\n"
     # remove several things from the output
     remove_list = ["ead:ead/ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper/ead:num",
                    "ead:ead/ead:eadheader/ead:filedesc/ead:publicationstmt/ead:address",
@@ -6198,7 +6222,8 @@ def processor(my_xml):
             for bump in bumps:
                 bump.getparent().remove(bump)
                 error_text += f"removed a {item} from the ead file\n"
-    # handle ead header stuff
+    #start work on the header content
+    # edit attributes for ead:eadheader
     header = root.xpath("//ead:eadheader", namespaces=nsmap)
     for item in header:
         item.attrib['langencoding'] = "iso639-2b"
@@ -6211,6 +6236,11 @@ def processor(my_xml):
         if 'id' in item.attrib:
             item.attrib = item.attrib.pop('id')
     error_text += f"eadheader attributes fixed\n"
+    # assign encoding analog to sponsor tags
+    sponsors = root.xpath(".//ead:sponsor", namespaces=nsmap)
+    for sponsor in sponsors:
+        sponsor.attrib['encodinganalog'] = "536"
+    #assign encoding analog to eadid
     header = root.xpath("//ead:eadid", namespaces=nsmap)
     for item in header:
         if 'encodinganalog' in item.attrib:
@@ -6220,14 +6250,6 @@ def processor(my_xml):
         item.attrib['countrycode'] = 'US'
         item.attrib['mainagencycode'] = 'US-tx'
     error_text += f"eadid attributes fixed\n"
-    header = root.xpath("//ead:ead", namespaces=nsmap)
-    for item in header:
-        if 'xmlns:ead' in item.attrib:
-            item.attrib = item.attrib.pop('xmlns:ead')
-        if 'xmlns' not in item.attrib:
-            item.attrib['xmlns'] = "urn:isbn:1-931666-22-9"
-        item.attrib['relatedencoding'] = "MARC21"
-    error_text += f"ead:ead tag attributes addressed\n"
     # log the actions taken thus far
     with open(error_log, "w") as w:
         w.write(error_text)
@@ -6247,6 +6269,91 @@ def processor(my_xml):
             unitid.attrib['repositorycode'] = "US-tx"
             unitid.attrib['encodinganalog'] = "099"
             error_text += f"update attributes for unitid {unitid.text}"
+    # fix ead:publisher stuff
+    publisher = root.find(".//ead:header/ead:filedesc/ead:publicationstmt/ead:publisher/ead:extptr", namespace=nsmap)
+    publisher.attrib['xmlns:xlink'] = "http://www.w3.org/1999/xlink"
+    publisher.attrib['xlink:actuate'] = "onLoad"
+    publisher.attrib['xlink:show'] = "embed"
+    publisher.attrib['xlink:href'] = "https://www.tsl.texas.gov/sites/default/files/public/tslac/arc/findingaids/tslac_logo.jpg"
+    publisher.attrib['xlink:type'] = "simple"
+    # rephrase creation statement
+    # double check that output
+    creation = root.find(".//ead:eadheader/ead:profiledesc/ead:creation", namespace=nsmap)
+    author = root.find(".//ead:author", namespaces=nsmap).text
+    author = author.split(" ")
+    date = root.find(".//ead:publicationstmt/ead:date", namespace=nsmap).text
+    creation.text = f"Finding aid created in ArchivesSpace by {author[-2]} {author[-1]} and exported as EAD Version 2002 as part of the TARO project, "
+    creation_date = ET.SubElement(creation, "ead:date")
+    creation_date.attrib['calendar'] = "gregorian"
+    creation_date.attrib['era'] = "ce"
+    creation_date.text = date
+    creation.text = f"{creation.text}."
+    # fix finding aid creation date issues
+    create_date = root.find(".//ead:publicationstmt/ead:date", namespaces=nsmap)
+    create_date_text = create_date.text
+    creation = root.find(".//ead:creation", namespaces=nsmap)
+    creation_text = creation.text
+    creation.text = ""
+    creation_date = ET.SubElement(creation, "date")
+    creation_date.attrib["calendar"] = "gregorian"
+    creation_date.attrib["era"] = "ce"
+    creation_date.text = create_date.text
+    creation_text = creation_text.replace(create_date_text,
+                                          f'<date calendar="gregorian" era="ce">{create_date.text}</date>')
+    creation.text = creation_text
+    error_text += f"changed ead:creation text to have a subtag and to match publication statement date\n"
+    #start work on descrules standard text
+    descrules = root.find(".//ead:descrules", namespace=nsmap)
+    descrules.text = "Description based on "
+    desc_emph = ET.SubElement(descrules, "ead:emph")
+    desc_emph.attrib['render'] = "italic"
+    desc_emph.text = DACS
+    descrules.text = f"{descrules.text}."
+    #start work on the top level ead:did section
+    # fix topest-level dates
+    dates = root.xpath(".//ead:archdesc/ead:did/ead:unitdate", namespaces=nsmap)
+    for date in dates:
+        date.attrib['label'] = "Dates:"
+        if "type" in date.attrib:
+            if date.attrib['type'] == "bulk":
+                date.attrib['encodinganalog'] = "245$g"
+            else:
+                date.attrib['encodinganalog'] = "245$f"
+        else:
+            # when someone forgot to add date type assume it is inclusive
+            date.attrib['type'] = "inclusive"
+            date.attrib['encodinganalog'] = "245$f"
+    # update attributes of top-level abstract
+    abstracts = root.xpath(".//ead:archdesc/ead:did/ead:abstract", namespaces=nsmap)
+    for abstract in abstracts:
+        abstract.attrib['label'] = "Abstract:"
+        abstract.attrib['encodinganalog'] = "300$a"
+    # update physdesc attributes of top-level
+    physdescs = root.xpath(".//ead:archdesc/ead:did/ead:physdesc", namespaces=nsmap)
+    for physdesc in physdescs:
+        physdesc.attrib['label'] = "Quantity:"
+        physdesc.attrib['encodinganalog'] = "300$a"
+    # fix top-level langmaterial attributes
+    languages = root.xpath(".//ead:archdesc/ead:did/ead:langmaterial", namespaces=nsmap)
+    for language in languages:
+        language.attrib['label'] = "Language:"
+        language.attrib['encodinganalog'] = "546$a"
+        # fix a cdata issue with exported language info
+        mylanguage = language.text
+        mylanguage = mylanguage.replace("<![CDATA[", "").replace("]]>", "")
+        language.text = mylanguage
+    # fix repo attributes
+    repositories = root.xpath(".//ead:archdesc/ead:did/ead:repository", namespaces=nsmap)
+    for repository in repositories:
+        repository.attrib['encodinganalog'] = "852$a"
+        # possibility need to manually include here the extref details of the repository, but don't assume yet
+        # would be the xlink stuff
+    # fix extref attributes across the board
+    externals = root.xpath(".//ead:extref", namespaces=nsmap)
+    for external in externals:
+        external.attrib['xlink:actuate'] = "onRequest"
+        external.attrib['xlink:show'] = "new"
+        external.attrib['xlink:type'] = "simple"
     # add encodinganalog 245 to high level unittitles
     unittitles = root.xpath(".//ead:unittitle", namespaces=nsmap)
     for unittitle in unittitles:
@@ -6285,24 +6392,202 @@ def processor(my_xml):
         originator.attrib['encodinganalog'] = "100 3"
         print("something")
     error_text += "made necessary modifications to first origination entity\n"
-    # fix topest-level dates
-    dates = root.xpath(".//ead:archdesc/ead:did/ead:unitdate")
-    for date in dates:
-        date.attrib['label'] = "Dates:"
-    # fix finding aid creation date issues
-    create_date = root.find(".//ead:publicationstmt/ead:date", namespaces=nsmap)
-    create_date_text = create_date.text
-    creation = root.find(".//ead:creation", namespaces=nsmap)
-    creation_text = creation.text
-    creation.text = ""
-    creation_date = ET.SubElement(creation, "date")
-    creation_date.attrib["calendar"] = "gregorian"
-    creation_date.attrib["era"] = "ce"
-    creation_date.text = create_date.text
-    creation_text = creation_text.replace(create_date_text,
-                                          f'<date calendar="gregorian" era="ce">{create_date.text}</date>')
-    creation.text = creation_text
-    error_text += f"changed ead:creation text to have a subtag and to match publication statement date\n"
+    #start work on the top body of the text
+    # fix acquisition info attributes
+    acquisitions = root.xpath(".//ead:acqinfo", namespaces=nsmap)
+    for acquisition in acquisitions:
+        parent = acquisition.getparent()
+        if parent.tag == "ead:archdesc" or parent.tag == "ead:descgrp":
+            acquisition.attrib['encodinganalog'] = "541"
+    # fix custodial history attributes
+    custodians = root.xpath(".//ead:custodhist", namespace=nsmap)
+    if custodians is not None:
+        for custodian in custodians:
+            parent = custodian.getparent()
+            if parent.tag == "ead:archdesc" or parent.tag == "ead:descgrp":
+                custodian.attrib['encodinganalog'] = "561"
+    # fix accessrestrict attributes
+    restrictions = root.xpath(".//ead:accessrestrict", namespaces=nsmap)
+    for restriction in restrictions:
+        parent = restriction.getparent()
+        if parent.tag == "ead:archdesc" or parent.tag == "ead:descgrp":
+            restriction.attrib['encodinganalog'] = "506"
+    #fix processinginfo tag
+    processes = root.xpath(".//ead:processinfo", namspaces=nsmap)
+    for process in processes:
+        parent = process.getparent()
+        if parent.tag == "ead:archdesc" or parent.tag == "ead:descgrp":
+            process.attrib['encodinganalog'] = "583"
+    # fix encoding analog on appraisal tag
+    appraisals = root.xpath(".//ead:appraisal", namespaces=nsmap)
+    for appraisal in appraisals:
+        parent = appraisal.getparent()
+        if parent.tag == "ead:archdesc" or parent.tag == "ead:descgrp":
+            appraisal.attrib['encodinganalog'] = "583"
+    # fix encoding analog on separated materials
+    separations = root.xpath(".//ead:separatedmaterial", namespaces=nsmap)
+    for separation in separations:
+        parent = separation.getparent()
+        if parent.tag == "ead:archdesc" or parent.tag == "ead:descgrp":
+            separation.attrib['encodinganalog'] = "544 0"
+    # fix accruals encoding analog
+    accruals = root.xpath(".//ead:accruals", namespaces=nsmap)
+    for accrual in accruals:
+        parent = accrual.getparent()
+        if parent.tag == "ead:archdesc" or parent.tag == "ead:descgrp":
+            accrual.attrib['encodinganalog'] = "584"
+    #fix encoding analog for alternate formats
+    formats = root.xpath(".//ead:altformavail", namespace=nsmap)
+    encodinganaloger(formats, "535")
+    # fix encoding analog for usre restrictions
+    userrestrictions = root.xpath(".//ead:userestrict", namespaces=nsmap)
+    encodinganaloger(userrestrictions, "540")
+    # fix encoding analog for phystech
+    phystechs = root.xpath('.//ead:phystech', namespace=nsmap)
+    encodinganaloger(phystechs, "340")
+    # fix enconding analog for arrangement
+    arrangements = root.xpath(".//ead:arrangement", namespaces=nsmap)
+    encodinganaloger(arrangements, "351")
+    # fix encoding analog for preferred citations
+    citations = root.xpath(".//ead:prefercite", namespaces=nsmap)
+    encodinganaloger(citations, "524")
+    # fix bioghist attributes including id numbers
+    bioghistories = root.xpath(".//ead:archdesc/ead:bioghist", namespaces=nsmap)
+    counter = 0
+    for bioghistory in bioghistories:
+        counter += 1
+        bioghistory.attrib['id'] = f"bio{str(counter)}"
+        bioghistory.attrib['encodinganalog'] = "545"
+    contents = root.xpath(".//ead:archdesc/ead:scopecontent", namespaces=nsmap)
+    for content in contents:
+        content.attrib['encodinganalog'] = "520$b"
+    # process the controlled access thing
+    master_arch = root.find(".//ead:archdesc", namespaces=nsmap)
+    master_control = ET.SubElement(master_arch, "ead:controlaccess")
+    master_control.attrib['construct'] = "master"
+    control_head = ET.SubElement(master_control, "ead:head")
+    control_head.text = "Index Terms"
+    master_control_p = ET.SubElement(master_control, "ead:p")
+    master_control_p_emph = ET.SubElement(master_control_p, "ead:emph")
+    master_control_p_emph.attrib['render'] = "italic"
+    master_control_p_emph.text = "The terms listed here were used to catalog the records. The terms can be used to find similar or related records."
+    # populate family names if applicable
+    origination_flag = False
+    subject_flag = False
+    famname_flag = False
+    origination_seven_hundreds = root.xpath(".//ead:origination/ead:famname", namespaces=nsmap)
+    if origination_seven_hundreds is not None:
+        origination_flag = True
+        famname_flag = True
+    subject_seven_hundreds = root.xpath(".//ead:controlaccess/ead:famname", namespaces=nsmap)
+    if subject_seven_hundreds is not None:
+        subject_flag = True
+        famname_flag = True
+    if famname_flag is True:
+        famname = ET.SubElement(master_control, "ead:controlaccess")
+        famname_head = ET.SubElement(famname, "ead:head")
+        famname_head.text = "Family Names:"
+        if origination_flag is True:
+            for origination_seven_hundred in origination_seven_hundreds:
+                if "encodinganalog" not in origination_seven_hundred.attrib:
+                    famname_item = ET.SubElement(famname, "ead:famname")
+                    famname_item.attrib = origination_seven_hundred.attrib
+                    famname_item.text = origination_seven_hundred.text
+                    origination_parent = origination_seven_hundred.getparent()
+                    origination_parent.getparent().remove(origination_parent)
+                    famname_item.attrib['encodinganalog'] = "700"
+        if subject_flag is True:
+            for subject_seven_hundred in subject_seven_hundreds:
+                famname_item = ET.SubElement(famname, "ead:famname")
+                famname_item.attrib = subject_seven_hundred.attrib
+                famname_item.text = subject_seven_hundred.text
+                subject_seven_hundred.getparent().remove(subject_seven_hundred)
+                famname_item.attrib['encodinganalog'] = "700"
+    subject_flag = False
+    origination_flag = False
+    persname_flag = False
+    origination_seven_hundreds = root.xpath(".//ead:origination/ead:persname", namespaces=nsmap)
+    if origination_seven_hundreds is not None:
+        origination_flag = True
+        persname_flag = True
+    subject_seven_hundreds = root.xpath(".//ead:controlaccess/ead:persname", namespaces=nsmap)
+    if subject_seven_hundreds is not None:
+        subject_flag = True
+        persname_flag = True
+    if persname_flag is True:
+        persname = ET.SubElement(master_control, "ead:controlaccess")
+        persname_head = ET.SubElement(persname, "ead:head")
+        persname_head.text = "Personal Names:"
+        if origination_flag is True:
+            for origination_seven_hundred in origination_seven_hundreds:
+                if "encodinganalog" not in origination_seven_hundred.attrib:
+                    persname_item = ET.SubElement(persname, "ead:persname")
+                    persname_item.attrib = origination_seven_hundred.attrib
+                    persname_item.text = origination_seven_hundred.text
+                    origination_parent = origination_seven_hundred.getparent()
+                    origination_parent.getparent().remove(origination_parent)
+                    persname_item.attrib['encodinganalog'] = "700"
+        if subject_flag is True:
+            for subject_seven_hundred in subject_seven_hundreds:
+                persname_item = ET.SubElement(persname, "ead:persname")
+                persname_item.attrib = subject_seven_hundred.attrib
+                persname_item.text = subject_seven_hundred.text
+                subject_seven_hundred.getparent().remove(subject_seven_hundred)
+                persname_item.attrib['encodinganalog'] = "700"
+    subject_flag = False
+    origination_flag = False
+    corpname_flag = False
+    origination_seven_hundreds = root.xpath(".//ead:origination/ead:corpname", namespaces=nsmap)
+    if origination_seven_hundreds is not None:
+        origination_flag  = True
+        corpname_flag = True
+    subject_seven_hundreds = root.xpath(".//ead:controlaccess/ead:corpname", namespaces=nsmap)
+    if subject_seven_hundreds is not None:
+        subject_flag = True
+        corpname_flag = True
+    if corpname_flag is True:
+        corpname = ET.SubElement(master_control, "ead:controlaccess")
+        corpname_head = ET.SubElement(corpname, "ead:head")
+        corpname_head.text = "Corporate Names:"
+        if origination_flag is True:
+            for origination_seven_hundred in origination_seven_hundreds:
+                if "encodinganalog" not in origination_seven_hundred.attrib:
+                    corpname_item = ET.SubElement(corpname, "ead:corpname")
+                    corpname_item.attrib = origination_seven_hundred.attrib
+                    corpname_item.text = origination_seven_hundred.text
+                    origination_parent = origination_seven_hundred.getparent()
+                    origination_parent.getparent().remove(origination_parent)
+                    corpname.attrib['encodinganalog'] = "710"
+        if subject_flag is True:
+            for subject_seven_hundred in subject_seven_hundreds:
+                corpname_item = ET.SubElement(corpname, "ead:corpname")
+                corpname_item.attrib = subject_seven_hundred.attrib
+                corpname_item.text = subject_seven_hundred.text
+                corpname_item.attrib['encodinganalog'] = "710"
+                subject_seven_hundred.getparent().remove(subject_seven_hundred)
+    subjects = root.xpath(".//ead:controlaccess/ead:subject", namespaces=nsmap)
+    if subjects is not None:
+        subjective = ET.SubElement(master_control, "ead:controlaccess")
+        subjective_head = ET.SubElement(subjective, "ead:head")
+        subjective_head.text = "Subjects:"
+        for subject in subjects:
+            subject_item = ET.SubElement(subjective, "ead:subject")
+            subject_item.attrib = subject.attrib
+            subject_item.text = subject.text
+            subject_item.attrib['encodinganalog'] = "650"
+            subject.getparent().remove(item)
+    geonames = root.xpath(".//ead:controlaccess/ead:geogname", namespaces=nsmap)
+    if geonames is not None:
+        geode = ET.SubElement(master_control, "ead:controlaccess")
+        geode_head = ET.SubElement(geode, "ead:head")
+        geode_head.text = "Places:"
+        for geoname in geonames:
+            geo_item = ET.SubElement(geode, "ead:geogname")
+            geo_item.attrib = geoname.attrib
+            geo_item.text = geoname.text
+            geo_item.attrib['encodinganalog'] = "651"
+            geoname.getparent().remove(geoname)
+
     # fix unittitle issues
     # remove trailing commas in nested ead:emph
     error_text += f"Titles fixed:\n"
@@ -6996,6 +7281,8 @@ def processor(my_xml):
                         error_text += f"manual check of paragraph italicization around this text: {scopenote.text[:50]}\n"
                         scopenote.text = ""
                     window['-OUTPUT-'].update("\n" + scopenote.text, append=True)
+
+
     # being handling physdesc/extent companion elements if they exist
     extents = root.xpath(".//ead:extent", namespaces=nsmap)
     error_text += f"Extent physfacet and dimensions addressed:\n"
