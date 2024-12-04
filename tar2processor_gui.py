@@ -4732,7 +4732,11 @@ def processor(my_xml):
     with open(error_log, "w") as w:
         w.write(error_text)
     w.close()
-    #change ead:odd to ead:note
+    #change ead:odd to ead:note and remove child head
+    odd_heads = root.findall(".//ead:odd/ead:head", namespaces=nsmap)
+    if odd_heads is not None:
+        for odd in odd_heads:
+            odd.getparent().remove(odd)
     odds = root.findall(".//ead:odd", namespaces=nsmap)
     if odds is not None:
         for odd in odds:
