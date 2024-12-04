@@ -572,1530 +572,6 @@ def normalize_source(source):
         source = "lcnaf"
     return source
 
-catalyst = ET.XML('''
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ead="urn:isbn:1-931666-22-9" xmlns:xlink="http://www.w3.org/1999/xlink" exclude-result-prefixes="xs" version="1.0">
-
-<xsl:output method="xml" encoding="UTF-8" indent="yes"/>
-<!-- copy everything -->
-<xsl:template match="node()|@*">
-	<xsl:copy>
-		<xsl:apply-templates select="node()|@*"/>
-	</xsl:copy>
-</xsl:template>
-<!-- insert namespace prefix into everything so there are no errors in xml transform application -->
-<xsl:template match="*">
-	<xsl:element name="ead:{name()}" namespace="urn:isbn:1-931666-22-9">
-		<xsl:copy-of select="namespace::*"/>
-		<xsl:apply-templates select="node()|@*"/>
-	</xsl:element>
-</xsl:template>
-
-<xsl:template match="ead:eadid">
-	<xsl:element name="ead:eadid">
-		<xsl:attribute name="countrycode">US</xsl:attribute>
-		<xsl:attribute name="mainagencycode">US-tx</xsl:attribute>
-		<xsl:value-of select="."/>
-	</xsl:element>
-</xsl:template>
-<!-- make a change to the unitid to add the correct attributes -->
-<xsl:template match="ead:odd">
-	<xsl:element name="ead:note">
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-
-<xsl:template match="ead:unitid">
-	<xsl:element name="ead:unitid">
-		<xsl:attribute name="label">TSLAC Control No.:</xsl:attribute>
-		<xsl:attribute name="countrycode">US</xsl:attribute>
-		<xsl:attribute name="repositorycode">US-tx</xsl:attribute>
-		<xsl:attribute name="encodinganalog">099</xsl:attribute>
-		<xsl:value-of select="."/>
-	</xsl:element>
-</xsl:template>
-<!-- change unit titles to generally have the marc code inserted -->
-<xsl:template match="ead:unittitle">
-	<xsl:element name="ead:unittitle">
-		<xsl:attribute name="encodinganalog">245</xsl:attribute>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- change highest level unit title to have both marc code and title label -->
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:unittitle">
-	<ead:unittitle>
-		<xsl:attribute name="label">Title:</xsl:attribute>
-		<xsl:attribute name="encodinganalog">245</xsl:attribute>
-		<xsl:apply-templates select="@*|node()"/>
-	</ead:unittitle>
-</xsl:template>
-<!-- modify 1storigination to match the correct encoding analog attributes in the 100s -->
-<xsl:template match="ead:origination[1]">
-	<xsl:element name="ead:origination">
-		<xsl:choose>
-			<xsl:when test="@label='creator'">
-				<xsl:attribute name="label">Creator:</xsl:attribute>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:attribute name="label"><xsl:value-of select="@label"/></xsl:attribute>
-			</xsl:otherwise>
-		</xsl:choose>
-		<xsl:for-each select="ead:corpname">
-			<xsl:element name="ead:corpname">
-				<xsl:attribute name="encodinganalog">110</xsl:attribute>
-				<xsl:choose>
-				    <xsl:when test="@source">
-                        <xsl:choose>
-                            <xsl:when test="@source='Library of Congress Subject Headings'">
-                                <xsl:attribute name="source">lcsh</xsl:attribute>
-                            </xsl:when>
-                            <xsl:when test="@source='naf'">
-                                <xsl:attribute name="source">lcnaf</xsl:attribute>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:attribute name="source">local</xsl:attribute>
-                    </xsl:otherwise>
-                </xsl:choose>
-                <xsl:if test="@role">
-                    <xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
-                </xsl:if>
-				<xsl:if test="@authfilenumber">
-					<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:text>.</xsl:text>
-			</xsl:element>
-		</xsl:for-each>
-		<xsl:for-each select="ead:persname">
-			<xsl:element name="ead:persname">
-				<xsl:attribute name="encodinganalog">100</xsl:attribute>
-				<xsl:choose>
-				    <xsl:when test="@source">
-                        <xsl:choose>
-                            <xsl:when test="@source='Library of Congress Subject Headings'">
-                                <xsl:attribute name="source">lcsh</xsl:attribute>
-                            </xsl:when>
-                            <xsl:when test="@source='naf'">
-                                <xsl:attribute name="source">lcnaf</xsl:attribute>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:attribute name="source">local</xsl:attribute>
-                    </xsl:otherwise>
-                </xsl:choose>
-                <xsl:if test="@role">
-                    <xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
-                </xsl:if>
-				<xsl:if test="@authfilenumber">
-					<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:text>.</xsl:text>
-			</xsl:element>
-		</xsl:for-each>
-		<xsl:for-each select="ead:famname">
-			<xsl:element name="ead:famname">
-				<xsl:attribute name="encodinganalog">100 3</xsl:attribute>
-				<xsl:choose>
-				    <xsl:when test="@source">
-                        <xsl:choose>
-                            <xsl:when test="@source='Library of Congress Subject Headings'">
-                                <xsl:attribute name="source">lcsh</xsl:attribute>
-                            </xsl:when>
-                            <xsl:when test="@source='naf'">
-                                <xsl:attribute name="source">lcnaf</xsl:attribute>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:attribute name="source">local</xsl:attribute>
-                    </xsl:otherwise>
-                </xsl:choose>
-                <xsl:if test="@role">
-                    <xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
-                </xsl:if>
-				<xsl:if test="@authfilenumber">
-					<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-				</xsl:if>
-				<xsl:value-of select="."/>
-				<xsl:text>.</xsl:text>
-			</xsl:element>
-		</xsl:for-each>
-	</xsl:element>
-</xsl:template>
-<!-- update the highest level unit date to include the label=Dates: and encodinganalog -->
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:unitdate">
-	<ead:unitdate>
-		<xsl:attribute name="calendar"><xsl:value-of select="@calendar"/></xsl:attribute>
-		<xsl:attribute name="era"><xsl:value-of select="@era"/></xsl:attribute>
-		<xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
-		<xsl:choose>
-			<xsl:when test="@normal">
-				<xsl:attribute name="normal"><xsl:value-of select="@normal"/></xsl:attribute>
-			</xsl:when>
-			<xsl:otherwise/>
-		</xsl:choose>
-		<xsl:attribute name="label">Dates:</xsl:attribute>
-		<xsl:choose>
-			<xsl:when test="@type='bulk'">
-				<xsl:attribute name="encodinganalog">245$g</xsl:attribute>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:attribute name="encodinganalog">245$f</xsl:attribute>
-			</xsl:otherwise>
-		</xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
-	</ead:unitdate>
-</xsl:template>
-<!-- update the highest level abstract to include encodinganalog and correct label -->
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:abstract">
-	<ead:abstract>
-		<xsl:attribute name="label">Abstract:</xsl:attribute>
-		<xsl:attribute name="encodinganalog">520$a</xsl:attribute>
-		<xsl:apply-templates select="@*|node()"/>
-	</ead:abstract>
-</xsl:template>
-<!-- update the highest level physdesc to include encodinganalog and correct label name -->
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:physdesc">
-	<ead:physdesc>
-		<xsl:attribute name="label">Quantity:</xsl:attribute>
-		<xsl:attribute name="encodinganalog">300$a</xsl:attribute>
-		<xsl:apply-templates select="@*|node()"/>
-	</ead:physdesc>
-</xsl:template>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:langmaterial">
-	<xsl:element name="ead:langmaterial">
-		<xsl:attribute name="label">Language:</xsl:attribute>
-		<xsl:attribute name="encodinganalog">546$a</xsl:attribute>
-		<xsl:if test="@audience">
-			<xsl:attribute name="audience"><xsl:value-of select="@audience"/></xsl:attribute>
-		</xsl:if>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- update repository to include the encodinganalog and correct links for tslac -->
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:repository">
-	<xsl:element name="ead:repository">
-		<xsl:attribute name="encodinganalog">852$a</xsl:attribute>
-		<xsl:element name="ead:extref">
-            <xsl:attribute name="xlink:actuate">onRequest</xsl:attribute>
-            <xsl:attribute name="xlink:show">new</xsl:attribute>
-            <xsl:attribute name="xlink:href">http://www.tsl.state.tx.us/arc/index.html</xsl:attribute>
-            <xsl:attribute name="xlink:type">simple</xsl:attribute>
-			<xsl:text>Texas State Archives</xsl:text>
-		</xsl:element>
-	</xsl:element>
-</xsl:template>
-<!-- general extref processing -->
-<xsl:template match="ead:extref">
-    <xsl:element name="ead:extref">
-            <xsl:attribute name="xlink:actuate">onRequest</xsl:attribute>
-            <xsl:attribute name="xlink:show">new</xsl:attribute>
-            <xsl:attribute name="xlink:href"><xsl:value-of select="@xlink:href"/></xsl:attribute>
-            <xsl:attribute name="xlink:type">simple</xsl:attribute>
-            <xsl:apply-templates select="@*|node()"/>
-    </xsl:element>
-</xsl:template>
-<!-- insert correct encodinganalog in acqinfo -->
-<xsl:template match="ead:acqinfo">
-	<xsl:element name="ead:acqinfo">
-	    <xsl:choose>
-	        <xsl:when test="parent::ead:archdesc">
-		        <xsl:attribute name="encodinganalog">541</xsl:attribute>
-	        </xsl:when>
-	        <xsl:when test="parent::ead:descgrp">
-		        <xsl:attribute name="encodinganalog">541</xsl:attribute>
-	        </xsl:when>
-	        <xsl:otherwise/>
-		</xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- update custodhist to generally have correct encodinganalog -->
-<xsl:template match="ead:custodhist">
-	<xsl:element name="ead:custodhist">
-	    <xsl:choose>
-	        <xsl:when test="parent::ead:archdesc">
-		        <xsl:attribute name="encodinganalog">561</xsl:attribute>
-	        </xsl:when>
-	        <xsl:when test="parent::ead:descgrp">
-		        <xsl:attribute name="encodinganalog">561</xsl:attribute>
-	        </xsl:when>
-	        <xsl:otherwise/>
-	    </xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- add correct encodinganalog to sponsor tag -->
-<xsl:template match="ead:sponsor">
-	<xsl:element name="ead:sponsor">
-		<xsl:attribute name="encodinganalog">536</xsl:attribute>
-		<xsl:value-of select="."/>
-	</xsl:element>
-</xsl:template>
-<!-- insert the logo/graphic reference in the tslac listed as publisher tag -->
-<xsl:template match="ead:ead/ead:eadheader/ead:filedesc/ead:publicationstmt/ead:publisher">
-	<xsl:element name="ead:publisher">
-		<xsl:value-of select="."/>
-		<extptr xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onLoad" xlink:show="embed" xlink:href="https://www.tsl.texas.gov/sites/default/files/public/tslac/arc/findingaids/tslac_logo.jpg" xlink:type="simple"/>
-	</xsl:element>
-</xsl:template>
-<!-- modify creation to reword the output, pull the archivists name, 
-insert proper attributes in the date and keep just the date and not the whole UTC code 
-<xsl:template match="ead:ead/ead:eadheader/ead:profiledesc/ead:creation">
-	<xsl:element name="ead:creation">
-		<xsl:text>Finding aid created in ArchivesSpace by </xsl:text>
-		<xsl:value-of select="substring(//ead:titlestmt/ead:author,15,1000)"/>
-		<xsl:text> and exported as EAD Version 2002 as part of the TARO project, </xsl:text>
-		<xsl:element name="ead:date">
-			<xsl:attribute name="era">ce</xsl:attribute>
-			<xsl:attribute name="calendar">gregorian</xsl:attribute>
-			<xsl:value-of select="//ead:publicationstmt/ead:date"/>
-		</xsl:element>
-		<xsl:text>.</xsl:text>
-	</xsl:element>
-</xsl:template> -->
-<!-- change descrules tag content to match our standards -->
-<xsl:template match="ead:ead/ead:eadheader/ead:profiledesc/ead:descrules">
-	<xsl:element name="ead:descrules">Description based on 
-		<xsl:element name="ead:emph">
-			<xsl:attribute name="render">italic</xsl:attribute>DACS
-		</xsl:element>.
-	</xsl:element>
-</xsl:template>
-<!-- add correct encodinganalog attribute to accessrestrict -->
-<xsl:template match="ead:accessrestrict">
-	<xsl:element name="ead:accessrestrict">
-	    <xsl:choose>
-	        <xsl:when test="parent::ead:archdesc">
-		        <xsl:attribute name="encodinganalog">506</xsl:attribute>
-	        </xsl:when>
-	        <xsl:when test="parent::ead:descgrp">
-		        <xsl:attribute name="encodinganalog">506</xsl:attribute>
-	        </xsl:when>
-	        <xsl:otherwise/>
-	    </xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- add correct encodinganalog to processing info -->
-<xsl:template match="ead:processinfo">
-	<xsl:element name="ead:processinfo">
-	    <xsl:choose>
-	        <xsl:when test="parent::ead:archdesc">
-		        <xsl:attribute name="encodinganalog">583</xsl:attribute>
-	        </xsl:when>
-	        <xsl:when test="parent::ead:descgrp">
-		        <xsl:attribute name="encodinganalog">583</xsl:attribute>
-	        </xsl:when>
-	        <xsl:otherwise/>
-	    </xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- add correct encoding analog to appraisal info -->
-<xsl:template match="ead:appraisal">
-	<xsl:element name="ead:appraisal">
-	    <xsl:choose>
-	        <xsl:when test="parent::ead:archdesc">
-		        <xsl:attribute name="encodinganalog">583</xsl:attribute>
-	        </xsl:when>
-	        <xsl:when test="parent::ead:descgrp">
-		        <xsl:attribute name="encodinganalog">583</xsl:attribute>
-	        </xsl:when>
-	        <xsl:otherwise/>
-	    </xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- add correct encoding analog to separated materials -->
-<xsl:template match="ead:separatedmaterial">
-	<xsl:element name="ead:separatedmaterial">
-	    <xsl:choose>
-	        <xsl:when test="parent::ead:archdesc">
-		        <xsl:attribute name="encodinganalog">544 0</xsl:attribute>
-	        </xsl:when>
-	        <xsl:when test="parent::ead:descgrp">
-		        <xsl:attribute name="encodinganalog">544 0</xsl:attribute>
-	        </xsl:when>
-	        <xsl:otherwise/>
-	    </xsl:choose>
-		<xsl:apply-templates />
-	</xsl:element>
-</xsl:template>
-<!-- add correct encodinganalog to accruals -->
-<xsl:template match="ead:accruals">
-	<xsl:element name="ead:accruals">
-	    <xsl:choose>
-	        <xsl:when test="parent::ead:archdesc">
-		        <xsl:attribute name="encodinganalog">584</xsl:attribute>
-	        </xsl:when>
-	        <xsl:when test="parent::ead:descgrp">
-		        <xsl:attribute name="encodinganalog">584</xsl:attribute>
-	        </xsl:when>
-	        <xsl:otherwise/>
-	    </xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- add correct encodinganalog to altformavail -->
-<xsl:template match="ead:altformavail">
-	<xsl:element name="ead:altformavail">
-	    <xsl:choose>
-	        <xsl:when test="parent::ead:archdesc">
-		        <xsl:attribute name="encodinganalog">530</xsl:attribute>
-	        </xsl:when>
-	        <xsl:when test="parent::ead:descgrp">
-		        <xsl:attribute name="encodinganalog">530</xsl:attribute>
-	        </xsl:when>
-	        <xsl:otherwise/>
-	    </xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- add correct encoding analog to originalsloc -->
-<xsl:template match="ead:originalsloc">
-	<xsl:element name="ead:originalsloc">
-	    <xsl:choose>
-	        <xsl:when test="parent::ead:archdesc">
-		        <xsl:attribute name="encodinganalog">535</xsl:attribute>
-	        </xsl:when>
-	        <xsl:when test="parent::ead:descgrp">
-		        <xsl:attribute name="encodinganalog">535</xsl:attribute>
-	        </xsl:when>
-	        <xsl:otherwise/>
-	    </xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- add correct encodinganalog attribute to userestrict -->
-<xsl:template match="ead:userestrict">
-	<xsl:element name="ead:userestrict">
-	    <xsl:choose>
-	        <xsl:when test="parent::ead:archdesc">
-		        <xsl:attribute name="encodinganalog">540</xsl:attribute>
-	        </xsl:when>
-	        <xsl:when test="parent::ead:descgrp">
-		        <xsl:attribute name="encodinganalog">540</xsl:attribute>
-	        </xsl:when>
-	        <xsl:otherwise/>
-	    </xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- add correct encodinganalog attribute to phystech -->
-<xsl:template match="ead:phystech">
-	<xsl:element name="ead:phystech">
-	    <xsl:choose>
-	        <xsl:when test="parent::ead:archdesc">
-		        <xsl:attribute name="encodinganalog">340</xsl:attribute>
-	        </xsl:when>
-	        <xsl:when test="parent::ead:descgrp">
-		        <xsl:attribute name="encodinganalog">340</xsl:attribute>
-	        </xsl:when>
-	        <xsl:otherwise/>
-	    </xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- add correct encodinganalog and bio attribute to bioghist -->
-<xsl:template match="ead:ead/ead:archdesc/ead:bioghist[1]">
-	<xsl:element name="ead:bioghist">
-		<xsl:attribute name="id">bio1</xsl:attribute>
-		<xsl:attribute name="encodinganalog">545</xsl:attribute>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="ead:ead/ead:archdesc/ead:bioghist[2]">
-	<xsl:element name="ead:bioghist">
-		<xsl:attribute name="id">bio2</xsl:attribute>
-		<xsl:attribute name="encodinganalog">545</xsl:attribute>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="ead:ead/ead:archdesc/ead:bioghist[3]">
-	<xsl:element name="ead:bioghist">
-		<xsl:attribute name="id">bio3</xsl:attribute>
-		<xsl:attribute name="encodinganalog">545</xsl:attribute>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- add correct encodinganalog to scopecontent -->
-<xsl:template match="ead:scopecontent">
-	<ead:scopecontent>
-		<xsl:if test="parent::ead:archdesc">
-			<xsl:attribute name="encodinganalog">520$b</xsl:attribute>
-		</xsl:if>
-		<!--
-		<xsl:if test="@id">
-		    <xsl:attribute name="id"><xsl:value-of select="@id"/></xsl:attribute>
-		</xsl:if>
-		-->
-		<xsl:apply-templates />
-	</ead:scopecontent>
-</xsl:template>
-<!-- add correct encodinganalog to arrangement -->
-<xsl:template match="ead:arrangement">
-	<xsl:element name="ead:arrangement">
-	    <xsl:choose>
-	        <xsl:when test="parent::ead:descgrp">
-        		<xsl:attribute name="encodinganalog">351</xsl:attribute>
-        	</xsl:when>
-        	<xsl:when test="parent::ead:archdesc">
-        		<xsl:attribute name="encodinganalog">351</xsl:attribute>
-        	</xsl:when>
-        	<xsl:otherwise/>
-        </xsl:choose>
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- add correct encodinganalog to preferred citation -->
-<xsl:template match="ead:prefercite">
-	<xsl:element name="ead:prefercite">
-	    <xsl:choose>
-	        <xsl:when test="parent::ead:descgrp">
-        		<xsl:attribute name="encodinganalog">524</xsl:attribute>
-        	</xsl:when>
-        	<xsl:when test="parent::ead:archref">
-        		<xsl:attribute name="encodinganalog">524</xsl:attribute>
-        	</xsl:when>
-        	<xsl:otherwise/>
-        </xsl:choose>        	    
-		<xsl:apply-templates select="@*|node()"/>
-	</xsl:element>
-</xsl:template>
-<!-- update physdesc when not direct child of a series -->
-<xsl:template match="ead:physdesc[ancestor::*[@level='file']]">
-	<xsl:element name="ead:physdesc">
-		<xsl:apply-templates select="@*"/>
-		<xsl:text>[</xsl:text>
-		<xsl:apply-templates />
-		<xsl:text>]</xsl:text>
-	</xsl:element>
-</xsl:template>
-<!-- reformat controlled access to group like tags into subheadings and nested structure -->
-<!-- change source from 'library of congress subject headings' to 'lcsh' when applicable -->
-<xsl:template match="ead:ead/ead:archdesc/ead:controlaccess">
-	<xsl:element name="ead:controlaccess">
-		<ead:head>Index Terms</ead:head>
-		<ead:p>
-			<ead:emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</ead:emph>
-		</ead:p>
-		<!-- redirect added authors into controlled access terms and add the correct encoding analog -->
-		<!-- trigger on the existence of the role attribute. Won't create segments if does not exist -->
-		<xsl:if test="//ead:origination/ead:famname|ead:controlaccess/ead:famname">
-			<xsl:element name="ead:controlaccess">
-				<xsl:element name="ead:head">Family Names:</xsl:element>
-				<xsl:for-each select="//ead:origination/ead:famname">
-					<xsl:element name="ead:famname">
-						<xsl:attribute name="encodinganalog">700</xsl:attribute>
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        <xsl:if test="@role">
-    						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
-    					</xsl:if>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:value-of select="."/>
-						<xsl:text>.</xsl:text>
-					</xsl:element>
-				</xsl:for-each>
-				<xsl:for-each select="//ead:controlaccess/ead:famname">
-					<xsl:element name="ead:famname">
-						<xsl:attribute name="encodinganalog">700</xsl:attribute>
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-                        <xsl:if test="@role">
-    						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
-    					</xsl:if>
-						<xsl:value-of select="."/>
-						<xsl:text>.</xsl:text>
-					</xsl:element>
-				</xsl:for-each>
-			</xsl:element>
-		</xsl:if>
-		<xsl:if test="//ead:origination/ead:persname|ead:controlaccess/ead:persname">
-			<xsl:element name="ead:controlaccess">
-				<xsl:element name="ead:head">Personal Names:</xsl:element>
-				<xsl:for-each select="//ead:origination/ead:persname[@role]">
-					<xsl:element name="ead:persname">
-						<xsl:attribute name="encodinganalog">700</xsl:attribute>
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-                        <xsl:if test="@role">
-    						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
-    					</xsl:if>
-						<xsl:value-of select="."/>
-						<xsl:text>.</xsl:text>
-					</xsl:element>
-				</xsl:for-each>
-				<xsl:for-each select="//ead:controlaccess/ead:persname">
-					<xsl:element name="ead:persname">
-						<xsl:attribute name="encodinganalog">700</xsl:attribute>
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-                        <xsl:if test="@role">
-    						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
-    					</xsl:if>
-						<xsl:value-of select="."/>
-						<xsl:text>.</xsl:text>
-					</xsl:element>
-				</xsl:for-each>
-			</xsl:element>
-		</xsl:if>
-		<xsl:if test="//ead:origination/ead:corpname|ead:controlaccess/ead:corpname">
-			<xsl:element name="ead:controlaccess">
-				<xsl:element name="ead:head">Corporate Names:</xsl:element>
-				<xsl:for-each select="//ead:origination/ead:corpname">
-					<xsl:element name="ead:corpname">
-						<xsl:attribute name="encodinganalog">710</xsl:attribute>
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        <xsl:if test="@role">
-    						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
-    					</xsl:if>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:value-of select="."/>
-						<xsl:text>.</xsl:text>
-					</xsl:element>
-				</xsl:for-each>
-				<xsl:for-each select="//ead:controlaccess/ead:corpname">
-					<xsl:element name="ead:corpname">
-						<xsl:attribute name="encodinganalog">710</xsl:attribute>
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        <xsl:if test="@role">
-    						<xsl:attribute name="role"><xsl:value-of select="@role"/></xsl:attribute>
-    					</xsl:if>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:value-of select="."/>
-						<xsl:text>.</xsl:text>
-					</xsl:element>
-				</xsl:for-each>
-			</xsl:element>
-		</xsl:if>
-		<!-- begin rearrangement of controlled access terms into nested structure, but preserve structure if possible -->
-		<xsl:if test="ead:persname[1]|ead:controlaccess/ead:persname">
-			<ead:controlaccess>
-				<ead:head>Subjects (Persons):</ead:head>
-				<xsl:for-each select="ead:persname">
-					<xsl:element name="ead:persname">
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:attribute name="encodinganalog">600</xsl:attribute>
-						<xsl:value-of select="."/>
-						<xsl:text>.</xsl:text>
-					</xsl:element>
-				</xsl:for-each>
-				<xsl:for-each select="//ead:controlaccess/ead:persname">
-					<xsl:element name="ead:persname">
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:attribute name="encodinganalog">600</xsl:attribute>
-						<xsl:value-of select="."/>
-						<xsl:text>.</xsl:text>
-					</xsl:element>
-				</xsl:for-each>
-			</ead:controlaccess>
-		</xsl:if>
-		<xsl:if test="ead:famname[1]|ead:controlaccess/ead:famname">
-			<ead:controlaccess>
-				<ead:head>Subjects (Families):</ead:head>
-				<xsl:for-each select="ead:famname">
-					<xsl:element name="ead:famname">
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:attribute name="encodinganalog">600</xsl:attribute>
-						<xsl:value-of select="."/>
-						<xsl:text>.</xsl:text>
-					</xsl:element>
-				</xsl:for-each>
-				<xsl:for-each select="//ead:controlaccess/ead:persname">
-					<xsl:element name="ead:famname">
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:attribute name="encodinganalog">600</xsl:attribute>
-						<xsl:value-of select="."/>
-						<xsl:text>.</xsl:text>
-					</xsl:element>
-				</xsl:for-each>
-			</ead:controlaccess>
-		</xsl:if>
-		<xsl:if test="ead:corpname|ead:controlaccess/ead:corpname">
-			<ead:controlaccess>
-				<ead:head>Subjects (Organizations):</ead:head>
-				<xsl:for-each select="ead:corpname">
-					<xsl:element name="ead:corpname">
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:attribute name="encodinganalog">610</xsl:attribute>
-						<xsl:value-of select="."/>
-						<xsl:text>.</xsl:text>
-					</xsl:element>
-				</xsl:for-each>
-				<xsl:for-each select="//ead:controlaccess/ead:corpname">
-					<xsl:element name="ead:corpname">
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:attribute name="encodinganalog">610</xsl:attribute>
-						<xsl:value-of select="."/>
-						<xsl:text>.</xsl:text>
-					</xsl:element>
-				</xsl:for-each>
-			</ead:controlaccess>
-		</xsl:if>
-		<xsl:if test="ead:subject[1]|ead:controlaccess/ead:subject">
-			<ead:controlaccess>
-				<ead:head>Subjects:</ead:head>
-				<xsl:for-each select="ead:subject">
-					<xsl:element name="ead:subject">
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:attribute name="encodinganalog">650</xsl:attribute>
-						<xsl:value-of select="."/>
-					</xsl:element>
-				</xsl:for-each>
-				<xsl:for-each select="ead:controlaccess/ead:subject">
-					<xsl:element name="ead:subject">
-                        <xsl:choose>
-                            <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                        <xsl:when test="@source=''">
-                                            <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                        </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="source">local</xsl:attribute>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        <xsl:if test="@authfilenumber">
-                            <xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-                        </xsl:if>
-                        <xsl:attribute name="encodinganalog">650</xsl:attribute>
-                        <xsl:value-of select="."/>
-					</xsl:element>
-				</xsl:for-each>
-			</ead:controlaccess>
-		</xsl:if>
-		<xsl:if test="ead:geogname[1]|ead:controlaccess/ead:geogname[@encodinganalog='651']">
-			<ead:controlaccess>
-				<ead:head>Places:</ead:head>
-				<xsl:for-each select="ead:geogname">
-					<xsl:element name="ead:geogname">
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:attribute name="encodinganalog">651</xsl:attribute>
-						<xsl:value-of select="."/>
-					</xsl:element>
-				</xsl:for-each>
-				<xsl:for-each select="ead:controlaccess/ead:geogname[@encodinganalog='651']">
-					<xsl:element name="ead:geogname">
-					<xsl:choose>
-						<xsl:when test="@source='Library of Congress Subject Headings'">
-							<xsl:attribute name="source">lcsh</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="@source='naf'">
-							<xsl:attribute name="source">lcnaf</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:attribute name="encodinganalog">651</xsl:attribute>
-						<xsl:value-of select="."/>
-					</xsl:element>
-				</xsl:for-each>
-			</ead:controlaccess>
-		</xsl:if>
-		<xsl:if test="ead:genreform[1]|ead:controlaccess/ead:genreform">
-			<ead:controlaccess>
-				<ead:head>Document Types:</ead:head>
-				<xsl:for-each select="ead:genreform">
-					<xsl:element name="ead:genreform">
-					    <xsl:choose>
-					        <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source=''">
-                                        <xsl:attribute name="source">aat</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-					        <xsl:otherwise>
-					            <xsl:attribute name="source">aat</xsl:attribute>
-					        </xsl:otherwise>
-					    </xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:attribute name="encodinganalog">655</xsl:attribute>
-						<xsl:value-of select="."/>
-					</xsl:element>
-				</xsl:for-each>
-				<xsl:for-each select="ead:controlaccess/ead:genreform">
-					<xsl:element name="ead:genreform">
-					    <xsl:choose>
-					        <xsl:when test="@source">
-                                <xsl:choose>
-                                    <xsl:when test="@source='Library of Congress Subject Headings'">
-                                        <xsl:attribute name="source">lcsh</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source='naf'">
-                                        <xsl:attribute name="source">lcnaf</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="@source=''">
-                                        <xsl:attribute name="source">aat</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-					        <xsl:otherwise>
-					            <xsl:attribute name="source">aat</xsl:attribute>
-					        </xsl:otherwise>
-					    </xsl:choose>
-						<xsl:if test="@authfilenumber">
-							<xsl:attribute name="authfilenumber"><xsl:value-of select="@authfilenumber"/></xsl:attribute>
-						</xsl:if>
-						<xsl:attribute name="encodinganalog">655</xsl:attribute>
-						<xsl:value-of select="."/>
-					</xsl:element>
-				</xsl:for-each>
-			</ead:controlaccess>
-		</xsl:if>
-		<xsl:if test="ead:title[1]|ead:controlaccess/ead:title[@encodinganalog='630']">
-			<ead:controlaccess>
-				<ead:head>Titles:</ead:head>
-				<xsl:for-each select="ead:title">
-					<xsl:element name="ead:title">
-						<xsl:attribute name="render">italic</xsl:attribute>
-						<xsl:attribute name="encodinganalog">630</xsl:attribute>
-						<xsl:attribute name="source">lcnaf</xsl:attribute>
-						<xsl:value-of select="."/>
-					</xsl:element>
-				</xsl:for-each>
-				<xsl:for-each select="ead:controlaccess/ead:title[@encodinganalog='630']">
-					<xsl:element name="ead:title">
-						<xsl:attribute name="render">italic</xsl:attribute>
-						<xsl:attribute name="encodinganalog">630</xsl:attribute>
-						<xsl:attribute name="source">lcnaf</xsl:attribute>
-						<xsl:value-of select="."/>
-					</xsl:element>
-				</xsl:for-each>
-			</ead:controlaccess>
-		</xsl:if>
-		<xsl:if test="ead:function[1]|ead:controlaccess/ead:function[@encodinganalog='657']">
-			<ead:controlaccess>
-				<ead:head>Functions:</ead:head>
-				<xsl:for-each select="ead:function">
-					<xsl:element name="ead:function">
-						<xsl:choose>
-							<xsl:when test="@source='Library of Congress Subject Headings'">
-								<xsl:attribute name="source">lcsh</xsl:attribute>
-							</xsl:when>
-							<xsl:when test="@source='naf'">
-								<xsl:attribute name="source">lcnaf</xsl:attribute>
-							</xsl:when>
-							<xsl:when test="@source='aat'">
-								<xsl:attribute name="source">local</xsl:attribute>
-							</xsl:when>
-							<xsl:when test="@source=''">
-								<xsl:attribute name="source">local</xsl:attribute>
-							</xsl:when>
-							<xsl:otherwise>
-								<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-							</xsl:otherwise>
-						</xsl:choose>
-						<xsl:attribute name="encodinganalog">657</xsl:attribute>
-						<xsl:value-of select="."/>
-					</xsl:element>
-				</xsl:for-each>
-				<xsl:for-each select="ead:controlaccess/ead:function[@encodinganalog='657']">
-					<xsl:element name="ead:function">
-						<xsl:choose>
-							<xsl:when test="@source='Library of Congress Subject Headings'">
-								<xsl:attribute name="source">lcsh</xsl:attribute>
-							</xsl:when>
-							<xsl:when test="@source='naf'">
-								<xsl:attribute name="source">lcnaf</xsl:attribute>
-							</xsl:when>
-							<xsl:when test="@source='aat'">
-								<xsl:attribute name="source">local</xsl:attribute>
-							</xsl:when>
-							<xsl:when test="@source=''">
-								<xsl:attribute name="source">local</xsl:attribute>
-							</xsl:when>
-							<xsl:otherwise>
-								<xsl:attribute name="source"><xsl:value-of select="@source"/></xsl:attribute>
-							</xsl:otherwise>
-						</xsl:choose>
-						<xsl:attribute name="encodinganalog">657</xsl:attribute>
-						<xsl:value-of select="."/>
-					</xsl:element>
-				</xsl:for-each>
-			</ead:controlaccess>
-		</xsl:if>
-	</xsl:element>
-</xsl:template>
-<!-- update ead:dsc to include a generic header -->
-<xsl:template match="ead:ead/ead:archdesc/ead:dsc">
-	<xsl:element name="ead:dsc">
-		<xsl:attribute name="type">combined</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[1]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser1</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[2]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser2</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[3]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser3</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[4]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser4</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[5]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser5</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[6]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser6</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[7]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser7</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[8]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser8</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[9]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser9</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[10]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser10</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[11]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser11</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[12]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser12</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[13]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser13</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[14]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser14</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[15]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser15</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[16]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser16</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[17]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser17</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[18]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser18</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[19]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser19</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<xsl:template match="//ead:c01[20]">
-	<xsl:element name="ead:c01">
-		<xsl:if test="@level">
-			<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="id">ser20</xsl:attribute>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-
-
-<!-- add some attributes to the archdesc tag -->
-<!-- add a overview head tag to the top level did -->
-<!-- get related materials properly nested together -->
-<!-- group content belonging in the descgrp into that tag -->
-<xsl:template match="ead:ead/ead:archdesc">
-	<xsl:element name="ead:archdesc">
-		<xsl:attribute name="level"><xsl:value-of select="@level"/></xsl:attribute>
-		<xsl:attribute name="type">inventory</xsl:attribute>
-		<xsl:attribute name="audience">external</xsl:attribute>
-		<xsl:for-each select="ead:did">
-			<xsl:element name="ead:did">
-				<!-- <ead:head>Overview</ead:head> -->
-				<xsl:apply-templates />
-			</xsl:element>
-		</xsl:for-each>
-		<xsl:if test="ead:relatedmaterial[1]">
-			<xsl:element name="ead:relatedmaterial">
-				<xsl:attribute name="encodinganalog">544 1</xsl:attribute>
-				<ead:head>Related Material</ead:head>
-				<ead:p>
-					<xsl:element name="ead:emph">
-						<xsl:attribute name="render">italic</xsl:attribute>
-						<xsl:text>The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive.</xsl:text>
-					</xsl:element>
-				</ead:p> 
-				<xsl:for-each select="ead:relatedmaterial">
-					<xsl:element name="ead:relatedmaterial">
-						<xsl:apply-templates/>
-					</xsl:element>
-				</xsl:for-each> 
-			</xsl:element>
-		</xsl:if>
-		<xsl:for-each select="ead:custodhist">
-			<xsl:element name="ead:custodhist">
-				<xsl:attribute name="encodinganalog">561</xsl:attribute>
-				<xsl:apply-templates select="@*|node()"/>
-			</xsl:element>
-		</xsl:for-each>
-		<xsl:for-each select="ead:prefercite">
-			<xsl:element name="ead:prefercite">
-				<xsl:attribute name="encodinganalog">524</xsl:attribute>
-				<xsl:apply-templates select="@*|node()"/>
-			</xsl:element>
-		</xsl:for-each>
-		<xsl:for-each select="ead:acqinfo">
-			<xsl:element name="ead:acqinfo">
-				<xsl:attribute name="encodinganalog">541</xsl:attribute>
-				<xsl:apply-templates select="@*|node()"/>
-			</xsl:element>
-		</xsl:for-each>
-		<xsl:for-each select="ead:processinfo">
-			<xsl:element name="ead:processinfo">
-				<xsl:attribute name="encodinganalog">583</xsl:attribute>
-				<xsl:apply-templates select="@*|node()"/>
-			</xsl:element>
-		</xsl:for-each>
-		<xsl:for-each select="ead:appraisal">
-			<xsl:element name="ead:appraisal">
-				<xsl:attribute name="encodinganalog">583</xsl:attribute>
-				<xsl:apply-templates select="@*|node()"/>
-			</xsl:element>
-		</xsl:for-each>
-		<xsl:for-each select="ead:separatedmaterial">
-			<xsl:element name="ead:separatedmaterial">
-				<xsl:attribute name="encodinganalog">544 0</xsl:attribute>
-				<xsl:apply-templates select="@*|node()"/>
-			</xsl:element>
-		</xsl:for-each>
-		<xsl:for-each select="ead:accruals">
-			<xsl:element name="ead:accruals">
-				<xsl:attribute name="encodinganalog">584</xsl:attribute>
-				<xsl:apply-templates select="@*|node()"/>
-			</xsl:element>
-		</xsl:for-each>
-		<xsl:for-each select="ead:altformavail">
-			<xsl:element name="ead:altformavail">
-				<xsl:attribute name="encodinganalog">530</xsl:attribute>
-				<xsl:apply-templates select="@*|node()"/>
-			</xsl:element>
-		</xsl:for-each>
-		<xsl:for-each select="ead:originalsloc">
-			<xsl:element name="ead:originalsloc">
-				<xsl:attribute name="encodinganalog">535</xsl:attribute>
-				<xsl:apply-templates select="@*|node()"/>
-			</xsl:element>
-		</xsl:for-each>
-		<xsl:apply-templates/>
-	</xsl:element>
-</xsl:template>
-<!-- now strip out the original copy of everything that was modified above -->
-<xsl:template match="//ead:note/ead:head"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[2]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[3]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[4]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[5]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[6]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[7]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[8]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[9]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[10]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[11]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[12]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[13]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[14]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[15]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[16]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[17]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[18]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[19]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[20]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[21]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[22]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[23]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[24]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[25]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[26]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[27]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[28]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:did/ead:origination[29]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:relatedmaterial[1]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:relatedmaterial[2]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:relatedmaterial[3]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:relatedmaterial[4]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:relatedmaterial[5]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:relatedmaterial[6]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:relatedmaterial[7]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:relatedmaterial[8]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:relatedmaterial[9]"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:custodhist"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:prefercite"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:acqinfo"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:processinfo"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:appraisal"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:separatedmaterial"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:accruals"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:altformavail"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:originalsloc"/>
-<xsl:template match="ead:ead/ead:archdesc/ead:odd"/>
-<xsl:template match="//ead:c01/ead:controlaccess"/>
-<xsl:template match="//ead:accessrestrict[@ audience='internal']"/>
-<xsl:template match="//ead:c01/ead:scopecontent/ead:head|//ead:c02/ead:scopecontent/ead:head|//ead:c03/ead:scopecontent/ead:head|//ead:c04/ead:scopecontent/ead:head|//ead:c05/ead:scopecontent/ead:head|//ead:c06/ead:scopecontent/ead:head|//ead:c07/ead:scopecontent/ead:head|//ead:c07/ead:scopecontent/ead:head|//ead:c08/ead:scopecontent/ead:head|//ead:c09/ead:scopecontent/ead:head"/>
-</xsl:stylesheet>''')
 html_transform = ET.XML('''
 <!-- EAD 2002 print stylesheet for the Texas State Archives, Nancy Enneking, January 2003-->
 <!--  This stylesheet generates Style 4 which is intended to produce print output.  -->
@@ -6139,7 +4615,6 @@ def processor(my_xml):
                   'subseries', 'Sub-Series', 'Sub-Group', 'Series']
     high_level = ['collection', 'fonds', 'recordgrp', 'series', 'subfonds', 'subgrp', 'subseries', 'Sub-Series',
                   'Sub-Group', 'Series']
-    transform = ET.XSLT(catalyst)
     window["-OUTPUT-"].update(
         "\nthis is supposed to fix a bunch of minor issues related to TARO 2.0 normalization, check output for correctness",
         append=True)
@@ -6261,7 +4736,7 @@ def processor(my_xml):
     odds = root.findall(".//ead:odd", namespaces=nsmap)
     if odds is not None:
         for odd in odds:
-            odd.tag = "ead:note"
+            odd.tag = "note"
             error_text += "changed an ead:off to an ead:note\n"
     # fix attribute issues with unitid
     unitids = root.xpath(".//ead:unitid", namespaces=nsmap)
@@ -6353,6 +4828,7 @@ def processor(my_xml):
         mylanguage = language.text
         mylanguage = mylanguage.replace("<![CDATA[", "").replace("]]>", "")
         language.text = mylanguage
+        error_text += f"CDATA issue addressed in the langmaterial section\n"
     # fix repo attributes
     repositories = root.xpath(".//ead:archdesc/ead:did/ead:repository", namespaces=nsmap)
     for repository in repositories:
@@ -6413,71 +4889,85 @@ def processor(my_xml):
         error_text += f"related materials sections exist, check to see if nesting is needed\n"
         for relation in relations:
             relation.attrib['encodinganalog'] = "544 1"
+            error_text += f"added encoding analog to {relation.text}\n"
     # fix acquisition info attributes
     acquisitions = root.xpath(".//ead:archdesc/ead:acqinfo", namespaces=nsmap)
     if acquisitions is not None:
         for acquisition in acquisitions:
             acquisition.attrib['encodinganalog'] = "541"
+            error_text += f"added encoding analog to {acquisition.text}\n"
     # fix custodial history attributes
     custodians = root.xpath(".//ead:archdesc/ead:custodhist", namespaces=nsmap)
     if custodians is not None:
         for custodian in custodians:
             custodian.attrib['encodinganalog'] = "561"
+            error_text += f"added encoding analog to {custodian.text}\n"
     # fix accessrestrict attributes
     restrictions = root.xpath(".//ead:archdesc/ead:accessrestrict", namespaces=nsmap)
     if restrictions is not None:
         for restriction in restrictions:
             restriction.attrib['encodinganalog'] = "506"
+            error_text += f"added encoding analog to {restriction.text}\n"
     #fix processinginfo tag
     processes = root.xpath(".//ead:archdesc/ead:processinfo", namespaces=nsmap)
     if processes is not None:
         for process in processes:
             process.attrib['encodinganalog'] = "583"
+            error_text += f"added encoding analog to {process.text}\n"
     # fix encoding analog on appraisal tag
     appraisals = root.xpath(".//ead:archdesc/ead:appraisal", namespaces=nsmap)
     if appraisals is not None:
         for appraisal in appraisals:
             appraisal.attrib['encodinganalog'] = "583"
+            error_text += f"added encoding analog to {appraisal.text}\n"
     # fix encoding analog on separated materials
     separations = root.xpath(".//ead:archdesc/ead:separatedmaterial", namespaces=nsmap)
     if separations is not None:
         for separation in separations:
             separation.attrib['encodinganalog'] = "544 0"
+            error_text += f"added encoding analog to {separation.text}\n"
     # fix accruals encoding analog
     accruals = root.xpath(".//ead:archdesc/ead:accruals", namespaces=nsmap)
     if accruals is not None:
         for accrual in accruals:
             accrual.attrib['encodinganalog'] = "584"
+            error_text += f"added encoding analog to {accrual.text}\n"
     #fix encoding analog for alternate formats
     formats = root.xpath(".//ead:archdesc/ead:altformavail", namespaces=nsmap)
     if formats is not None:
         for x in formats:
             x.attrib['encodinganalog'] = "530"
+            error_text += f"added encoding analog to {x.text}\n"
     # fix originals location
     originals = root.xpath(".//ead:archdesc/ead:originalsloc", namespaces=nsmap)
     if originals is not None:
         for original in originals:
             original.attrib['encodinganalog'] = "535"
+            error_text += f"added encoding analog to {original.text}\n"
     # fix encoding analog for usre restrictions
     userrestrictions = root.xpath(".//ead:archdesc/ead:userestrict", namespaces=nsmap)
     if userrestrictions is not None:
         for userrestriction in userrestrictions:
             userrestriction.attrib['encodinganalog'] = "540"
+            error_text += f"added encoding analog to {userrestriction.text}\n"
     # fix encoding analog for phystech
     phystechs = root.xpath('.//ead:archdesc/ead:phystech', namespaces=nsmap)
     if phystechs is not None:
         for phystech in phystechs:
             phystech.attrib['encodinganalog'] = "340"
+            error_text += f"added encoding analog to {phystech.text}\n"
     # fix enconding analog for arrangement
     arrangements = root.xpath(".//ead:archdesc/ead:arrangement", namespaces=nsmap)
     if arrangements is not None:
         for arrangement in arrangements:
             arrangement.attrib['encodinganalog'] = "351"
+            error_text += f"added encoding analog to {arrangement.text}\n"
     # fix encoding analog for preferred citations
     citations = root.xpath(".//ead:archdesc/ead:prefercite", namespaces=nsmap)
     if citations is not None:
         for citation in citations:
             citation.attrib['encodinganalog'] = "524"
+            error_text += f"added encoding analog to {citation.text}\n"
     # fix bioghist attributes including id numbers
     bioghistories = root.xpath(".//ead:archdesc/ead:bioghist", namespaces=nsmap)
     counter = 0
@@ -6485,10 +4975,13 @@ def processor(my_xml):
         counter += 1
         bioghistory.attrib['id'] = f"bio{str(counter)}"
         bioghistory.attrib['encodinganalog'] = "545"
+        error_text += f"added encoding analog to {bioghistory.text}\n"
     contents = root.xpath(".//ead:archdesc/ead:scopecontent", namespaces=nsmap)
     for content in contents:
         content.attrib['encodinganalog'] = "520$b"
+        error_text += f"added encoding analog to {content.text}\n"
     # process the controlled access thing
+    error_text += f"generating master controlled access section"
     master_arch = root.find(".//ead:dsc", namespaces=nsmap)
     master_control = ET.Element("controlaccess")
     master_arch.addprevious(master_control)
@@ -6513,11 +5006,25 @@ def processor(my_xml):
         for origination_seven_hundred in origination_seven_hundreds:
             if "encodinganalog" not in origination_seven_hundred.attrib:
                 famname_item = ET.SubElement(famname, "famname")
+                if "source" in origination_seven_hundred.attrib:
+                    if origination_seven_hundred.attrib['source'] == "Library of Congress Subject Headings":
+                        origination_seven_hundred.attrib['source'] = "lcsh"
+                    if origination_seven_hundred.attrib['source'] == 'naf':
+                        origination_seven_hundred.attrib['source'] = "lcnaf"
+                    if origination_seven_hundred.attrib['source'] == "":
+                        origination_seven_hundred.attrib['source'] = "local"
+                if origination_seven_hundred.attrib['source'] == "local":
+                    error_text += f"\tlocal source attribute in family name {origination_seven_hundred.text}\n"
                 copy_attributes(famname_item, origination_seven_hundred)
+                subjective = origination_seven_hundred.text
+                origination_seven_hundred.text = subjectspace(subjective)
+                error_text += f"\tFamily name: {origination_seven_hundred.text} normalized\n"
                 famname_item.text = origination_seven_hundred.text
                 origination_parent = origination_seven_hundred.getparent()
                 origination_parent.getparent().remove(origination_parent)
                 famname_item.attrib['encodinganalog'] = "700"
+    # clear marker for subject terms to ensure it doesn't get repeated for later
+    origination_seven_hundreds = None
     # populate personal name creators if applicable
     persname_flag = False
     origination_seven_hundreds = root.xpath(".//ead:origination[@label = 'Creator']/ead:persname", namespaces=nsmap)
@@ -6532,11 +5039,24 @@ def processor(my_xml):
         for origination_seven_hundred in origination_seven_hundreds:
             if "encodinganalog" not in origination_seven_hundred.attrib:
                 persname_item = ET.SubElement(persname, "persname")
+                if "source" in origination_seven_hundred.attrib:
+                    if origination_seven_hundred.attrib['source'] == "Library of Congress Subject Headings":
+                        origination_seven_hundred.attrib['source'] = "lcsh"
+                    if origination_seven_hundred.attrib['source'] == 'naf':
+                        origination_seven_hundred.attrib['source'] = "lcnaf"
+                    if origination_seven_hundred.attrib['source'] == "":
+                        origination_seven_hundred.attrib['source'] = "local"
+                if origination_seven_hundred.attrib['source'] == "local":
+                    error_text += f"\tlocal source in personal name {origination_seven_hundred.text}\n"
                 copy_attributes(persname_item, origination_seven_hundred)
+                subjective = origination_seven_hundred.text
+                origination_seven_hundred.text = subjectspace(subjective)
+                error_text += f"\tPersonal name: {origination_seven_hundred.text} normalized\n"
                 persname_item.text = origination_seven_hundred.text
                 origination_parent = origination_seven_hundred.getparent()
                 origination_parent.getparent().remove(origination_parent)
                 persname_item.attrib['encodinganalog'] = "700"
+    origination_seven_hundreds = None
     # populate corporate name creators if applicable
     corpname_flag = False
     origination_seven_hundreds = root.xpath(".//ead:origination[@label = 'Creator']/ead:corpname", namespaces=nsmap)
@@ -6551,12 +5071,27 @@ def processor(my_xml):
         for origination_seven_hundred in origination_seven_hundreds:
             if "encodinganalog" not in origination_seven_hundred.attrib:
                 corpname_item = ET.SubElement(corpname, "corpname")
+                if "source" in origination_seven_hundred.attrib:
+                    if origination_seven_hundred.attrib['source'] == "Library of Congress Subject Headings":
+                        origination_seven_hundred.attrib['source'] = "lcsh"
+                    if origination_seven_hundred.attrib['source'] == 'naf':
+                        origination_seven_hundred.attrib['source'] = "lcnaf"
+                    if origination_seven_hundred.attrib['source'] == "":
+                        origination_seven_hundred.attrib['source'] = "local"
+                if origination_seven_hundred.attrib['source'] == "local":
+                    error_text += f"\tlocal source attribute for corporate name {origination_seven_hundred.text}\n"
                 copy_attributes(corpname_item, origination_seven_hundred)
                 #corpname_item.attrib = origination_seven_hundred.attrib
+                subjective = origination_seven_hundred.text
+                subjective = subjectspace(subjective)
+                error_text += f"\tcorporate name: {origination_seven_hundred.text} normalized\n"
+                origination_seven_hundred.text = subarea(subjective)
+                error_text += f"\tcorporate name: {origination_seven_hundred.text} had subarea rules applied to it\n"
                 corpname_item.text = origination_seven_hundred.text
                 origination_parent = origination_seven_hundred.getparent()
                 origination_parent.getparent().remove(origination_parent)
-                corpname.attrib['encodinganalog'] = "710"
+                corpname_item.attrib['encodinganalog'] = "710"
+    origination_seven_hundreds = None
     # populate family name subjects if applicable
     famname_flag = False
     origination_six_hundreds = root.xpath(".//ead:origination[@label = 'Subject']/ead:famname", namespaces=nsmap)
@@ -6571,11 +5106,24 @@ def processor(my_xml):
         for origination_six_hundred in origination_six_hundreds:
             if "encodinganalog" not in origination_six_hundred.attrib:
                 famname_item = ET.SubElement(famname, "famname")
+                if "source" in origination_six_hundred.attrib:
+                    if origination_six_hundred.attrib['source'] == "Library of Congress Subject Headings":
+                        origination_six_hundred.attrib['source'] = "lcsh"
+                    if origination_six_hundred.attrib['source'] == 'naf':
+                        origination_six_hundred.attrib['source'] = "lcnaf"
+                    if origination_six_hundred.attrib['source'] == "":
+                        origination_six_hundred.attrib['source'] = "local"
+                if origination_six_hundred.attrib['source'] == "local":
+                    error_text += f"\tlocal source attribute in {origination_six_hundred.text}\n"
                 copy_attributes(famname_item, origination_six_hundred)
+                subjective = origination_six_hundred.text
+                origination_six_hundred.text = subjectspace(subjective)
+                error_text += f"\tFamily name: {origination_six_hundred.text} normalized\n"
                 famname_item.text = origination_six_hundred.text
                 origination_parent = origination_six_hundred.getparent()
                 origination_parent.getparent().remove(origination_parent)
                 famname_item.attrib['encodinganalog'] = "600"
+    origination_six_hundreds = None
     # populate personal name subjects if applicable
     persname_flag = False
     origination_six_hundreds = root.xpath(".//ead:origination[@label = 'Subject']/ead:persname", namespaces=nsmap)
@@ -6590,11 +5138,24 @@ def processor(my_xml):
         for origination_six_hundred in origination_six_hundreds:
             if "encodinganalog" not in origination_six_hundred.attrib:
                 persname_item = ET.SubElement(persname, "persname")
+                if "source" in origination_six_hundred.attrib:
+                    if origination_six_hundred.attrib['source'] == "Library of Congress Subject Headings":
+                        origination_six_hundred.attrib['source'] = "lcsh"
+                    if origination_six_hundred.attrib['source'] == 'naf':
+                        origination_six_hundred.attrib['source'] = "lcnaf"
+                    if origination_six_hundred.attrib['source'] == "":
+                        origination_six_hundred.attrib['source'] = "local"
+                if origination_six_hundred.attrib['source'] == "local":
+                    error_text += f"\tlocal source attribute in {origination_six_hundred.text}\n"
                 copy_attributes(persname_item, origination_six_hundred)
+                subjective = origination_six_hundred.text
+                origination_six_hundred.text = subjectspace(subjective)
+                error_text += f"\tcorporate name: {origination_six_hundred.text} normalized\n"
                 persname_item.text = origination_six_hundred.text
                 origination_parent = origination_six_hundred.getparent()
                 origination_parent.getparent().remove(origination_parent)
                 persname_item.attrib['encodinganalog'] = "600"
+    origination_six_hundreds = None
     # populate corporate name subjects if applicable
     corpname_flag = False
     origination_six_hundreds = root.xpath(".//ead:origination[@label = 'Subject']/ead:corpname", namespaces=nsmap)
@@ -6609,70 +5170,163 @@ def processor(my_xml):
         for origination_six_hundred in origination_six_hundreds:
             if "encodinganalog" not in origination_six_hundred.attrib:
                 corpname_item = ET.SubElement(corpname, "corpname")
+                if "source" in origination_six_hundred.attrib:
+                    if origination_six_hundred.attrib['source'] == "Library of Congress Subject Headings":
+                        origination_six_hundred.attrib['source'] = "lcsh"
+                    if origination_six_hundred.attrib['source'] == 'naf':
+                        origination_six_hundred.attrib['source'] = "lcnaf"
+                    if origination_six_hundred.attrib['source'] == "":
+                        origination_six_hundred.attrib['source'] = "local"
+                if origination_six_hundred.attrib['source'] == "local":
+                    error_text += f"\tlocal source attribute in {origination_six_hundred.text}\n"
                 copy_attributes(corpname_item, origination_six_hundred)
+                #corpname_item.attrib = origination_seven_hundred.attrib
+                subjective = origination_six_hundred.text
+                subjective = subjectspace(subjective)
+                error_text += f"\tcorporate name: {origination_six_hundred.text} normalized\n"
+                origination_six_hundred.text = subarea(subjective)
+                error_text += f"\tcorporate name: {origination_six_hundred.text} had subarea rules applied to it\n"
                 corpname_item.text = origination_six_hundred.text
                 origination_parent = origination_six_hundred.getparent()
                 origination_parent.getparent().remove(origination_parent)
                 corpname_item.attrib['encodinganalog'] = "610"
+    origination_six_hundreds = None
     # populate subject terms if applicable
+    subject_flag = False
     subjects = root.xpath(".//ead:controlaccess/ead:subject", namespaces=nsmap)
-    if subjects is not None:
-        subjective = ET.SubElement(master_control, "controlaccess")
-        subjective_head = ET.SubElement(subjective, "head")
+    if subjects != []:
+        for subject in subjects:
+            if "encodinganalog" not in subject.attrib:
+                subject_flag = True
+    if subject_flag is True:
+        subject_section = ET.SubElement(master_control, "controlaccess")
+        subjective_head = ET.SubElement(subject_section, "head")
         subjective_head.text = "Subjects:"
         for subject in subjects:
-            subject_item = ET.SubElement(subjective, "subject")
+            subject_item = ET.SubElement(subject_section, "subject")
+            if "source" in subject.attrib:
+                if subject.attrib['source'] == "Library of Congress Subject Headings":
+                    subject.attrib['source'] = "lcsh"
+                if subject.attrib['source'] == 'naf':
+                    subject.attrib['source'] = "lcnaf"
+                if subject.attrib['source'] == "":
+                    subject.attrib['source'] = "local"
+            if subject.attrib['source'] == "local":
+                error_text += f"\tlocal source for subject {subject.text}\n"
             copy_attributes(subject_item, subject)
+            subjective = subject.text
+            subject.text = subjectspace(subjective)
+            error_text += f"\tSubject: {subject.text} normalized\n"
             subject_item.text = subject.text
             subject_item.attrib['encodinganalog'] = "650"
             subject.getparent().remove(subject)
     # populate geographic terms if applicable
+    geo_flag = False
     geonames = root.xpath(".//ead:controlaccess/ead:geogname", namespaces=nsmap)
-    if geonames is not None:
+    window["-OUTPUT-"].update(f"{geonames}\n", append=True)
+    if geonames != []:
+        for geoname in geonames:
+            if "encodinganalog" not in geoname.attrib:
+                geo_flag = True
+    if geo_flag is True:
         geode = ET.SubElement(master_control, "controlaccess")
         geode_head = ET.SubElement(geode, "head")
         geode_head.text = "Places:"
         for geoname in geonames:
             geo_item = ET.SubElement(geode, "geogname")
+            if "source" in geoname.attrib:
+                if geoname.attrib['source'] == "Library of Congress Subject Headings":
+                    geoname.attrib['source'] = "lcsh"
+                if geoname.attrib['source'] == 'naf':
+                    geoname.attrib['source'] = "lcnaf"
+                if geoname.attrib['source'] == "":
+                    geoname.attrib['source'] = "local"
+            if geoname.attrib['source'] == "local":
+                error_text += f"\tlocal source listed for {geoname.text}\n"
             copy_attributes(geo_item, geoname)
+            subjective = geoname.text
+            geoname.text = subjectspace(subjective)
+            error_text += f"\tGeogname: {geoname.text} normalized\n"
             geo_item.text = geoname.text
             geo_item.attrib['encodinganalog'] = "651"
             geoname.getparent().remove(geoname)
     # populate genreform terms if applicable
+    genre_flag = False
     genreforms = root.xpath(".//ead:controlaccess/ead:genreform", namespaces=nsmap)
-    if genreforms is not None:
-        forms = ET.SubElement(master_control, "controlaccess")
-        forms_head = ET.SubElement(forms, "head")
+    window["-OUTPUT-"].update(f"{genreforms}\n", append=True)
+    if genreforms != []:
+        for genreform in genreforms:
+            if "encodinganalog" not in genreform.attrib:
+                genre_flag = True
+    if genre_flag is True:
+        genre = ET.SubElement(master_control, "controlaccess")
+        forms_head = ET.SubElement(genre, "head")
         forms_head.text = "Document Types:"
-        for x in forms:
-            form_item = ET.SubElement(forms, "genreform")
-            copy_attributes(form_item, x)
-            form_item.text = x.text
+        for formation in genreforms:
+            form_item = ET.SubElement(genre, "genreform")
+            if "source" in formation.attrib:
+                if formation.attrib['source'] == "Library of Congress Subject Headings":
+                    formation.attrib['source'] = "lcsh"
+                if formation.attrib['source'] == 'naf':
+                    formation.attrib['source'] = "lcnaf"
+                if formation.attrib['source'] == "":
+                    formation.attrib['source'] = "local"
+            if formation.attrib['source'] == "local":
+                error_text += f"\tlocal source for genreform {formation.text}\n"
+            copy_attributes(form_item, formation)
+            subjective = formation.text
+            formation.text = subjectspace(subjective)
+            error_text += f"\tGenreform: {formation.text} normalized\n"
+            form_item.text = formation.text
             form_item.attrib['encodinganalog'] = "655"
-            x.getparent().remove(x)
+            formation.getparent().remove(formation)
     # populate title terms if applicable
+    title_flag = False
     titles = root.xpath(".//ead:controlaccess/ead:title", namespaces=nsmap)
-    if titles is not None:
+    if titles != []:
+        for title in titles:
+            if "encodinganalog" not in title.attrib:
+                title_flag = True
+    if title_flag is True:
         control_title = ET.SubElement(master_control, "controlaccess")
         control_title_head = ET.SubElement(control_title, "head")
         control_title_head.text = "Titles:"
         for x in titles:
             titles_item = ET.SubElement(control_title, "title")
+            if "source" in x.attrib:
+                if x.attrib['source'] == "Library of Congress Subject Headings":
+                    x.attrib['source'] = "lcsh"
+                if x.attrib['source'] == 'naf':
+                    x.attrib['source'] = "lcnaf"
+                if x.attrib['source'] == "":
+                    x.attrib['source'] = "local"
             copy_attributes(titles_item, x)
             titles_item.text = x.text
             titles_item.attrib['encodinganalog'] = "630"
             x.getparent().remove(x)
     # populate function statement terms if applicable
+    function_flag = False
     functionals = root.xpath(".//ead:controlaccess/ead:function", namespaces=nsmap)
-    if functionals is not None:
+    if functionals != []:
+        for functional in functionals:
+            if "encodinganalog" not in functional.attrib:
+                function_flag = True
+    if function_flag is True:
         control_functions = ET.SubElement(master_control, "controlaccess")
         control_functions_head = ET.SubElement(control_functions, "head")
         control_functions_head.text = "Functions:"
         for x in functionals:
             functions_item = ET.SubElement(control_functions, "function")
+            if "source" in x.attrib:
+                if x.attrib['source'] == "Library of Congress Subject Headings":
+                    x.attrib['source'] = "lcsh"
+                if x.attrib['source'] == 'naf':
+                    x.attrib['source'] = "lcnaf"
+                if x.attrib['source'] == "":
+                    x.attrib['source'] = "local"
             copy_attributes(functions_item, x)
             functions_item.text = x.text
-            functions_item.attrb['encodinganalog'] = "657"
+            functions_item.attrib['encodinganalog'] = "657"
             x.getparent().remove(x)
     # remove not empty control access sections
     controlaccesses = root.xpath(".//ead:controlaccess", namespaces=nsmap)
@@ -6701,7 +5355,7 @@ def processor(my_xml):
     # start subjects tags handling
     flag = 0
     error_text += f"Subjects handled:\n"
-    subjects = root.xpath("//ead:subject", namespaces=nsmap)
+    subjects = root.xpath(".//ead:subject", namespaces=nsmap)
     subjectlist = []
     for subject in subjects:
         subjective = subject.text
@@ -6717,7 +5371,7 @@ def processor(my_xml):
             flag += 1
             error_text += f"\tlocal source attribute in subject {subject.text}\n"
     # start genreform tags handling
-    subjects = root.xpath("//ead:controlaccess/ead:genreform", namespaces=nsmap)
+    subjects = root.xpath(".//ead:controlaccess/ead:genreform", namespaces=nsmap)
     error_text += f"Genreforms handled:\n"
     for subject in subjects:
         subjective = subject.text
@@ -6731,7 +5385,7 @@ def processor(my_xml):
             flag += 1
             error_text += f"\tlocal source attribute in genreform {subject.text}\n"
     # start geogname tags handling
-    subjects = root.xpath("//ead:geogname", namespaces=nsmap)
+    subjects = root.xpath(".//ead:geogname", namespaces=nsmap)
     error_text += f"Geognames handled:\n"
     for subject in subjects:
         subjective = subject.text
@@ -6745,7 +5399,7 @@ def processor(my_xml):
             flag += 1
             error_text += f"\tlocal source attribute in geogname {subject.text}\n"
     # start function statement handling
-    subjects = root.xpath("//ead:function", namespaces=nsmap)
+    subjects = root.xpath(".//ead:function", namespaces=nsmap)
     error_text += f"Function statements handled:\n"
     subjectlist = []
     for subject in subjects:
@@ -6759,7 +5413,7 @@ def processor(my_xml):
         else:
             subjectlist.append(subject.text)
     # start personal name tag handling
-    subjects = root.xpath("//ead:persname", namespaces=nsmap)
+    subjects = root.xpath(".//ead:persname", namespaces=nsmap)
     error_text += f"Personal names handled:\n"
     subjectlist = []
     for subject in subjects:
@@ -6775,7 +5429,7 @@ def processor(my_xml):
             error_text += f"\tlocal source or lcsh source attribute in {subject.text}\n"
     # start family name handling
     error_text += f"Family names handled:\n"
-    subjects = root.xpath("//ead:famname", namespaces=nsmap)
+    subjects = root.xpath(".//ead:famname", namespaces=nsmap)
     subjectlist = []
     for subject in subjects:
         subjective = subject.text
@@ -6790,7 +5444,7 @@ def processor(my_xml):
             error_text += f"\tlocal source or lcsh source attribute in {subject.text}\n"
     # being corpname handling
     error_text += f"Corporate names handled:\n"
-    subjects = root.xpath("//ead:corpname", namespaces=nsmap)
+    subjects = root.xpath(".//ead:corpname", namespaces=nsmap)
     subjectlist = []
     for subject in subjects:
         subjective = subject.text
@@ -6799,7 +5453,7 @@ def processor(my_xml):
         if 'encodinganalog' in subject.attrib:
             corp_analog = ['710', '110', '610']
             if subject.attrib['encodinganalog'] in corp_analog:
-                subject.text = subarea(subject.text)
+                subject.text = subarea(subjective)
                 error_text += f"\tcorporate name: {subject.text} had subarea rules applied to it\n"
         if subject.text in subjectlist:
             subject.getparent().remove(subject)
@@ -7081,13 +5735,6 @@ def processor(my_xml):
     with open(error_log, "w") as w:
         w.write(error_text)
     w.close()
-    # fix the CDATA issue with ead exports
-    langs = root.xpath("//ead:langmaterial", namespaces=nsmap)
-    for lang in langs:
-        lang_text = lang.text
-        if lang_text.startswith("<![CDATA"):
-            lang.text = lang_text.replace("<![CDATA[", "").replace("]]>", "")
-            error_text += "CDATA issue addressed in the langmaterial section\n"
     # work on extents
     extents = root.xpath(".//ead:extent", namespaces=nsmap)
     error_text += "Extent issues addressed:\n"
@@ -7530,6 +6177,7 @@ def processor(my_xml):
         filedata = r.read()
         filedata = filedata.replace("xmlns_xlink", "xmlns:xlink").replace("xlink_", "xlink:")
         filedata = filedata.replace("</creation>.<langusage>", ".</creation><langusage>")
+        filedata = filedata.replace(' construct="master">', ">")
         filedata = filedata.replace('<extptr href',
                                     '<extptr xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onLoad" xlink:show="embed" xlink:type="simple" xlink:href')
         filedata = filedata.replace('<ead:extref href',
