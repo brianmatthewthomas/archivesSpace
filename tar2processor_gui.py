@@ -6180,7 +6180,7 @@ def processor(my_xml):
     with open(finished_product, "r", encoding='utf-8') as r:
         filedata = r.read()
         filedata = filedata.replace("xmlns_xlink", "xmlns:xlink").replace("xlink_", "xlink:")
-        filedata = filedata.replace("</creation>.<langusage>", ".</creation><langusage>")
+        filedata = filedata.replace("</creation>.<langusage>", ".</creation><langusage>").replace("</creation>.<descrules>", ".</creation><descrules>")
         filedata = filedata.replace(' construct="master">', ">")
         filedata = filedata.replace('<extptr href',
                                     '<extptr xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onLoad" xlink:show="embed" xlink:type="simple" xlink:href')
