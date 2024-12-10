@@ -4817,7 +4817,7 @@ def processor(my_xml):
     abstracts = root.xpath(".//ead:archdesc/ead:did/ead:abstract", namespaces=nsmap)
     for abstract in abstracts:
         abstract.attrib['label'] = "Abstract:"
-        abstract.attrib['encodinganalog'] = "300$a"
+        abstract.attrib['encodinganalog'] = "520$a"
     # update physdesc attributes of top-level
     physdescs = root.xpath(".//ead:archdesc/ead:did/ead:physdesc", namespaces=nsmap)
     for physdesc in physdescs:
