@@ -4846,8 +4846,9 @@ def processor(my_xml):
         external.attrib['xlink_actuate'] = "onRequest"
         external.attrib['xlink_show'] = "new"
         external.attrib['xlink_type'] = "simple"
-        external.attrib['xlink_href'] = "http://www.tsl.state.tx.us/arc/index.html"
-        external.attrib.pop("href")
+        if "href" in external.attrib.keys():
+            external.attrib['xlink_href'] = external.attrib['href']
+            external.attrib.pop("href")
     # add encodinganalog 245 to high level unittitles
     unittitles = root.xpath(".//ead:unittitle", namespaces=nsmap)
     for unittitle in unittitles:
@@ -6182,20 +6183,10 @@ def processor(my_xml):
         filedata = filedata.replace("xmlns_xlink", "xmlns:xlink").replace("xlink_", "xlink:")
         filedata = filedata.replace("</creation>.<langusage>", ".</creation><langusage>").replace("</creation>.<descrules>", ".</creation><descrules>")
         filedata = filedata.replace(' construct="master">', ">")
-        filedata = filedata.replace('<extptr href',
-                                    '<extptr xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onLoad" xlink:show="embed" xlink:type="simple" xlink:href')
-        filedata = filedata.replace('<ead:extref href',
-                                    '<ead:extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
         filedata = filedata.replace('<ead:archref href',
                                     '<ead:archref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
         filedata = filedata.replace('<ead:bibref href',
                                     '<ead:bibref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href')
-        filedata = filedata.replace('label="Quantity"', 'label="Quantity:"')
-        filedata = filedata.replace('label="Creator"', 'label="Creator:"')
-        filedata = filedata.replace('label="Collector"', 'label="Collector:"')
-        filedata = filedata.replace('label="Title"', 'label="Title:"')
-        filedata = filedata.replace('label="Dates"', 'label="Dates:"')
-        filedata = filedata.replace('label="Abstract"', 'label="Abstract:"')
         filedata = filedata.replace(", , <", ", <")
         filedata = filedata.replace("..", ".").replace(". .", ".")
         filedata = filedata.replace("\n<ead:descgrp>\n<head>Administrative Information</head>", "")
@@ -6210,17 +6201,7 @@ def processor(my_xml):
         filedata = filedata.replace("<physfacet>[", "[<physfacet>, ").replace("]</physfacet>", "</physfacet>]")
         filedata = filedata.replace("<dimensions>[", "[<dimensions>, ").replace("]</dimensions>", "</dimensions>]")
         filedata = filedata.replace("][<physfacet>", "<physfacet>").replace("][<dimensions>", "<dimensions>")
-        filedata = filedata.replace(
-            '\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive.</emph>\n</p>',
-            '')
-        filedata = filedata.replace(
-            '\n<relatedmaterial>\n<p>\n<emph render="italic">The following materials are offered as possible sources of further information on the agencies and subjects covered by the records. The listing is not exhaustive. </emph>\n</p>',
-            '')
-        filedata = filedata.replace("\n</relatedmaterial>\n</relatedmaterial>\n</relatedmaterial>",
-                                    "\n</relatedmaterial>\n</relatedmaterial>")
-        filedata = filedata.replace(
-            '\n<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>',
-            '')
+
         if "852$a" not in filedata:
             filedata = filedata.replace("</abstract>",
                                         '</abstract>\n<repository encodinganalog="852$a">\n<extref xmlns:xlink="http://www.w3.org/1999/xlink" xlink:actuate="onRequest" xlink:show="new" xlink:type="simple" xlink:href="http://www.tsl.texas.gov/arc/index.html">Texas State Archives</extref>\n</repository>')
@@ -6230,17 +6211,6 @@ def processor(my_xml):
         filedata = filedata.replace(
             '\n<unitid label="TSLAC Control No.:" countrycode="US" repositorycode="US-tx" encodinganalog="099">\n</unitid>',
             '')
-        filedata = filedata.replace('<controlaccess>\n<head>Personal Names:</head>\n</controlaccess>\n', '')
-        filedata = filedata.replace('<controlaccess>\n<head>Family Names:</head>\n</controlaccess>\n', '')
-        filedata = filedata.replace('<controlaccess>\n<head>Corporate Names:</head>\n</controlaccess>\n', '')
-        filedata = filedata.replace('<controlaccess>\n<head>Subjects (Persons):</head>\n</controlaccess>\n', '')
-        filedata = filedata.replace('<controlaccess>\n<head>Subjects (Families):</head>\n</controlaccess>\n', '')
-        filedata = filedata.replace('<controlaccess>\n<head>Subjects (Organizations):</head>\n</controlaccess>\n', '')
-        filedata = filedata.replace('<controlaccess>\n<head>Subjects:</head>\n</controlaccess>\n', '')
-        filedata = filedata.replace('<controlaccess>\n<head>Places:</head>\n</controlaccess>\n', '')
-        filedata = filedata.replace('<controlaccess>\n<head>Document Types:</head>\n</controlaccess>\n', '')
-        filedata = filedata.replace('<controlaccess>\n<head>Titles:</head>\n</controlaccess>\n', '')
-        filedata = filedata.replace('<controlaccess>\n<head>Functions:</head>\n</controlaccess>\n', '')
         filedata = filedata.replace(
             '<controlaccess>\n<head>Index Terms</head>\n<p>\n<emph render="italic">The terms listed here were used to catalog the records. The terms can be used to find similar or related records.</emph>\n</p>\n</controlaccess>',
             '')
@@ -6264,12 +6234,6 @@ def processor(my_xml):
         filedata = filedata.replace('type="inclusive">, <emph', 'type="inclusive"><emph').replace('type="bulk">, <emph',
                                                                                                   'type="bulk"><emph')
         filedata = filedata.replace('list type="ordered">', 'list>')
-        # removed a few blank items i think, appears to create a problem so removing for now
-        # filedata = filedata.replace("\n<?xm-replace_text (be sure level attribute is correct)?>","")
-        # filedata = filedata.replace('\n<change>\n<date era="ce" calendar="gregorian">\n<?xm-replace_text {date}?>\n</date>\n<item>\n<?xm-replace_text {item}?>\n</item>\n</change>','')
-        # filedata = filedata.replace('<unitdate era="ce" calendar="gregorian" normal="0000/0000" type="inclusive">\n<?xm-replace_text {date}?>\n</unitdate>\n','')
-        # filedata = filedata.replace('\n<note>\n<p>\n<emph render="italic">\n<?xm-replace_text {Notes, if desired}?>\n</emph>\n</p>\n</note>','')
-        # filedata = filedata.replace('\n<unittitle>\n<?xm-replace_text {title}?>, </unittitle>','')
         filedata = filedata.replace(
             '\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->', '')
         donkeykong = re.findall(']</physdesc>\n<unitdate *.*, </unitdate>\n</did>', filedata)
