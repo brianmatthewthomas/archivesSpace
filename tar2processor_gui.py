@@ -4643,14 +4643,8 @@ def processor(my_xml):
             else:
                 filedata = filedata.replace('origination>',
                                             "origination>\n<ead:unitid label='TSLAC Control No.:' countrycode='US' repositorycode='US-tx' encodinganalog='099'></ead:unitid>")
-        filedata = filedata.replace(' xmlns:xlink="http://www.w3.org/1999/xlink"', "")
-        filedata = filedata.replace(' xlink:actuate="onLoad"', "")
-        filedata = filedata.replace(' xlink:actuate="onRequest"', "")
-        filedata = filedata.replace(' xlink:show="embed"', '')
-        filedata = filedata.replace(' xlink:show="new"', '')
-        filedata = filedata.replace(' xlink:href', ' href')
-        filedata = filedata.replace(' xlink:type="simple"', '')
-        filedata = filedata.replace(' xlink:role=""', '')
+        filedata = filedata.replace('xmlns:xlink', "xmlns_xlink")
+        filedata = filedata.replace('xlink:', "xlink_")
         filedata = filedata.replace(' href=""', '')
         filedata = filedata.replace('<ead:unitdate era="ce" calendar="gregorian"/>', '').replace("<unitdate/>",
                                                                                                  '').replace(
@@ -6044,23 +6038,49 @@ def processor(my_xml):
     error_text += f"Extent physfacet and dimensions addressed:\n"
     for extent in extents:
         parent = extent.getparent().getparent().getparent()
-        physfacet = extent.find("../ead:physfacet", namespaces=nsmap)
-        dimension = extent.find("../ead:dimensions", namespaces=nsmap)
+        next_phys = extent.getnext()
         parent_attrib = parent.attrib['level']
         if parent_attrib != None and parent_attrib not in exceptions:
             preceding = extent.getparent()
-            preceding.text = "["
-            extent.text = "[" + extent.text + "]"
+            extent.text = f"[{extent.text}"
+            if next_phys is not None:
+                if next_phys.tag == "{urn:isbn:1-931666-22-9}physfacet" or next_phys.tag == "{urn:isbn:1-931666-22-9}dimensions":
+                    next_phys.text = f", {next_phys.text}"
+                    next_next_phys = next_phys.getnext()
+                    if next_next_phys is not None:
+                        if next_next_phys.tag == "{urn:isbn:1-931666-22-9}physfacet" or next_next_phys.tag == "{urn:isbn:1-931666-22-9}dimensions":
+                            next_next_phys.text = f", {next_next_phys.text}]"
+                        else:
+                            next_phys.text = f"{next_phys.text}]"
+                    else:
+                        next_phys.text = f"{next_phys.text}]"
+                else:
+                    extent.text = f"{extent.text}]"
+            else:
+                extent.text = f"{extent.text}]"
             if 'altrender' in extent.attrib:
                 if extent.attrib['altrender'] == "materialtype spaceoccupied":
                     del extent.attrib['altrender']
             # window['-OUTPUT-'].update("\n" + parent.attrib['level'], append=True)
-            if physfacet != None:
-                physfacet.text = "[" + physfacet.text + "]"
+            '''if physfacet != None:
+                prior_auth = physfacet.getprevious()
+                later_auth = physfacet.getnext()
+                if prior_auth.tag is not None:
+                    if prior_auth.tag == 'genreform' or prior_auth.tag == 'dimensions' or prior_auth.tag == 'extent':
+                        physfacet.text = f", {physfacet.text}"
+                    else:
+                        physfacet.text = f'[{physfacet.text}'
+                else:
+                    physfacet.text = f"[{physfacet.text}"
+                if later_auth is not None:
+                    if later_auth.tag != 'genreform' or later_auth.tag != 'dimensions':
+                        physfacet.text = f'{physfacet.text}]'
+                else:
+                    physfacet.text = f'{physfacet.text}]'
                 error_text += f"\tupdated to {physfacet.text}\n"
             if dimension != None:
                 dimension.text = "[" + dimension.text + "]"
-                error_text += f"\tupdated to {dimension.text}\n"
+                error_text += f"\tupdated to {dimension.text}\n"'''
         # do parenthetical for high level electronic records count in extent
         if parent_attrib in exceptions:
             if "electronic files" in extent.text:
@@ -6076,8 +6096,10 @@ def processor(my_xml):
     for extent in extents:
         tempstring = extent.text
         if "[" in tempstring:
-            tempstring = tempstring[1:-1]
-            window['-OUTPUT-'].update("\n" + tempstring, append=True)
+            tempstring = tempstring[1:]
+        if "]" in tempstring:
+            tempstring = tempstring[:-1]
+        window['-OUTPUT-'].update("\n" + tempstring, append=True)
         var = tempstring.split(" ")[0]
         if var == "1":
             tempstring = tempstring.replace("1 ", "")
