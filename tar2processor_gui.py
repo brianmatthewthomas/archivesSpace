@@ -4871,8 +4871,6 @@ def processor(my_xml):
             originator.attrib['source'] = "lcnaf"
     else:
         originator.attrib['source'] = "local"
-    if not originator.text.endswith("."):
-        originator.text = f"{originator.text}."
     if "corpname" in originator.tag:
         originator.attrib['encodinganalog'] = "110"
     if "famname" in originator.tag:
@@ -6128,11 +6126,11 @@ def processor(my_xml):
     title.text = my_title
     dates = root.xpath(".//ead:archdesc/ead:did/ead:unitdate", namespaces=nsmap)
     if len(dates) > 0:
-        for date in dates:
-            date_text = date.text
-            while date_text.endswith(" ") or date_text.endswith(","):
-                date_text = date_text[:-1]
-            date.text = date_text
+        my_date = dates[-1]
+        date_text = my_date.text
+        while date_text.endswith(" ") or date_text.endswith(","):
+            date_text = date_text[:-1]
+        my_date.text = date_text
     # reprocess a date issue
     dids = root.xpath(".//ead:did", namespaces=nsmap)
     for did in dids:
@@ -6258,6 +6256,7 @@ def processor(my_xml):
         filedata = filedata.replace('list type="ordered">', 'list>')
         filedata = filedata.replace(
             '\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->', '')
+        filedata = filedata.replace("etc", "etc.").replace("etc..", "etc.")
         donkeykong = re.findall(']</physdesc>\n<unitdate *.*, </unitdate>\n</did>', filedata)
         if donkeykong:
             for item in donkeykong:
