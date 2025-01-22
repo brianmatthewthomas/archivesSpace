@@ -5525,17 +5525,19 @@ def processor(my_xml):
         nexty = date.getparent().getnext()
         if nexty is not None:
             if nexty.tag == '{urn:isbn:1-931666-22-9}unitdate':
-                if not dateify.endswith(","):
-                    dateify = f"{dateify},"
-                    error_text += f"\ttrailing comma added to {dateify} because of sibling unitdate\n"
+                if nexty.attrib['type'] == "inclusive" or nexty.attrib['type'] == "single":
+                    if not dateify.endswith(","):
+                        dateify = f"{dateify},"
+                        error_text += f"\ttrailing comma added to {dateify} because of sibling unitdate\n"
         my_children = date.getparent().getparent().getchildren()
+        my_grandparent = date.getparent().getparent().getparent()
         # add trailing comma if next sibiling is a physdesc
         my_children_flag = False
         if my_children is not None:
             for my_child in my_children:
                 if my_child.tag == '{urn:isbn:1-931666-22-9}physdesc':
                     my_children_flag = True
-        if my_children_flag is True:
+        if my_children_flag is True and my_grandparent.tag != "{urn:isbn:1-931666-22-9}archdesc":
             dateify = f"{dateify},"
             error_text += f"\ttrailing comma added to {dateify} due to sibling physdesc\n"
         if dateify.endswith(","):
@@ -5587,17 +5589,19 @@ def processor(my_xml):
         nexty = date.getnext()
         if nexty is not None:
             if nexty.tag == '{urn:isbn:1-931666-22-9}unitdate':
-                if not dateify.endswith(","):
-                    dateify = f"{dateify},"
-                    error_text += f"\ttrailing comma added to {dateify} because of sibling unitdate\n"
+                if nexty.attrib['type'] == "inclusive" or nexty.attrib['type'] == "single":
+                    if not dateify.endswith(","):
+                        dateify = f"{dateify},"
+                        error_text += f"\ttrailing comma added to {dateify} because of sibling unitdate\n"
         my_children = date.getparent().getchildren()
+        my_grandparent = date.getparent().getparent()
         # add trailing comma if next sibling is a physdesc
         my_children_flag = False
         if my_children is not None:
             for my_child in my_children:
                 if my_child.tag == '{urn:isbn:1-931666-22-9}physdesc':
                     my_children_flag = True
-        if my_children_flag is True:
+        if my_children_flag is True and my_grandparent.tag != "{urn:isbn:1-931666-22-9}archdesc":
             dateify = f"{dateify},"
             error_text += f"\ttrailing comma added to {dateify} due to sibling physdesc\n"
         if dateify.endswith(","):
