@@ -4622,7 +4622,7 @@ def processor(my_xml):
     temp1 = my_xml.split("/")[-1].split(".")[0]
     temp2 = f"{temp1}-done"
     finished_product = my_xml.replace(temp1, temp2)
-    error_log = finished_product.replace(f"{temp2}.xml", "error_log.txt")
+    error_log = finished_product.replace(f"{temp2}.xml", "change_log.txt")
     # start a rolling text of changes to periodically write to the error log file
     error_text = ""
     with open(my_xml, "r", encoding='utf-8') as r:
@@ -6121,7 +6121,7 @@ def processor(my_xml):
                 if not tempstring.startswith("("):
                     tempstring = f"includes {tempstring}"
                     tempstring = tempstring.replace("includes [", "includes ")
-                    extent.text = tempstring
+                    extent.text = f"({tempstring})"
     # reprocess header stuff
     title = root.find(".//ead:archdesc/ead:did/ead:unittitle", namespaces=nsmap)
     my_title = title.text
