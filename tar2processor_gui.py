@@ -4876,7 +4876,7 @@ def processor(my_xml):
     if "famname" in originator.tag:
         originator.attrib['encodinganalog'] = "100"
     if "persname" in originator.tag:
-        originator.attrib['encodinganalog'] = "100 3"
+        originator.attrib['encodinganalog'] = "100"
         print("something")
     error_text += "made necessary modifications to first origination entity\n"
     #start work on the top body of the text
@@ -5525,10 +5525,9 @@ def processor(my_xml):
         nexty = date.getparent().getnext()
         if nexty is not None:
             if nexty.tag == '{urn:isbn:1-931666-22-9}unitdate':
-                if nexty.attrib['type'] == "inclusive" or nexty.attrib['type'] == "single":
-                    if not dateify.endswith(","):
-                        dateify = f"{dateify},"
-                        error_text += f"\ttrailing comma added to {dateify} because of sibling unitdate\n"
+                if not dateify.endswith(","):
+                    dateify = f"{dateify},"
+                    error_text += f"\ttrailing comma added to {dateify} because of sibling unitdate\n"
         my_children = date.getparent().getparent().getchildren()
         my_grandparent = date.getparent().getparent().getparent()
         # add trailing comma if next sibiling is a physdesc
@@ -5589,10 +5588,9 @@ def processor(my_xml):
         nexty = date.getnext()
         if nexty is not None:
             if nexty.tag == '{urn:isbn:1-931666-22-9}unitdate':
-                if nexty.attrib['type'] == "inclusive" or nexty.attrib['type'] == "single":
-                    if not dateify.endswith(","):
-                        dateify = f"{dateify},"
-                        error_text += f"\ttrailing comma added to {dateify} because of sibling unitdate\n"
+                if not dateify.endswith(","):
+                    dateify = f"{dateify},"
+                    error_text += f"\ttrailing comma added to {dateify} because of sibling unitdate\n"
         my_children = date.getparent().getchildren()
         my_grandparent = date.getparent().getparent()
         # add trailing comma if next sibling is a physdesc
