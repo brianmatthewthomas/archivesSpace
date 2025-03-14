@@ -6220,6 +6220,7 @@ def processor(my_xml):
         filedata = filedata.replace("\n<physfacet>", "<physfacet>").replace("\n<dimensions>", "<dimensions>").replace(
             "\n</physdesc>", "</physdesc>")
         filedata = filedata.replace("<extent>[", "[<extent>").replace("]</extent>", "</extent>]")
+        filedata = filedata.replace("])</extent>", ")</extent>")
         filedata = filedata.replace("<physfacet>[", "[<physfacet>, ").replace("]</physfacet>", "</physfacet>]")
         filedata = filedata.replace("<dimensions>[", "[<dimensions>, ").replace("]</dimensions>", "</dimensions>]")
         filedata = filedata.replace("][<physfacet>", "<physfacet>").replace("][<dimensions>", "<dimensions>")
