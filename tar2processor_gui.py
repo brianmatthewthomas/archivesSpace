@@ -4563,7 +4563,7 @@ html_transform = ET.XML('''
     <xsl:if test="ead:unitid">
       <xsl:for-each select="ead:unitid">
         <xsl:apply-templates/>
-        <xsl:text> </xsl:text>
+        <xsl:text>: </xsl:text>
       </xsl:for-each>
     </xsl:if>
 
