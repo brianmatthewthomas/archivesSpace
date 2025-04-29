@@ -5091,7 +5091,7 @@ def processor(my_xml):
     origination_seven_hundreds = None
     # populate family name subjects if applicable
     famname_flag = False
-    origination_six_hundreds = root.xpath(".//ead:origination[@label = 'Subject']/ead:famname", namespaces=nsmap)
+    origination_six_hundreds = root.xpath(".//ead:archdesc/ead:controlaccess/ead:famname", namespaces=nsmap)
     if origination_six_hundreds is not None:
         for origination_six_hundred in origination_six_hundreds:
             if "encodinganalog" not in origination_six_hundred.attrib:
@@ -5117,13 +5117,12 @@ def processor(my_xml):
                 origination_six_hundred.text = subjectspace(subjective)
                 error_text += f"\tFamily name: {origination_six_hundred.text} normalized\n"
                 famname_item.text = origination_six_hundred.text
-                origination_parent = origination_six_hundred.getparent()
-                origination_parent.getparent().remove(origination_parent)
+                origination_six_hundred.getparent().remove(origination_six_hundred)
                 famname_item.attrib['encodinganalog'] = "600"
     origination_six_hundreds = None
     # populate personal name subjects if applicable
     persname_flag = False
-    origination_six_hundreds = root.xpath(".//ead:origination[@label = 'Subject']/ead:persname", namespaces=nsmap)
+    origination_six_hundreds = root.xpath(".//ead:archdesc/ead:controlaccess/ead:persname", namespaces=nsmap)
     if origination_six_hundreds is not None:
         for origination_six_hundred in origination_six_hundreds:
             if "encodinganalog" not in origination_six_hundred.attrib:
@@ -5149,13 +5148,12 @@ def processor(my_xml):
                 origination_six_hundred.text = subjectspace(subjective)
                 error_text += f"\tcorporate name: {origination_six_hundred.text} normalized\n"
                 persname_item.text = origination_six_hundred.text
-                origination_parent = origination_six_hundred.getparent()
-                origination_parent.getparent().remove(origination_parent)
+                origination_six_hundred.getparent().remove(origination_six_hundred)
                 persname_item.attrib['encodinganalog'] = "600"
     origination_six_hundreds = None
     # populate corporate name subjects if applicable
     corpname_flag = False
-    origination_six_hundreds = root.xpath(".//ead:origination[@label = 'Subject']/ead:corpname", namespaces=nsmap)
+    origination_six_hundreds = root.xpath(".//ead:archdesc/ead:controlaccess/ead:corpname", namespaces=nsmap)
     if origination_six_hundreds is not None:
         for origination_six_hundred in origination_six_hundreds:
             if "encodinganalog" not in origination_six_hundred.attrib:
@@ -5184,17 +5182,16 @@ def processor(my_xml):
                 origination_six_hundred.text = subarea(subjective)
                 error_text += f"\tcorporate name: {origination_six_hundred.text} had subarea rules applied to it\n"
                 corpname_item.text = origination_six_hundred.text
-                origination_parent = origination_six_hundred.getparent()
-                origination_parent.getparent().remove(origination_parent)
+                origination_six_hundred.getparent().remove(origination_six_hundred)
                 corpname_item.attrib['encodinganalog'] = "610"
     origination_six_hundreds = None
     # populate subject terms if applicable
     subject_flag = False
-    subjects = root.xpath(".//ead:controlaccess/ead:subject", namespaces=nsmap)
-    if subjects != []:
+    subjects = root.xpath(".//ead:archdesc/ead:controlaccess/ead:subject", namespaces=nsmap)
+    if subjects is not None:
         for subject in subjects:
-            if "encodinganalog" not in subject.attrib:
-                subject_flag = True
+            subject_flag = True
+            window['-OUTPUT-'].update(f"\n{subject.text}\n", append=True)
     if subject_flag is True:
         subject_section = ET.SubElement(master_control, "controlaccess")
         subjective_head = ET.SubElement(subject_section, "head")
@@ -5217,11 +5214,12 @@ def processor(my_xml):
             subject_item.text = subject.text
             subject_item.attrib['encodinganalog'] = "650"
             subject.getparent().remove(subject)
+
     # populate geographic terms if applicable
     geo_flag = False
     geonames = root.xpath(".//ead:controlaccess/ead:geogname", namespaces=nsmap)
     window["-OUTPUT-"].update(f"{geonames}\n", append=True)
-    if geonames != []:
+    if geonames is not None:
         for geoname in geonames:
             if "encodinganalog" not in geoname.attrib:
                 geo_flag = True
@@ -5247,11 +5245,12 @@ def processor(my_xml):
             geo_item.text = geoname.text
             geo_item.attrib['encodinganalog'] = "651"
             geoname.getparent().remove(geoname)
+
     # populate genreform terms if applicable
     genre_flag = False
     genreforms = root.xpath(".//ead:controlaccess/ead:genreform", namespaces=nsmap)
     window["-OUTPUT-"].update(f"{genreforms}\n", append=True)
-    if genreforms != []:
+    if genreforms is not None:
         for genreform in genreforms:
             if "encodinganalog" not in genreform.attrib:
                 genre_flag = True
@@ -5280,7 +5279,7 @@ def processor(my_xml):
     # populate title terms if applicable
     title_flag = False
     titles = root.xpath(".//ead:controlaccess/ead:title", namespaces=nsmap)
-    if titles != []:
+    if titles is not None:
         for title in titles:
             if "encodinganalog" not in title.attrib:
                 title_flag = True
@@ -5304,7 +5303,7 @@ def processor(my_xml):
     # populate function statement terms if applicable
     function_flag = False
     functionals = root.xpath(".//ead:controlaccess/ead:function", namespaces=nsmap)
-    if functionals != []:
+    if functionals is not None:
         for functional in functionals:
             if "encodinganalog" not in functional.attrib:
                 function_flag = True
@@ -5334,14 +5333,14 @@ def processor(my_xml):
         if 'construct' in controlaccess.attrib:
             controlaccess.attrib.pop('construct')
     # sorts subjects, but causes head to sort into the middle so adding a preceding space to get it sort on top, then removing afterwards
-    subjects = root.xpath("//ead:head", namespaces=nsmap)
+    subjects = root.xpath(".//ead:head", namespaces=nsmap)
     for subject in subjects:
         subject.text = " " + subject.text
-    for node in root.xpath("//ead:controlaccess/ead:controlaccess", namespaces=nsmap):
+    for node in root.xpath(".//ead:controlaccess/ead:controlaccess", namespaces=nsmap):
         if node.tag == "head":
             node.text = " " + node.text
         node[:] = sorted(node, key=lambda ch: ch.text)
-    subjects = root.xpath("//ead:head", namespaces=nsmap)
+    subjects = root.xpath(".//ead:head", namespaces=nsmap)
     for subject in subjects:
         subjective = subject.text
         subject.text = subjectspace(subjective)
