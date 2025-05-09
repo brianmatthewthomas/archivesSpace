@@ -5,6 +5,7 @@ import lxml.etree as ET
 import re
 import PySimpleGUI as Sg
 import traceback
+import os
 
 my_icon = b'iVBORw0KGgoAAAANSUhEUgAAAHgAAABsCAQAAAALKr7UAAAAAmJLR0QAAKqNIzIAAAAJcEhZcwAALEsAACxLAaU9lqkAAAAHdElNRQ' \
           b'fmAhQHBBtCNNv6AAANwUlEQVR42u2ca3hV5ZXHf0lObgRz4WK4WmpAEFFHFBTkMQWUoTyoiIpDrajcpGOFWsaOtCqgraIdO8pDp7VF' \
@@ -4620,8 +4621,9 @@ def processor(my_xml):
         append=True)
     # window['-OUTPUT-'].update("\n" + "this is supposed to fix a bunch of minor issues related to TARO 2.0 normalization, check output for correctness", append=True)
     temp1 = my_xml.split("/")[-1].split(".")[0]
-    temp2 = f"{temp1}-done"
+    temp2 = f"{temp1}-DONOTUSE"
     finished_product = my_xml.replace(temp1, temp2)
+    finished_product_removable = finished_product
     error_log = finished_product.replace(f"{temp2}.xml", "change_log.txt")
     # start a rolling text of changes to periodically write to the error log file
     error_text = ""
@@ -5707,6 +5709,16 @@ def processor(my_xml):
                     my_list.sort()
                     # isolate first and last box numbers
                     for integer in my_list:
+                        my_integer = list(integer)
+                        for character in my_integer:
+                            try:
+                                int(character)
+                            except:
+                                my_integer.remove(character)
+                        new_integer = ""
+                        for character in my_integer:
+                            new_integer = f"{new_integer}{str(character)}"
+                        integer = new_integer
                         if int(integer) >= top:
                             top = int(integer)
                         if int(integer) <= bottom:
@@ -6281,10 +6293,12 @@ def processor(my_xml):
             'xsi:schemaLocation="urn:isbn:1-931666-22-9 ead.xsd"')
         filedata = filedata.replace("</emph>\n,</unittitle>", "</emph>,</unittitle>")
         filedata = filedata.replace('",</unittitle>', ',"</unittitle>').replace("</emph>,</unittitle>", ",</emph></unittitle>").replace(",,", ",")
+    finished_product = finished_product.replace("-DONOTUSE", "-done")
     with open(finished_product, "w", encoding='utf-8') as w:
         w.write(
             '<?xml version="1.0" encoding="UTF-8"?>\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->\n<!-- <?xml-stylesheet type="text/xsl" href="ead.xsl"?> <?xml-stylesheet type="text/css" href="ead.css"?> -->\n' + filedata)
     w.close()
+    os.remove(finished_product_removable)
     error_text += f"A number of manual text changes added to the ead file to make it compliant/clean-up before html generation\n"
     error_text += f"attempting to parse file to make sure the ead is valid\n"
     html_file = f"{finished_product[:-3]}html"
@@ -6318,6 +6332,7 @@ def processor(my_xml):
     w.close()
     window['-OUTPUT-'].update("\n" + f'{unitid_text} finished', append=True)
     window['-OUTPUT-'].update("\n" + "all done!", append=True)
+    window['-DONE_message-'].update(visible=True)
 
 
 Sg.theme('DarkGreen')
@@ -6339,6 +6354,9 @@ layout = [[
             default_text="Look here for information about various data points as the file processes. Your processed file will end in '-done'",
             size=(70, 5), auto_refresh=True, reroute_stdout=False, key="-OUTPUT-", autoscroll=True,
             border_width=5)
+    ],
+    [
+        Sg.Text("IF YOU HAD MULTIPLE CONTAINERS of the SAME PREFIX on an DID, especially \nif there was letters in the container identifier, CHECK THE OUTPUT", visible=False, key="-DONE_message-", font=("Arial", "10", "bold italic"))
     ]
 ]
 
