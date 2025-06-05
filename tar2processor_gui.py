@@ -4739,7 +4739,7 @@ def processor(my_xml):
             odd.tag = "note"
             error_text += "changed an ead:off to an ead:note\n"
     # fix attribute issues with unitid
-    unitids = root.xpath(".//ead:unitid", namespaces=nsmap)
+    unitids = root.xpath(".//ead:archdesc/ead:did/ead:unitid", namespaces=nsmap)
     if unitids is not None:
         for unitid in unitids:
             unitid.attrib['label'] = "TSLAC Control No.:"
@@ -5785,6 +5785,7 @@ def processor(my_xml):
                     'ambrotypes (photographs)': 'ambrotype (photograph)',
                     'architectural drawings (visual works)': 'architectural drawing (visual work)',
                     'architectural models': 'architectural model',
+                    'artifact_(object_genres)': 'artifact (object genre)',
                     'artifacts (object genre)': 'artifact (object genre)',
                     'artifacts_(object_genres)': "artifact (object genre)",
                     'audiocassettes': 'audiocassette',

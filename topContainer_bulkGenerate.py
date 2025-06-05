@@ -64,9 +64,9 @@ baseline = {'jsonmodel_type': 'top_container',
                   'restricted': 'false',
                   'container_profile': {'ref': ''},
                   'container_locations': [{'ref': '', 'jsonmodel_type': 'container_location', 'status': 'current', 'start_date': '2021-11-09'}]}
-df1 = PD.read_excel("/media/sf_Z_DRIVE/Working/research/archivespace/2024-025-80cf top container bulk import.xlsx", sheet_name="Sheet1", dtype=object)
+df1 = PD.read_excel("/media/sf_Documents/topContainer_csv_zavala_newspapers1.xlsx", sheet_name="Sheet1", dtype=object)
 print(df1[:5])
-df2 = PD.read_csv("/media/sf_Z_DRIVE/Working/research/archivespace/locations_list2.csv", dtype=object)
+df2 = PD.read_csv("/media/sf_G_DRIVE/Working/research/archivespace/locations_list2.csv", dtype=object)
 print(df2[:5])
 df3 = df1.merge(df2, how='left', on=['structure_name','location_label_1_text','location_label_2_text','coordinate_1_label','coordinate_1_text','coordinate_2_label','coordinate_2_text','coordinate_3_label','coordinate_3_text'])
 print(df3[:])
@@ -109,10 +109,18 @@ for thing in listy:
     endpoint = "/" + temp_list[1] + "/" + temp_list[2] + "/top_containers"
     for item in post_back[thing]:
         response = (client.get(endpoint + "/search?q=" + item).json())
-        print(response)
-        for widget in response['response']['docs']:
-            temp['instances'].append({'jsonmodel_type': 'instance', 'instance_type': 'mixed_materials',
-                                      'sub_container':{'jsonmodel_type': 'sub_container','top_container':{'ref':widget['id']}}})
+        print(response['response']['docs'])
+        # add switch to ensure multiple containers of the same name aren't paired multiple times
+        my_match = False
+        while my_match is False:
+            for widget in response['response']['docs']:
+                typee = f"{widget['type_u_ssort']} "
+                my_string = widget['display_string'].replace(typee, '')
+                if my_string == item and my_match is False:
+                    temp['instances'].append({'jsonmodel_type': 'instance', 'instance_type': 'mixed_materials',
+                                              'sub_container':{'jsonmodel_type': 'sub_container','top_container':{'ref':widget['id']}}})
+                    print(f"found match for {widget['id']}")
+                    my_match = True
     temp2 = (client.post(thing, json=temp))
     print(temp)
     print(temp2.status_code)
