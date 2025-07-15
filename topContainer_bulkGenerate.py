@@ -52,7 +52,8 @@ container_profiles = {'Capitol drawings cabinet drawer (434-445)':'/container_pr
                       'Oversize 24x36':'/container_profiles/19',
                       'Public debt':'/container_profiles/28',
                       'RS':'/container_profiles/3',
-                      'Volume':'/container_profiles/33'}
+                      'Volume':'/container_profiles/33',
+                      'Film container': '/container_profiles/37'}
 baseline = {'jsonmodel_type': 'top_container',
                   'active_restrictions': [],
                   'series': [],
@@ -64,7 +65,7 @@ baseline = {'jsonmodel_type': 'top_container',
                   'restricted': 'false',
                   'container_profile': {'ref': ''},
                   'container_locations': [{'ref': '', 'jsonmodel_type': 'container_location', 'status': 'current', 'start_date': '2021-11-09'}]}
-df1 = PD.read_excel("/media/sf_Documents/topContainer_csv_zavala_newspapers1.xlsx", sheet_name="Sheet1", dtype=object)
+df1 = PD.read_excel("/media/sf_Documents/topContainer_csv_zavala_films.xlsx", sheet_name="Sheet1", dtype=object)
 print(df1[:5])
 df2 = PD.read_csv("/media/sf_G_DRIVE/Working/research/archivespace/locations_list2.csv", dtype=object)
 print(df2[:5])
@@ -85,11 +86,8 @@ for row in df3.itertuples():
         thisContainer['repository']['ref'] = '/repositories/12'
     if str(valuables['repository']) != 'nan' and str(valuables['type of linked record']) != 'nan' and str(valuables['id_number']) != 'nan':
         collectionString = thisContainer['repository']['ref'] + "/" + valuables['type of linked record'] + "/" + str(valuables['id_number'])
-        if collectionString in post_back.keys():
-            post_back[collectionString].append(thisContainer['indicator'])
-            print(post_back)
-        else:
-            post_back[collectionString] = [thisContainer['indicator']]
+        if collectionString not in post_back.keys():
+            post_back[collectionString] = []
         thisContainer['series'] = []
         thisContainer['series'].append({'ref': collectionString, 'jsonmodel_type':valuables['type of linked record']})
     if str(valuables['location_ref']) != 'nan':
@@ -98,8 +96,24 @@ for row in df3.itertuples():
         thisContainer['container_locations'] = []
     print(thisContainer)
     endpoint = thisContainer['repository']['ref'] + "/top_containers"
-    response = client.post(endpoint, json=thisContainer)
-    print(response.status_code)
+    response = client.post(endpoint, json=thisContainer).json()
+    post_back[collectionString].append(response['uri'])
+    print(response)
+print("waiting 30 seconds for the containers to register in the system")
+time.sleep(30)
+listy = post_back.keys()
+for thing in listy:
+    temp = client.get(thing).json()
+    if "instances" not in temp.keys():
+        temp['instances'] = []
+    for item in post_back[thing]:
+        temp['instances'].append({'jsonmodel_type': 'instance', 'instance_type': 'mixed_materials',
+                                  'sub_container': {'jsonmodel_type': 'sub_container', 'top_container': {'ref': item}}})
+    temp2 = client.post(thing, json=temp)
+    print(temp2.status_code)
+print("all done")
+
+'''
 print("waiting 30 seconds for changes to take effect")
 time.sleep(30)
 listy = post_back.keys()
@@ -126,4 +140,5 @@ for thing in listy:
     print(temp2.status_code)
 yourTime = time.asctime()
 print(f"process started at {myTime} and completed at {yourTime}")
+'''
 

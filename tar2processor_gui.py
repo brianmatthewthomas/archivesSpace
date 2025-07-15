@@ -5662,7 +5662,11 @@ def processor(my_xml):
             container_temp = container_text.split("-")[-1]
             while container_temp.startswith("0"):
                 container_temp = container_temp[1:]
-            container.text = container_text.split("-")[0] + "-" + container_temp
+            container_list = container_text.split("-")[:-1]
+            replacement_text = ""
+            for container_listy in container_list:
+                replacement_text = f"{replacement_text}{container_listy}-"
+            container.text = f"{replacement_text}{container_temp}"
     # target containers on a per-did basis
     container_dids = root.xpath(".//ead:did", namespaces=nsmap)
     for container_did in container_dids:
