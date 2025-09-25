@@ -65,7 +65,7 @@ baseline = {'jsonmodel_type': 'top_container',
                   'restricted': 'false',
                   'container_profile': {'ref': ''},
                   'container_locations': [{'ref': '', 'jsonmodel_type': 'container_location', 'status': 'current', 'start_date': '2021-11-09'}]}
-df1 = PD.read_excel("/media/sf_Documents/topContainer_csv_zavala_films.xlsx", sheet_name="Sheet1", dtype=object)
+df1 = PD.read_excel("/media/sf_Documents/2025-119 top container bulk import.xlsx", sheet_name="Sheet1", dtype=object)
 print(df1[:5])
 df2 = PD.read_csv("/media/sf_G_DRIVE/Working/research/archivespace/locations_list2.csv", dtype=object)
 print(df2[:5])

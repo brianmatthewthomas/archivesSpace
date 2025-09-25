@@ -5530,7 +5530,7 @@ def processor(my_xml):
                     dateify = f"{dateify},"
                     error_text += f"\ttrailing comma added to {dateify} because of sibling unitdate\n"
         my_children = date.getparent().getparent().getchildren()
-        my_grandparent = date.getparent().getparent().getparent()
+        my_grandparent = date.getparent().getparent()
         # add trailing comma if next sibiling is a physdesc
         my_children_flag = False
         if my_children is not None:
@@ -5600,7 +5600,7 @@ def processor(my_xml):
             for my_child in my_children:
                 if my_child.tag == '{urn:isbn:1-931666-22-9}physdesc':
                     my_children_flag = True
-        if my_children_flag is True and my_grandparent.tag != "{urn:isbn:1-931666-22-9}archdesc":
+        if my_children_flag is True and "archdesc" not in my_grandparent.tag:
             dateify = f"{dateify},"
             error_text += f"\ttrailing comma added to {dateify} due to sibling physdesc\n"
         if dateify.endswith(","):
@@ -5609,6 +5609,10 @@ def processor(my_xml):
         if date.text != dateify:
             error_text += f"\t{date.text} updated to {dateify}"
         date.text = dateify
+        if "archdesc" in my_grandparent.tag:
+            while dateify.endswith(", "):
+                dateify = dateify[:-2]
+                date.text = dateify
         # address date normal attribute specifically
         if "normal" not in date.attrib:
             date.attrib['normal'] = timeturner(dateify)
@@ -6275,7 +6279,7 @@ def processor(my_xml):
         filedata = filedata.replace('list type="ordered">', 'list>')
         filedata = filedata.replace(
             '\n<!--Remove the ead.xsl and ead.css statements above before uploading to TARO.-->', '')
-        filedata = filedata.replace("etc", "etc.").replace("etc..", "etc.")
+        filedata = filedata.replace(" etc<", " etc.<").replace(' etc ', ' etc. ').replace("etc..", "etc.")
         donkeykong = re.findall(']</physdesc>\n<unitdate *.*, </unitdate>\n</did>', filedata)
         if donkeykong:
             for item in donkeykong:
