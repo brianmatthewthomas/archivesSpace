@@ -4038,7 +4038,7 @@ html_transform = ET.XML('''
 
 ''')
 
-my_input_file = "C:/Users/bthomas/Downloads/TX006028_20251216_202557_UTC__ead.xml" #input("Enter the name of the file: ")
+my_input_file = "C:/Users/bthomas/Downloads/TX005697_20251217_190413_UTC__ead.xml" #input("Enter the name of the file: ")
 my_output_file = "C:/Users/bthomas/Downloads/output.xml" #input("Enter the name of the output file: ")
 
 nsmap = {'xmlns': 'urn:isbn:1-931666-22-9',
@@ -4051,24 +4051,32 @@ root = dom.getroot()
 ead = root.xpath("//ead:ead", namespaces=nsmap)
 for item in ead:
     item.attrib['relatedencoding'] = "MARC21"
+eadhead = root.find(".//ead:eadheader", namespaces=nsmap)
+eadhead.attrib['scriptencoding'] = "iso15924"
 identifiers = ET.iterwalk(root, events=("start", "end"))
 for action, elem in identifiers:
     if "id" in elem.attrib.keys():
         elem.attrib.pop("id")
-pub_stmt = root.xpath(".//ead:publisher", namespaces=nsmap)
+pub_stmt = root.find(".//ead:publicationstmt", namespaces=nsmap)
+pub_date = root.find(".//ead:publicationstmt/ead:p/ead:date", namespaces=nsmap)
+pub_date2 = ET.SubElement(pub_stmt, "date")
+pub_date2.text = pub_date.text
+date_container = pub_date.getparent()
+date_container.getparent().remove(date_container)
+pub_stmt = root.xpath(".//ead:publicationstmt/ead:publisher", namespaces=nsmap)
 for item in pub_stmt:
+    item.text = "Texas State Library and Archives Commission"
     extptr = ET.SubElement(item, "extptr")
     extptr.attrib['xlink_actuate'] = "onLoad"
     extptr.attrib['xlink_href'] = "https://www.tsl.texas.gov/sites/default/files/public/tslac/arc/findingaids/tslac_logo.jpg"
     extptr.attrib['xlink_show'] = "embed"
     extptr.attrib['xlink_type'] = "simple"
     extptr.attrib['xmlns_xlink'] = "http://www.w3.org/1999/xlink"
-popple = root.xpath(".//ead:publicationstmt/ead:p", namespaces=nsmap)
-if popple is not None:
-    for poppler in popple:
-        parental = poppler.getparent()
-        parental.remove(poppler)
 address = root.xpath(".//ead:publicationstmt/ead:address", namespaces=nsmap)
+paragraph = root.xpath(".//ead:publicationstmt/ead:p", namespaces=nsmap)
+if paragraph is not None:
+    for item in paragraph:
+        item.getparent().remove(item)
 if address is not None:
     for addres in address:
         parental = addres.getparent()
@@ -4088,20 +4096,57 @@ if revisions is not None:
     authorial.text = f"{authorial.text}{constructed}"
 creation_date = root.find(".//ead:profiledesc/ead:creation/ead:date", namespaces=nsmap)
 creation_date.text = creation_date.text[:10]
-main_did = root.find(".//ead:archdesc/ead:did/ead:head", namespaces=nsmap)
-main_did.text = "Overview"
 archdesc = root.find(".//ead:archdesc", namespaces=nsmap)
 archdesc.attrib['type'] = "inventory"
 archdesc.attrib['audience'] = "external"
+main_did = root.find(".//ead:archdesc/ead:did/ead:head", namespaces=nsmap)
+main_did.text = "Overview"
+repository = root.find(".//ead:archdesc/ead:did/ead:repository/ead:corpname", namespaces=nsmap)
+repository_text = repository.text
+repo_extref = root.find(".//ead:archdesc/ead:did/ead:repository/ead:extref", namespaces=nsmap)
+
+repo_extref.text = repository_text
+repository.getparent().remove(repository)
+top_title = root.find(".//ead:archdesc/ead:did/ead:unittitle", namespaces=nsmap)
+top_title.attrib['label'] = "Title:"
+originator = root.xpath(".//ead:origination", namespaces=nsmap)
+if originator is not None:
+    for item in originator:
+        if "label" not in item.attrib.keys():
+            item.attrib['label'] = "Creator:"
+        else:
+            if not item.attrib['label'].endswith(":"):
+                item.attrib['label'] = f'{item.attrib["label"]}:'
 head_id = root.find("ead:archdesc/ead:did/ead:unitid", namespaces=nsmap)
 head_id.attrib['label'] = "TSLAC Control No.:"
 langmaterial = root.xpath(".//ead:langmaterial", namespaces=nsmap)
+if langmaterial is not None:
+    langmaterial[0].attrib['label'] = "Language:"
+    if len(langmaterial) > 1:
+        while len(langmaterial) > 1:
+            langmaterial[-1].getparent().remove(langmaterial[-1])
+            langmaterial = root.xpath(".//ead:langmaterial", namespaces=nsmap)
 top_physdesc = root.xpath(".//ead:archdesc/ead:did/ead:physdesc", namespaces=nsmap)
-if len(top_physdesc) > 1:
-    for physdesc in top_physdesc[1:]:
-        if physdesc.attrib['altrender'] == "part":
-            extent = physdesc.find("./ead:extent", namespaces=nsmap)
-            extent.text = f"(includes {extent.text})"
+if top_physdesc is not None:
+    for item in top_physdesc:
+        item.attrib['label'] = "Quantity:"
+    if len(top_physdesc) > 1:
+        for physdesc in top_physdesc[1:]:
+            if physdesc.attrib['altrender'] == "part":
+                extent = physdesc.find("./ead:extent", namespaces=nsmap)
+                extent.text = f"(includes {extent.text})"
+top_unitdates = root.xpath(".//ead:archdesc/ead:did/ead:unitdate", namespaces=nsmap)
+if top_unitdates is not None:
+    for item in top_unitdates:
+        item.attrib['label'] = "Dates:"
+abstract = root.xpath(".//ead:archdesc/ead:did/ead:abstract", namespaces=nsmap)
+if abstract is not None:
+    for item in abstract:
+        item.attrib['label'] = "Abstract:"
+top_location = root.xpath(".//ead:archdesc/ead:did/ead:physloc", namespaces=nsmap)
+if top_location is not None:
+    for item in top_location:
+        item.attrib['label'] = "Location:"
 arrangement = root.xpath(".//ead:archdesc/ead:arrangement", namespaces=nsmap)
 if arrangement is not None:
     for item in arrangement:
@@ -4114,6 +4159,10 @@ appraisal = root.xpath(".//ead:archdesc/ead:appraisal", namespaces=nsmap)
 if appraisal is not None:
     for item in appraisal:
         item.attrib['encodinganalog'] = "583"
+phystech = root.xpath(".//ead:archdesc/ead:phystech", namespaces=nsmap)
+if phystech is not None:
+    for item in phystech:
+        item.attrib['encodinganalog'] = "340"
 controlaccess = root.find(".//ead:archdesc/ead:controlaccess/ead:controlaccess", namespaces=nsmap)
 if controlaccess is not None:
     paragraph = ET.SubElement(item, "p")
@@ -4124,6 +4173,21 @@ if controlaccess is not None:
 subject = root.xpath(".//ead:subject", namespaces=nsmap)
 if subject is not None:
     for item in subject:
+        if "source" in item.attrib.keys():
+            item.attrib['source'] = normalized_source(item.attrib['source'])
+corpname = root.xpath(".//ead:corpname", namespaces=nsmap)
+if corpname is not None:
+    for item in corpname:
+        if "source" in item.attrib.keys():
+            item.attrib['source'] = normalized_source(item.attrib['source'])
+famname = root.xpath(".//ead:famname", namespaces=nsmap)
+if famname is not None:
+    for item in famname:
+        if "source" in item.attrib.keys():
+            item.attrib['source'] = normalized_source(item.attrib['source'])
+persname = root.xpath(".//ead:persname", namespaces=nsmap)
+if persname is not None:
+    for item in persname:
         if "source" in item.attrib.keys():
             item.attrib['source'] = normalized_source(item.attrib['source'])
 counter = 0
@@ -4208,7 +4272,7 @@ w.close()
 
 with open(my_output_file, "r") as r:
     filedata = r.read()
-    filedata = filedata.replace("xlink_", "xlink:")
+    filedata = filedata.replace("xlink_", "xlink:").replace("xmlns_", "xmlns:")
     with open(my_output_file, "w") as w:
         w.write(filedata)
     w.close()
