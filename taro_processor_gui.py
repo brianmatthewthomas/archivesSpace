@@ -4473,6 +4473,8 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         pub_date = root.find(".//ead:publicationstmt/ead:p/ead:date", namespaces=nsmap)
         pub_date2 = ET.SubElement(pub_stmt, "date")
         pub_date2.text = pub_date.text
+        pub_date2.attrib['era'] = 'ce'
+        pub_date2.attrib['calendar'] = 'gregorian'
         date_container = pub_date.getparent()
         date_container.getparent().remove(date_container)
         window['-OUTPUT-'].update(f"promoted publication date\n", append=True)
@@ -4617,8 +4619,14 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         top_unitdates = root.xpath(".//ead:archdesc/ead:did/ead:unitdate", namespaces=nsmap)
         if top_unitdates is not None:
             if len(top_unitdates) > 1:
-                for item in top_unitdates[:-1]:
-                    item.text = f"{item.text}, "
+                top_dates = len(top_unitdates)
+                for item in top_unitdates:
+                    if item.attrib['type'] == "bulk":
+                        top_dates = top_dates - 1
+                if top_dates > 1:
+                    top_dates = root.xpath(".//ead:archdesc/ead:did/ead:unitdate[@type != 'bulk']", namespaces=nsmap)
+                    for item in top_dates[:-1]:
+                        item.text = f"{item.text}, "
             for item in top_unitdates:
                 item.attrib['label'] = "Dates:"
                 window['-OUTPUT-'].update(f"added date label to {item.text}\n", append=True)
