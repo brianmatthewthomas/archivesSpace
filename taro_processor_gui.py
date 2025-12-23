@@ -4700,6 +4700,63 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         window['-OUTPUT-'].update(f"trouble adding intro language to index terms\n", append=True)
         raise
     try:
+        controlaccess_children = root.xpath(".//ead:archdesc/ead:controlaccess/ead:controlaccess", namespaces=nsmap)
+        controlaccess = root.find(".//ead:archdesc/ead:controlaccess", namespaces=nsmap)
+        fams = 0
+        peeps = 0
+        corps = 0
+        for controlaccess_child in controlaccess_children:
+            children = controlaccess_child.getchildren()
+            for child in children:
+                print(child.text)
+                if "corpname" in child.tag:
+                    if "role" in child.attrib.keys():
+                        if child.attrib['role'] == "cre":
+                            corps += 1
+                if "famname" in child.tag:
+                    if "role" in child.attrib.keys():
+                        if child.attrib['role'] == "cre":
+                            fams += 1
+                if "persname" in child.tag:
+                    if "role"in child.attrib.keys():
+                        if child.attrib['role'] == "cre":
+                            peeps += 1
+        if fams > 0:
+            families = ET.SubElement(controlaccess, "controlaccess")
+            fam_head = ET.SubElement(families, "head")
+            fam_head.text = "Family Names"
+            family_subjects = root.xpath(".//ead:archdesc/ead:controlaccess/ead:controlaccess/ead:famname[@role = 'cre']", namespaces=nsmap)
+            for family in family_subjects:
+                family.attrib['encodinganalog'] = f"7{family.attrib['encodinganalog'][1:]}"
+                families.append(family)
+        if peeps > 0:
+            peoples = ET.SubElement(controlaccess, "controlaccess")
+            peep_head = ET.SubElement(peoples, "head")
+            peep_head.text = "Personal Names"
+            person_subjects = root.xpath(".//ead:archdesc/ead:controlaccess/ead:controlaccess/ead:persname[@role = 'cre']", namespaces=nsmap)
+            for persons in person_subjects:
+                persons.attrib['encodinganalog'] = f"7{persons.attrib['encodinganalog'][1:]}"
+                peoples.append(persons)
+        if corps > 0:
+            corporate = ET.SubElement(controlaccess, "controlaccess")
+            corporate_ceo = ET.SubElement(corporate, "head")
+            corporate_ceo.text = "Corporate Names"
+            corporations = root.xpath(".//ead:archdesc/ead:controlaccess/ead:controlaccess/ead:corpname[@role = 'cre']", namespaces=nsmap)
+            for corporation in corporations:
+                corporation.attrib['encodinganalog'] = f"7{corporation.attrib['encodinganalog'][1:]}"
+                corporate.append(corporation)
+        #remove any empty controlaccess sections
+        controlaccess = root.xpath(".//ead:archdesc/ead:controlaccess/ead:controlaccess", namespaces=nsmap)
+        for control in controlaccess:
+            control_children = control.getchildren()
+            print(len(control_children))
+            if len(control_children) <= 1:
+                if control_children[0].tag == "head":
+                    controlaccess.remove(control)
+    except:
+        window['-OUTPUT-'].update("trouble reassigning secondary creators to their own segment of control access\n", append=True)
+        raise
+    try:
         subject = root.xpath(".//ead:subject", namespaces=nsmap)
         if subject is not None:
             for item in subject:
@@ -4814,9 +4871,6 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                     if item.attrib['type'] == "box":
                         item.attrib['type'] = "Box"
                         window['-OUTPUT-'].update(f"normalized box label to {item.text}\n", append=True)
-                if "parent" in item.attrib.keys():
-                    item.attrib.pop('parent')
-                    window['-OUTPUT-'].update(f"removed parent attribute to {item.text}\n", append=True)
     except:
         window['-OUTPUT-'].update(f"trouble normalizing boxes\n", append=True)
         raise
@@ -4897,6 +4951,93 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
             except:
                 window['-OUTPUT-'].update(f"failed near {did_text}\n", append=True)
                 raise
+            # processing containers into comma delimited and "thru"
+        for did in dids:
+            containers = did.xpath("./ead:container", namespaces=nsmap)
+            if containers is not None:
+                if len(containers) > 1:
+                    containers_list = "clear"
+                    containers_list = dict()
+                    parent_flag = False
+                    container_range = False
+                    for container in containers:
+                        print(container.text)
+                        if "parent" in container.attrib.keys():
+                            parent_flag = True
+                        if container.attrib['type'] not in containers_list.keys():
+                            containers_list[container.attrib['type']] = []
+                        containers_list[container.attrib['type']].append(container.text)
+                    if parent_flag is False:
+                        container_index = 0
+                        for my_container in containers_list.keys():
+                            dash_flag = False
+                            for item in containers_list[my_container]:
+                                if "-" in item:
+                                    dash_flag = True
+                            if dash_flag is False:
+                                container_text = ""
+                                for item in containers_list[my_container]:
+                                    container_text = f"{container_text}, {item}"
+                                container_text = container_text[2:]
+                                containers[container_index].attrib['type'] = my_container
+                                containers[container_index].text = container_text
+                            if dash_flag is True:
+                                new_dict = "someting"
+                                new_dict = {}
+                                container_text = ""
+                                for item in containers_list[my_container]:
+                                    item = item.split("-")
+                                    if item[0] not in new_dict.keys():
+                                        new_dict[item[0]] = []
+                                    new_dict[item[0]].append(item[-1])
+                                for my_value in new_dict.keys():
+                                    high = 0
+                                    low = 0
+                                    new_value = new_dict[my_value]
+                                    print(new_value)
+                                    for number in new_value:
+                                        if high == 0 and low == 0:
+                                            high = number
+                                            low = number
+                                        else:
+                                            new_number = int(high) + 1
+                                            if int(number) == int(new_number):
+                                                high = number
+                                            else:
+                                                container_text = f"{container_text}, {my_value}-{low} thru {my_value}-{high}"
+                                                high = number
+                                                low = number
+                                    if high == low:
+                                        container_text = f"{container_text}, {my_value}-{low}"
+                                    if high != low:
+                                        container_text = f"{container_text}, {my_value}-{low} thru {my_value}-{high}"
+                                container_text = container_text[2:]
+                                containers[container_index].attrib['type'] = my_container
+                                containers[container_index].text = container_text
+                            container_index += 1
+                            print(container_index)
+                        while len(containers) > container_index:
+                            print(len(containers))
+                            containers[-1].getparent().remove(containers[-1])
+                            containers = did.xpath("./ead:container", namespaces=nsmap)
+                            '''print("manipulating containers of different kinds")
+                            container_text = ""
+                            for item in containers_list:
+                                container_text = f"{container_text}, {item}"
+                            container_text = container_text[2:]
+                            print(container_text)
+                            for container in containers:
+                                container.text = container_text
+                            while len(containers) > 1:
+                                containers[-1].getparent().remove(containers[-1])
+                                containers = did.xpath("./ead:container", namespaces=nsmap)
+                        if len(containers_list) > 0 and len(containers_dict) > 0:
+                            container_text = ""'''
+    containers = root.xpath(".//ead:container", namespaces=nsmap)
+    for item in containers:
+        if "parent" in item.attrib.keys():
+            item.attrib.pop('parent')
+            window['-OUTPUT-'].update(f"removed parent attribute to {item.text}\n", append=True)
     try:
         unitid_list = []
         unitid = root.xpath(".//ead:unitid", namespaces=nsmap)
