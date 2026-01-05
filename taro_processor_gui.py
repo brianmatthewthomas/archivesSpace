@@ -5033,11 +5033,74 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                                 containers = did.xpath("./ead:container", namespaces=nsmap)
                         if len(containers_list) > 0 and len(containers_dict) > 0:
                             container_text = ""'''
+    exceptions = ['class', 'collection', 'fonds', 'otherlevel', 'recordgrp', 'series', 'subfonds', 'subgrp',
+                  'subseries', 'Sub-Series', 'Sub-Group', 'Series']
+    # change the physdesc/extent to be bracketed and remove the last trailing comma previously added so it doesn't look weird
+    for c in c_tags:
+        extents = root.xpath(f'.//ead:{c}/ead:did/ead:physdesc/ead:extent', namespaces=nsmap)
+        if extents is not None:
+            if len(extents) > 0:
+                for extent in extents:
+                    level_up = extent.getparent().getparent().getparent()
+                    parent_attrib = level_up.attrib['level']
+                    if parent_attrib != None and parent_attrib not in exceptions:
+                        next_phys = extent.getnext()
+                        extent.text = f"[{extent.text}"
+                        # make the core change
+                        if next_phys is not None:
+                            if next_phys.tag == "{urn:isbn:1-931666-22-9}physfacet" or next_phys.tag == "{urn:isbn:1-931666-22-9)dimensions":
+                                next_phys.text = f", {next_phys.text}"
+                                next_next_phys = next_phys.getnext()
+                                if next_next_phys is not None:
+                                    if next_next_phys.tag == "{urn:isbn:1-931666-22-9}physfacet" or next_next_phys.tag == "{urn:isbn:1-931666-22-9":
+                                        next_next_phys.text = f", {next_next_phys.text}]"
+                                    else:
+                                        next_phys.text = f"{next_phys.text}]"
+                                else:
+                                    next_phys.text = f"{next_phys.text}]"
+                            else:
+                                extent.text = f"{extent.text}]"
+                        else:
+                            extent.text = f"{extent.text}]"
+                        # strip unnecessary altrender since it renders in taro weird
+                        if "altrender" in extent.attrib:
+                            if extent.attrib['altrender'] == "materialtype spaceoccupied":
+                                del extent.attrib['altrender']
+                        # process for unittitle unittitle/emph and unitdate comma removal; may need unitdate/emph at some point
+                        parent = extent.getparent().getparent()
+                        extent_titles = parent.xpath("./ead:unittitle", namespaces=nsmap)
+                        extent_titles_emph = parent.xpath("./ead:unittitle/ead:emph", namespaces=nsmap)
+                        extent_dates = parent.xpath("./ead:unitdate", namespaces=nsmap)
+                        if extent_dates is not None:
+                            if len(extent_dates) > 0:
+                                changer = extent_dates[-1]
+                                changer_text = changer.text
+                                while changer_text.endswith(","):
+                                    changer_text = changer_text[:-1]
+                                    changer.text = changer_text
+                            if extent_titles is not None:
+                                if len(extent_titles) > 0:
+                                    changer = extent_titles[-1]
+                                    changer_text = changer.text
+                                    if changer_text is not None:
+                                        while changer_text.endswith(","):
+                                            changer_text = changer_text[:-1]
+                                            changer.text = changer_text
+                            if extent_titles_emph is not None:
+                                if len(extent_titles_emph) > 0:
+                                    changer = extent_titles_emph[-1]
+                                    changer_text = changer.text
+                                    if changer_text is not None:
+                                        while changer_text.endswith(","):
+                                            changer_text = changer_text[:-1]
+                                            changer.text = changer_text
+    # remove an unnecessary parent attribute
     containers = root.xpath(".//ead:container", namespaces=nsmap)
     for item in containers:
         if "parent" in item.attrib.keys():
             item.attrib.pop('parent')
             window['-OUTPUT-'].update(f"removed parent attribute to {item.text}\n", append=True)
+    # remove unitids if they are duplicative to deal with spreadsheet imports creating a lot of the same unitid
     try:
         unitid_list = []
         unitid = root.xpath(".//ead:unitid", namespaces=nsmap)
