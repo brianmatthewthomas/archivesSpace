@@ -4926,7 +4926,7 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                                 did_text = f"{did_text}/{date_text}"
                 if len(physdesc) == 0:
                     if len(unitdate) > 1:
-                        for date in unitdate[1:]:
+                        for date in unitdate[:-1]:
                             date_text = date.text
                             if not date_text.endswith(",") or not date_text.endswith(", "):
                                 date_text += ","
@@ -5048,18 +5048,16 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                         extent.text = f"[{extent.text}"
                         # make the core change
                         if next_phys is not None:
-                            if next_phys.tag == "{urn:isbn:1-931666-22-9}physfacet" or next_phys.tag == "{urn:isbn:1-931666-22-9)dimensions":
-                                next_phys.text = f", {next_phys.text}"
-                                next_next_phys = next_phys.getnext()
-                                if next_next_phys is not None:
-                                    if next_next_phys.tag == "{urn:isbn:1-931666-22-9}physfacet" or next_next_phys.tag == "{urn:isbn:1-931666-22-9":
-                                        next_next_phys.text = f", {next_next_phys.text}]"
-                                    else:
-                                        next_phys.text = f"{next_phys.text}]"
+                            print(next_phys.text)
+                            next_phys.text = f", {next_phys.text}"
+                            next_next_phys = next_phys.getnext()
+                            if next_next_phys is not None:
+                                if next_next_phys.tag == "{urn:isbn:1-931666-22-9}physfacet" or next_next_phys.tag == "{urn:isbn:1-931666-22-9}dimensions":
+                                    next_next_phys.text = f", {next_next_phys.text}]"
                                 else:
                                     next_phys.text = f"{next_phys.text}]"
                             else:
-                                extent.text = f"{extent.text}]"
+                                next_phys.text = f"{next_phys.text}]"
                         else:
                             extent.text = f"{extent.text}]"
                         # strip unnecessary altrender since it renders in taro weird
@@ -5094,6 +5092,15 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                                         while changer_text.endswith(","):
                                             changer_text = changer_text[:-1]
                                             changer.text = changer_text
+    # remove head from non-major level scope contents notes
+    for c in c_tags:
+        scope_heads = root.xpath(f".//ead:{c}/ead:scopecontent/ead:head", namespaces=nsmap)
+        for scope_head in scope_heads:
+            grandparent = scope_head.getparent().getparent()
+            if "level" in grandparent.attrib.keys():
+                tester = grandparent.attrib['level']
+                if tester not in exceptions:
+                    scope_head.getparent().remove(scope_head)
     # remove an unnecessary parent attribute
     containers = root.xpath(".//ead:container", namespaces=nsmap)
     for item in containers:
