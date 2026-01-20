@@ -4903,25 +4903,32 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                     window['-OUTPUT-'].update(f"{unittitle}\n", append=True)
                     if unittitle is not None:
                         unittitle_text = unittitle.text
-                        if unittitle_text is not None:
+                        unittitle_emph_text = ""
+                        if unittitle_emph is not None:
+                            unittitle_emph_text = unittitle_emph.text
+                        if unittitle_text is not None and unittitle_emph_text == "":
                             if not unittitle_text.endswith(",") or not unittitle_text.endswith(", "):
                                 unittitle_text += ","
                                 unittitle.text = unittitle_text
                                 did_text = f"{did_text}{unittitle_text}"
-                        if unittitle_text is None:
-                            unittitle_text = unittitle_emph.text
-                            if unittitle_text is not None:
-                                if not unittitle_text.endswith(",") or not unittitle_text.endswith(", "):
-                                    unittitle_text += ","
-                                    unittitle_emph.text = unittitle_text
-                                    did_text = f"{did_text}{unittitle_text}"
+                        if unittitle_text is not None and unittitle_emph_text != "":
+                            unittitle_tail = unittitle_emph.tail
+                            if not unittitle_tail.endswith(",") or not unittitle_tail.endswith(", "):
+                                unittitle_tail += ","
+                                unittitle_emph.tail = unittitle_tail
+                                did_text = f"{did_text}{unittitle_tail}"
+                        if unittitle_text is None and unittitle_emph_text != "":
+                            if not unittitle_emph_text.endswith(",") or not unittitle_emph_text.endswith(", "):
+                                unittitle_emph_text += ","
+                                unittitle_emph.text = unittitle_emph_text
+                                did_text = f"{did_text}{unittitle_emph_text}"
                         print(unittitle_text)
                 if len(physdesc) > 0:
                     if len(unitdate) > 0:
                         for date in unitdate:
                             date_text = date.text
                             if not date_text.endswith(",") or not date_text.endswith(", "):
-                                date_text += ","
+                                date_text += ", "
                                 date.text = date_text
                                 did_text = f"{did_text}/{date_text}"
                 if len(physdesc) == 0:
@@ -4929,7 +4936,7 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                         for date in unitdate[:-1]:
                             date_text = date.text
                             if not date_text.endswith(",") or not date_text.endswith(", "):
-                                date_text += ","
+                                date_text += ", "
                                 date.text = date_text
                                 did_text = f"{did_text}/{date_text}"
                 if len(physdesc) > 1:
@@ -5073,10 +5080,10 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                             if len(extent_dates) > 0:
                                 changer = extent_dates[-1]
                                 changer_text = changer.text
-                                while changer_text.endswith(","):
-                                    changer_text = changer_text[:-1]
+                                while changer_text.endswith(", "):
+                                    changer_text = changer_text[:-2]
                                     changer.text = changer_text
-                            if extent_titles is not None:
+                            elif extent_titles is not None:
                                 if len(extent_titles) > 0:
                                     changer = extent_titles[-1]
                                     changer_text = changer.text
@@ -5084,7 +5091,7 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                                         while changer_text.endswith(","):
                                             changer_text = changer_text[:-1]
                                             changer.text = changer_text
-                            if extent_titles_emph is not None:
+                            elif extent_titles_emph is not None:
                                 if len(extent_titles_emph) > 0:
                                     changer = extent_titles_emph[-1]
                                     changer_text = changer.text
@@ -5135,6 +5142,8 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         with open(my_output_file, "r") as r:
             filedata = r.read()
             filedata = filedata.replace("xlink_", "xlink:").replace("xmlns_", "xmlns:")
+            filedata = filedata.replace('",', ',"').replace("[(", "[").replace(",]", "],")
+            filedata = filedata.replace('" ,<', ',"<')
             filedata = f"{xml_header}{filedata}"
             with open(my_output_file, "w") as w:
                 w.write(filedata)
