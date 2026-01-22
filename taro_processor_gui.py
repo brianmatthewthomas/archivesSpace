@@ -4448,6 +4448,8 @@ nsmap = {'xmlns': 'urn:isbn:1-931666-22-9',
          'ead': 'urn:isbn:1-931666-22-9',
          'xlink': 'http://www.w3.org/1999/xlink'}
 def processor(my_input_file=str, singularization_dict=dict, translation_dict=dict):
+    exceptions = ['class', 'collection', 'fonds', 'otherlevel', 'recordgrp', 'series', 'subfonds', 'subgrp',
+                  'subseries', 'Sub-Series', 'Sub-Group', 'Series']
     my_output_file = f"{my_input_file[:-4]}-done.xml"
     dom = ET.parse(my_input_file)
     root = dom.getroot()
@@ -4599,21 +4601,6 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
             window['-OUTPUT-'].update(f"removed all other langmaterial tags\n", append=True)
     except:
         window['-OUTPUT-'].update(f"trouble trying to update language/langmaterial tagging\n", append=True)
-        raise
-    try:
-        top_physdesc = root.xpath(".//ead:archdesc/ead:did/ead:physdesc", namespaces=nsmap)
-        if top_physdesc is not None:
-            for item in top_physdesc:
-                item.attrib['label'] = "Quantity:"
-            window['-OUTPUT-'].update(f"added labels to top level physdesc tags\n", append=True)
-            if len(top_physdesc) > 1:
-                for physdesc in top_physdesc[1:]:
-                    if physdesc.attrib['altrender'] == "part":
-                        extent = physdesc.find("./ead:extent", namespaces=nsmap)
-                        extent.text = f"(includes {extent.text})"
-            window['-OUTPUT-'].update(f"added parenthetical to partial extents if applicable\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble trying to update top physdesc tagging\n", append=True)
         raise
     try:
         top_unitdates = root.xpath(".//ead:archdesc/ead:did/ead:unitdate", namespaces=nsmap)
@@ -4840,7 +4827,7 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         window['-OUTPUT-'].update(f"trouble assigning series identifiers\n", append=True)
         raise
     try:
-        extents = root.xpath(".//ead:physdesc/ead:extent", namespaces=nsmap)
+        extents = root.xpath("//ead:physdesc/ead:extent", namespaces=nsmap)
         if extents is not None:
             for extent in extents:
                 if extent.text is not None:
@@ -4862,6 +4849,21 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                     extent.text = extent_text
     except:
         window['-OUTPUT-'].update("trouble translating or singularizing extents\n", append=True)
+        raise
+    try:
+        top_physdesc = root.xpath(".//ead:archdesc/ead:did/ead:physdesc", namespaces=nsmap)
+        if top_physdesc is not None:
+            for item in top_physdesc:
+                item.attrib['label'] = "Quantity:"
+            window['-OUTPUT-'].update(f"added labels to top level physdesc tags\n", append=True)
+            if len(top_physdesc) > 1:
+                for physdesc in top_physdesc[1:]:
+                    if physdesc.attrib['altrender'] == "part":
+                        extent = physdesc.find("./ead:extent", namespaces=nsmap)
+                        extent.text = f"(includes {extent.text})"
+            window['-OUTPUT-'].update(f"added parenthetical to partial extents if applicable\n", append=True)
+    except:
+        window['-OUTPUT-'].update(f"trouble trying to update top physdesc tagging\n", append=True)
         raise
     try:
         box = root.xpath(".//ead:container", namespaces=nsmap)
@@ -4951,9 +4953,11 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                         parental = phys.getparent()
                         if "altrender" in parental.attrib.keys():
                             if parental.attrib["altrender"] == "part":
-                                phys.text = f"(includes {phys.text})"
-                                physdesc[phys_counter].text = physdesc[phys_counter].text[:-1]
-                                phys_counter += 1
+                                parental = did.getparent()
+                                if parental.attrib['level'] not in exceptions:
+                                    phys.text = f"(includes {phys.text})"
+                                    physdesc[phys_counter].text = physdesc[phys_counter].text[:-1]
+                                    phys_counter += 1
                 window['-OUTPUT-'].update(f"processed {did_text}\n", append=True)
             except:
                 window['-OUTPUT-'].update(f"failed near {did_text}\n", append=True)
@@ -5040,8 +5044,7 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                                 containers = did.xpath("./ead:container", namespaces=nsmap)
                         if len(containers_list) > 0 and len(containers_dict) > 0:
                             container_text = ""'''
-    exceptions = ['class', 'collection', 'fonds', 'otherlevel', 'recordgrp', 'series', 'subfonds', 'subgrp',
-                  'subseries', 'Sub-Series', 'Sub-Group', 'Series']
+
     # change the physdesc/extent to be bracketed and remove the last trailing comma previously added so it doesn't look weird
     for c in c_tags:
         extents = root.xpath(f'.//ead:{c}/ead:did/ead:physdesc/ead:extent', namespaces=nsmap)
