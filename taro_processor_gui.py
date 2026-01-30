@@ -4915,7 +4915,11 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                                 did_text = f"{did_text}{unittitle_text}"
                         if unittitle_text is not None and unittitle_emph_text != "":
                             unittitle_tail = unittitle_emph.tail
-                            if not unittitle_tail.endswith(",") or not unittitle_tail.endswith(", "):
+                            if unittitle_tail is None:
+                                unittitle_tail = ","
+                                unittitle_emph.tail = unittitle_tail
+                                did_text = f"{did_text}{unittitle_tail}"
+                            elif not unittitle_tail.endswith(",") or not unittitle_tail.endswith(", "):
                                 unittitle_tail += ","
                                 unittitle_emph.tail = unittitle_tail
                                 did_text = f"{did_text}{unittitle_tail}"
