@@ -5110,11 +5110,7 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
     for c in c_tags:
         scope_heads = root.xpath(f".//ead:{c}/ead:scopecontent/ead:head", namespaces=nsmap)
         for scope_head in scope_heads:
-            grandparent = scope_head.getparent().getparent()
-            if "level" in grandparent.attrib.keys():
-                tester = grandparent.attrib['level']
-                if tester not in exceptions:
-                    scope_head.getparent().remove(scope_head)
+            scope_head.getparent().remove(scope_head)
     # remove an unnecessary parent attribute
     containers = root.xpath(".//ead:container", namespaces=nsmap)
     for item in containers:
