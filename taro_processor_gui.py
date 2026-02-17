@@ -5111,6 +5111,11 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         scope_heads = root.xpath(f".//ead:{c}/ead:scopecontent/ead:head", namespaces=nsmap)
         for scope_head in scope_heads:
             scope_head.getparent().remove(scope_head)
+    # remove header from odd note
+    for c in c_tags:
+        oddballs = root.xpath(f".//ead:{c}/ead:odd/ead:head", namespaces=nsmap)
+        for oddball in oddballs:
+            oddball.getparent().remove(oddball)
     # remove an unnecessary parent attribute
     containers = root.xpath(".//ead:container", namespaces=nsmap)
     for item in containers:
