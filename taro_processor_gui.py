@@ -4452,6 +4452,10 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                   'subseries', 'Sub-Series', 'Sub-Group', 'Series']
     my_output_file = f"{my_input_file[:-4]}-done.xml"
     dom = ET.parse(my_input_file)
+    ET.indent(dom, space="\t")
+    with open(my_input_file, "wb") as w:
+        w.write(ET.tostring(dom, pretty_print=True))
+    w.close()
     root = dom.getroot()
     try:
         ead = root.xpath("//ead:ead", namespaces=nsmap)
@@ -4467,9 +4471,17 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         if "id" in elem.attrib.keys():
             try:
                 elem.attrib.pop("id")
-            except:
-                window['-OUTPUT-'].update(f"failed to remove id from {elem.text}\n", append=True)
+            except Exception as e:
+                Sg.popup_error_with_traceback(f"failed to remove id from {elem.text}", e)
                 raise
+    unitdates = root.xpath(".//ead:unitdate", namespaces=nsmap)
+    for unitdate in unitdates:
+        try:
+            if "type" not in unitdate.attrib.keys():
+                unitdate.attrib['type'] = "inclusive"
+        except Exception as e:
+            Sg.popup_error_with_traceback(f'Error in changing unitdate type at date {unitdate.text}', e)
+            raise
     try:
         pub_stmt = root.find(".//ead:publicationstmt", namespaces=nsmap)
         pub_date = root.find(".//ead:publicationstmt/ead:p/ead:date", namespaces=nsmap)
@@ -4501,15 +4513,15 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                 parental = addres.getparent()
                 parental.remove(addres)
         window['-OUTPUT-'].update(f"removed address information from publication statement\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"failed while trying to update publication information\n", append=True)
+    except Exception as e:
+        Sg.popup_error_with_traceback(f"failed while trying to update publication information", e)
         raise
     try:
         creation_date = root.find(".//ead:profiledesc/ead:creation/ead:date", namespaces=nsmap)
         creation_date.text = creation_date.text[:10]
         window['-OUTPUT-'].update(f"shortened creation date to yyyy-mm-dd\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble shortening creation date\n", append=True)
+    except Exception as e:
+        Sg.popup_error_with_traceback(f"trouble shortening ead creation date", e)
         raise
     try:
         archdesc = root.find(".//ead:archdesc", namespaces=nsmap)
@@ -4518,8 +4530,8 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         main_did = root.find(".//ead:archdesc/ead:did/ead:head", namespaces=nsmap)
         main_did.text = "Overview"
         window['-OUTPUT-'].update(f"updated archdesc attributes and archdesc did descriptor\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble updating archdesc attributes and overview title\n", append=True)
+    except Exception as e:
+        Sg.popup_error_with_traceback(f"trouble updating archdesc attributes and overview title", e)
         raise
     try:
         repository = root.find(".//ead:archdesc/ead:did/ead:repository/ead:corpname", namespaces=nsmap)
@@ -4528,8 +4540,8 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         repo_extref.text = repository_text
         repository.getparent().remove(repository)
         window['-OUTPUT-'].update(f"re-arranged archdesc repo tags\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble re-arranging archdesc repository tags\n", append=True)
+    except Exception as e:
+        Sg.popup_error_with_traceback(f"trouble re-arranging archdesc repository tags", e)
         raise
     try:
         top_title = root.find(".//ead:archdesc/ead:did/ead:unittitle", namespaces=nsmap)
@@ -4546,8 +4558,8 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         head_id = root.find("ead:archdesc/ead:did/ead:unitid", namespaces=nsmap)
         head_id.attrib['label'] = "TSLAC Control No.:"
         window['-OUTPUT-'].update(f"updated label to top unitid\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble updating labels for title or TX number\n", append=True)
+    except Exception as e:
+        Sg.popup_error_with_traceback(f"trouble updating labels for title or TX number", e)
         raise
     try:
         origination = root.find(".//ead:archdesc/ead:did/ead:origination", namespaces=nsmap)
@@ -4586,8 +4598,8 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                     families.append(child)
                 if "persname" in child.tag:
                     peoples.append(child)
-    except:
-        window['-OUTPUT-'].update("trouble moving extra creators to controlaccess section\n", append=True)
+    except Exception as e:
+        Sg.popup_error_with_traceback("trouble moving extra creators to controlaccess section, good luck", e)
         raise
     try:
         langmaterial = root.xpath(".//ead:langmaterial", namespaces=nsmap)
@@ -4600,12 +4612,12 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                     langmaterial = root.xpath(".//ead:langmaterial", namespaces=nsmap)
             window['-OUTPUT-'].update(f"removed all other langmaterial tags\n", append=True)
     except:
-        window['-OUTPUT-'].update(f"trouble trying to update language/langmaterial tagging\n", append=True)
+        Sg.popup_error_with_traceback("trouble trying to update language/langmaterial tagging", e)
         raise
-    try:
-        top_unitdates = root.xpath(".//ead:archdesc/ead:did/ead:unitdate", namespaces=nsmap)
-        if top_unitdates is not None:
-            if len(top_unitdates) > 1:
+    top_unitdates = root.xpath(".//ead:archdesc/ead:did/ead:unitdate", namespaces=nsmap)
+    if top_unitdates is not None:
+        if len(top_unitdates) > 1:
+            try:
                 top_dates = len(top_unitdates)
                 for item in top_unitdates:
                     if item.attrib['type'] == "bulk":
@@ -4614,66 +4626,69 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                     top_dates = root.xpath(".//ead:archdesc/ead:did/ead:unitdate[@type != 'bulk']", namespaces=nsmap)
                     for item in top_dates[:-1]:
                         item.text = f"{item.text}, "
-            for item in top_unitdates:
+            except Exception as e:
+                Sg.popup_error_with_traceback(f"trouble adding trailing commas to top-level unitdates, fix that later", e)
+        for item in top_unitdates:
+            try:
                 item.attrib['label'] = "Dates:"
                 window['-OUTPUT-'].update(f"added date label to {item.text}\n", append=True)
-    except:
-        window['-OUTPUT-'].update("trouble adding labels to top-level dates\n", append=True)
-        raise
-    try:
-        abstract = root.xpath(".//ead:archdesc/ead:did/ead:abstract", namespaces=nsmap)
-        if abstract is not None:
-            for item in abstract:
+            except Exception as e:
+                Sg.popup_error_with_traceback(f"trouble adding label to {item.text}", e)
+                raise
+    abstract = root.xpath(".//ead:archdesc/ead:did/ead:abstract", namespaces=nsmap)
+    if abstract is not None:
+        for item in abstract:
+            try:
                 item.attrib['label'] = "Abstract:"
+            except Exception as e:
+                Sg.popup_error_with_traceback(f"trouble adding label to abstract tag at {item.text}", e)
+                raise
         window['-OUTPUT-'].update(f"added label to abstract tag\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"troruble adding label to abstract tag\n", append=True)
-        raise
     try:
         top_location = root.xpath(".//ead:archdesc/ead:did/ead:physloc", namespaces=nsmap)
         if top_location is not None:
             for item in top_location:
                 item.attrib['label'] = "Location:"
         window['-OUTPUT-'].update(f"added label to top physloc if applicable\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble adding label to top physloc\n", append=True)
+    except Exception as e:
+        Sg.popup_error_with_traceback(f"trouble adding label to top physloc with text {item.text}", e)
         raise
-    try:
-        arrangement = root.xpath(".//ead:archdesc/ead:arrangement", namespaces=nsmap)
-        if arrangement is not None:
-            for item in arrangement:
+    arrangement = root.xpath(".//ead:archdesc/ead:arrangement", namespaces=nsmap)
+    if arrangement is not None:
+        for item in arrangement:
+            try:
                 item.attrib['encodinganalog'] = "351"
                 window['-OUTPUT-'].update(f"added encodinganalog to arrangement note\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble adding encodinganalog to arrangement note\n", append=True)
-        raise
-    try:
-        processinfo = root.xpath(".//ead:processinfo", namespaces=nsmap)
-        if processinfo is not None:
-            for item in processinfo:
+            except Exception as e:
+                Sg.popup_error_with_traceback(f"trouble adding encodinganalog to arrangement note '{item.text}'", e)
+                raise
+    processinfo = root.xpath(".//ead:processinfo", namespaces=nsmap)
+    if processinfo is not None:
+        for item in processinfo:
+            try:
                 item.attrib['encodinganalog'] = "583"
                 window['-OUTPUT-'].update(f"added encodinganalog to processing info\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble adding encodinganalog to processing info\n", append=True)
-        raise
-    try:
-        appraisal = root.xpath(".//ead:archdesc/ead:appraisal", namespaces=nsmap)
-        if appraisal is not None:
-            for item in appraisal:
+            except Exception as e:
+                Sg.popup_error_with_traceback(f"trouble adding encodinganalog to processing info with text '{item.text}'", e)
+                raise
+    appraisal = root.xpath(".//ead:archdesc/ead:appraisal", namespaces=nsmap)
+    if appraisal is not None:
+        for item in appraisal:
+            try:
                 item.attrib['encodinganalog'] = "583"
                 window['-OUTPUT-'].update(f"added encodinganalog to appraisal\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble adding encodinganalog to appraisal\n", append=True)
-        raise
-    try:
-        phystech = root.xpath(".//ead:archdesc/ead:phystech", namespaces=nsmap)
-        if phystech is not None:
-            for item in phystech:
+            except Exception as e:
+                Sg.popup_error_with_traceback(f"trouble adding encodinganalog to appraisal info with text '{item.text}'", e)
+                raise
+    phystech = root.xpath(".//ead:archdesc/ead:phystech", namespaces=nsmap)
+    if phystech is not None:
+        for item in phystech:
+            try:
                 item.attrib['encodinganalog'] = "340"
                 window['-OUTPUT-'].update(f"added encoding analog to phystech\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble adding encodinganalog to phystech\n", append=True)
-        raise
+            except Exception as e:
+                Sg.popup_error_with_traceback(f"trouble adding encodinganalog to phystech with text {item.text}", e)
+                raise
     try:
         controlaccess = root.find(".//ead:archdesc/ead:controlaccess/ead:controlaccess", namespaces=nsmap)
         if controlaccess is not None:
@@ -4683,8 +4698,8 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
             emphasis.text = "The terms listed here were used to catalog the records. The terms can be used to find similar or related records."
             controlaccess.addprevious(paragraph)
             window['-OUTPUT-'].update(f"added intro language to index terms\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble adding intro language to index terms\n", append=True)
+    except Exception as e:
+        Sg.popup_error_with_traceback(f"trouble adding into language to index terms area", e)
         raise
     try:
         controlaccess_children = root.xpath(".//ead:archdesc/ead:controlaccess/ead:controlaccess", namespaces=nsmap)
@@ -4738,94 +4753,95 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
             control_children = control.getchildren()
             print(len(control_children))
             if len(control_children) <= 1:
-                if control_children[0].tag == "head":
-                    controlaccess.remove(control)
-    except:
-        window['-OUTPUT-'].update("trouble reassigning secondary creators to their own segment of control access\n", append=True)
+                if "head" in control_children[0].tag:
+                    control.getparent().remove(control)
+    except Exception as e:
+        Sg.popup_error_with_traceback(f"trouble reassigning secondary creators to their own segment of controlaccess", e)
         raise
-    try:
-        subject = root.xpath(".//ead:subject", namespaces=nsmap)
-        if subject is not None:
-            for item in subject:
-                if "source" in item.attrib.keys():
+    subject = root.xpath(".//ead:subject", namespaces=nsmap)
+    if subject is not None:
+        for item in subject:
+            if "source" in item.attrib.keys():
+                try:
                     item.attrib['source'] = normalized_source(item.attrib['source'])
                     window['-OUTPUT-'].update(f"normalized source attribute for {item.text}\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble normalizing source on subject tags\n", append=True)
-        raise
-    try:
-        corpname = root.xpath(".//ead:corpname", namespaces=nsmap)
-        if corpname is not None:
-            for item in corpname:
-                if "source" in item.attrib.keys():
+                except Exception as e:
+                    Sg.popup_error_with_traceback(f"trouble normalizing source on subject tags at {item.text}", e)
+                    raise
+    corpname = root.xpath(".//ead:corpname", namespaces=nsmap)
+    if corpname is not None:
+        for item in corpname:
+            if "source" in item.attrib.keys():
+                try:
                     item.attrib['source'] = normalized_source(item.attrib['source'])
                     window['-OUTPUT-'].update(f"normalized source attribute for {item.text}\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f'trouble normalizing source attributes for corpnames\n', append=True)
-        raise
-    try:
-        famname = root.xpath(".//ead:famname", namespaces=nsmap)
-        if famname is not None:
-            for item in famname:
-                if "source" in item.attrib.keys():
+                except Exception as e:
+                    Sg.popup_error_with_traceback(f"trouble normalizing source on corpnames at {item.text}", e)
+                    raise
+    famname = root.xpath(".//ead:famname", namespaces=nsmap)
+    if famname is not None:
+        for item in famname:
+            if "source" in item.attrib.keys():
+                try:
                     item.attrib['source'] = normalized_source(item.attrib['source'])
                     window['-OUTPUT-'].update(f"normalized source attribute for {item.text}\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble normalizing source attributes for famnames\n", append=True)
-        raise
-    try:
-        persname = root.xpath(".//ead:persname", namespaces=nsmap)
-        if persname is not None:
-            for item in persname:
-                if "source" in item.attrib.keys():
+                except Exception as e:
+                    Sg.popup_error_with_traceback(f"trouble normalizing source on famnames at {item.text}", e)
+                    raise
+    persname = root.xpath(".//ead:persname", namespaces=nsmap)
+    if persname is not None:
+        for item in persname:
+            if "source" in item.attrib.keys():
+                try:
                     item.attrib['source'] = normalized_source(item.attrib['source'])
                     window['-OUTPUT-'].update(f"normalized source attribute for {item.text}\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble normalizing source attributes for persnames\n", append=True)
-        raise
-    try:
-        geogname = root.xpath(".//ead:geogname", namespaces=nsmap)
-        if geogname is not None:
-            for item in geogname:
-                if item.text is not None:
+                except Exception as e:
+                    Sg.popup_error_with_traceback(f"trouble normalizing source on persnames at {item.text}", e)
+                    raise
+    geogname = root.xpath(".//ead:geogname", namespaces=nsmap)
+    if geogname is not None:
+        for item in geogname:
+            if item.text is not None:
+                try:
                     if "source" in item.attrib.keys():
                         item.attrib['source'] = normalized_source(item.attrib['source'])
                         window['-OUTPUT-'].update(f"normalized source attribute for {item.text}\n", append=True)
-    except:
-        window['-OUTPUT-'].update("trouble trying to update source attributes for geographic terms\n", append=True)
-        raise
-    try:
-        functional = root.xpath(".//ead:function", namespaces=nsmap)
-        if functional is not None:
-            for item in functional:
-                if item.text is not None:
+                except Exception as e:
+                    Sg.popup_error_with_traceback(f"trouble normalizing source attributes for geogname at {item.text}", e)
+                    raise
+    functional = root.xpath(".//ead:function", namespaces=nsmap)
+    if functional is not None:
+        for item in functional:
+            if item.text is not None:
+                try:
                     if "source" in item.attrib.keys():
                         item.attrib['source'] = normalized_source(item.attrib['source'])
                         window['-OUTPUT-'].update(f"normalized source attribute for {item.text}\n", append=True)
-    except:
-        window['-OUTPUT-'].update("trouble trying to update source attributes for function terms\n", append=True)
-    try:
-        titles = root.xpath(".//ead:title", namespaces=nsmap)
-        if titles is not None:
-            for item in titles:
-                if item.text is not None:
+                except Exception as e:
+                    Sg.popup_error_with_traceback(f"trouble normalizing source for function at {item.text}", e)
+                    raise
+    titles = root.xpath(".//ead:title", namespaces=nsmap)
+    if titles is not None:
+        for item in titles:
+            if item.text is not None:
+                try:
                     if "source" in item.attrib.keys():
                         item.attrib['source'] = normalized_source(item.attrib['source'])
                         window['-OUTPUT-'].update(f"normalized source attribute for {item.text}\n", append=True)
-    except:
-        window['-OUTPUT-'].update("trouble normalizing source attributes for title subjects\n", append=True)
-        raise
-    try:
-        counter = 0
-        series = root.xpath(".//ead:c01", namespaces=nsmap)
-        for item in series:
+                except Exception as e:
+                    Sg.popup_error_with_traceback(f"trouble normalizing source for titles at {item.text}", e)
+                    raise
+    counter = 0
+    series = root.xpath(".//ead:c01", namespaces=nsmap)
+    for item in series:
+        try:
             if item.attrib['level'] == "series":
                 counter += 1
                 item.attrib['id'] = f"ser{str(counter)}"
                 window['-OUTPUT-'].update(f"added {item.attrib['id']} identifier to series {str(counter)}\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble assigning series identifiers\n", append=True)
-        raise
+        except Exception as e:
+            Sg.popup_error_with_traceback(f"trouble adding series identifiers to {item.text}", e)
+            raise
     try:
         extents = root.xpath("//ead:physdesc/ead:extent", namespaces=nsmap)
         if extents is not None:
@@ -4843,12 +4859,12 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                                 if key in extent_text:
                                     extent_text = extent_text.replace(key, singularization_dict[key])
                                     window['-OUTPUT-'].update(f"singularized {extent_text}\n", append=True)
-                    except:
-                        window['-OUTPUT-'].update(f"trouble with singularization of {extent_text}, recommend checking on that\n", append=True)
+                    except Exception as e:
+                        Sg.popup_error_with_traceback(f"trouble with singularization of {extent_text}, recommend checking on that when this is done", e)
                         continue
                     extent.text = extent_text
-    except:
-        window['-OUTPUT-'].update("trouble translating or singularizing extents\n", append=True)
+    except Exception as e:
+        Sg.popup_error_with_traceback("trouble with extents somewhere, not sure where", e)
         raise
     try:
         top_physdesc = root.xpath(".//ead:archdesc/ead:did/ead:physdesc", namespaces=nsmap)
@@ -4862,23 +4878,23 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                         extent = physdesc.find("./ead:extent", namespaces=nsmap)
                         extent.text = f"(includes {extent.text})"
             window['-OUTPUT-'].update(f"added parenthetical to partial extents if applicable\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble trying to update top physdesc tagging\n", append=True)
+    except Exception as e:
+        Sg.popup_error_with_traceback(f"trouble updating top-level physdesc tagging", e)
         raise
-    try:
-        box = root.xpath(".//ead:container", namespaces=nsmap)
-        if box is not None:
-            for item in box:
+    box = root.xpath(".//ead:container", namespaces=nsmap)
+    if box is not None:
+        for item in box:
+            try:
                 if "type" in item.attrib.keys():
                     if item.attrib['type'] == "box":
                         item.attrib['type'] = "Box"
                         window['-OUTPUT-'].update(f"normalized box label to {item.text}\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble normalizing boxes\n", append=True)
-        raise
-    try:
-        date_normal = root.xpath(".//ead:unitdate", namespaces=nsmap)
-        for item in date_normal:
+            except Exception as e:
+                Sg.popup_error_with_traceback(f"trouble normalizing box to Box at {item.text}", e)
+                raise
+    date_normal = root.xpath(".//ead:unitdate", namespaces=nsmap)
+    for item in date_normal:
+        try:
             if "normal" in item.attrib.keys():
                 normal = item.attrib["normal"]
                 if "T" in normal:
@@ -4887,14 +4903,16 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                     var2 = normal[1].split("T")[0]
                     item.attrib['normal'] = f"{var1}/{var2}"
                     window['-OUTPUT-'].update(f"normalized out timecodes for {item.attrib['normal']}\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble normalizing out timecodes from unitdates\n", append=True)
-        raise
+        except Exception as e:
+            Sg.popup_error_with_traceback(f"trouble normalizing timecodes for {item.text}", e)
+            raise
     c_tags = ['c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07', 'c08', 'c09', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15']
     for c in c_tags:
         window['-OUTPUT-'].update(f"starting to process tags at {c} level\n", append=True)
         dids = root.xpath(f".//ead:{c}/ead:did", namespaces=nsmap)
+        did_text = ""
         for did in dids:
+            last_did = did_text
             did_text = ""
             try:
                 unittitle = did.find("./ead:unittitle", namespaces=nsmap)
@@ -4963,8 +4981,8 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                                     physdesc[phys_counter].text = physdesc[phys_counter].text[:-1]
                                     phys_counter += 1
                 window['-OUTPUT-'].update(f"processed {did_text}\n", append=True)
-            except:
-                window['-OUTPUT-'].update(f"failed near {did_text}\n", append=True)
+            except Exception as e:
+                Sg.popup_error_with_traceback(f"trouble normalazing the details/commas near in level {c} after {last_did}", e)
                 raise
             # processing containers into comma delimited and "thru"
         for did in dids:
@@ -5055,57 +5073,61 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         if extents is not None:
             if len(extents) > 0:
                 for extent in extents:
-                    level_up = extent.getparent().getparent().getparent()
-                    parent_attrib = level_up.attrib['level']
-                    if parent_attrib != None and parent_attrib not in exceptions:
-                        next_phys = extent.getnext()
-                        extent.text = f"[{extent.text}"
-                        # make the core change
-                        if next_phys is not None:
-                            print(next_phys.text)
-                            next_phys.text = f", {next_phys.text}"
-                            next_next_phys = next_phys.getnext()
-                            if next_next_phys is not None:
-                                if next_next_phys.tag == "{urn:isbn:1-931666-22-9}physfacet" or next_next_phys.tag == "{urn:isbn:1-931666-22-9}dimensions":
-                                    next_next_phys.text = f", {next_next_phys.text}]"
+                    try:
+                        level_up = extent.getparent().getparent().getparent()
+                        parent_attrib = level_up.attrib['level']
+                        if parent_attrib != None and parent_attrib not in exceptions:
+                            next_phys = extent.getnext()
+                            extent.text = f"[{extent.text}"
+                            # make the core change
+                            if next_phys is not None:
+                                print(next_phys.text)
+                                next_phys.text = f", {next_phys.text}"
+                                next_next_phys = next_phys.getnext()
+                                if next_next_phys is not None:
+                                    if next_next_phys.tag == "{urn:isbn:1-931666-22-9}physfacet" or next_next_phys.tag == "{urn:isbn:1-931666-22-9}dimensions":
+                                        next_next_phys.text = f", {next_next_phys.text}]"
+                                    else:
+                                        next_phys.text = f"{next_phys.text}]"
                                 else:
                                     next_phys.text = f"{next_phys.text}]"
                             else:
-                                next_phys.text = f"{next_phys.text}]"
-                        else:
-                            extent.text = f"{extent.text}]"
-                        # strip unnecessary altrender since it renders in taro weird
-                        if "altrender" in extent.attrib:
-                            if extent.attrib['altrender'] == "materialtype spaceoccupied":
-                                del extent.attrib['altrender']
-                        # process for unittitle unittitle/emph and unitdate comma removal; may need unitdate/emph at some point
-                        parent = extent.getparent().getparent()
-                        extent_titles = parent.xpath("./ead:unittitle", namespaces=nsmap)
-                        extent_titles_emph = parent.xpath("./ead:unittitle/ead:emph", namespaces=nsmap)
-                        extent_dates = parent.xpath("./ead:unitdate", namespaces=nsmap)
-                        if extent_dates is not None:
-                            if len(extent_dates) > 0:
-                                changer = extent_dates[-1]
-                                changer_text = changer.text
-                                while changer_text.endswith(", "):
-                                    changer_text = changer_text[:-2]
-                                    changer.text = changer_text
-                            elif extent_titles is not None:
-                                if len(extent_titles) > 0:
-                                    changer = extent_titles[-1]
+                                extent.text = f"{extent.text}]"
+                            # strip unnecessary altrender since it renders in taro weird
+                            if "altrender" in extent.attrib:
+                                if extent.attrib['altrender'] == "materialtype spaceoccupied":
+                                    del extent.attrib['altrender']
+                            # process for unittitle unittitle/emph and unitdate comma removal; may need unitdate/emph at some point
+                            parent = extent.getparent().getparent()
+                            extent_titles = parent.xpath("./ead:unittitle", namespaces=nsmap)
+                            extent_titles_emph = parent.xpath("./ead:unittitle/ead:emph", namespaces=nsmap)
+                            extent_dates = parent.xpath("./ead:unitdate", namespaces=nsmap)
+                            if extent_dates is not None:
+                                if len(extent_dates) > 0:
+                                    changer = extent_dates[-1]
                                     changer_text = changer.text
-                                    if changer_text is not None:
-                                        while changer_text.endswith(","):
-                                            changer_text = changer_text[:-1]
-                                            changer.text = changer_text
-                            elif extent_titles_emph is not None:
-                                if len(extent_titles_emph) > 0:
-                                    changer = extent_titles_emph[-1]
-                                    changer_text = changer.text
-                                    if changer_text is not None:
-                                        while changer_text.endswith(","):
-                                            changer_text = changer_text[:-1]
-                                            changer.text = changer_text
+                                    while changer_text.endswith(", "):
+                                        changer_text = changer_text[:-2]
+                                        changer.text = changer_text
+                                elif extent_titles is not None:
+                                    if len(extent_titles) > 0:
+                                        changer = extent_titles[-1]
+                                        changer_text = changer.text
+                                        if changer_text is not None:
+                                            while changer_text.endswith(","):
+                                                changer_text = changer_text[:-1]
+                                                changer.text = changer_text
+                                elif extent_titles_emph is not None:
+                                    if len(extent_titles_emph) > 0:
+                                        changer = extent_titles_emph[-1]
+                                        changer_text = changer.text
+                                        if changer_text is not None:
+                                            while changer_text.endswith(","):
+                                                changer_text = changer_text[:-1]
+                                                changer.text = changer_text
+                    except Exception as e:
+                        Sg.popup_error_with_traceback(f"trouble reformatting top-level details/commas where the extent is {extent.text}", e)
+                        raise
     # remove head from non-major level scope contents notes
     for c in c_tags:
         scope_heads = root.xpath(f".//ead:{c}/ead:scopecontent/ead:head", namespaces=nsmap)
@@ -5134,8 +5156,8 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                 else:
                     unitid_list.append(unit_text)
         window['-OUTPUT-'].update(f"removed duplicate unitids\n", append=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble removing duplicate unitids\n", append=True)
+    except Exception as e:
+        Sg.popup_error_with_traceback(f"trouble getting rid of duplicative unitids, try manually removing those instead or making them unique", e)
         raise
     ead_emph = root.xpath(".//ead:emph", namespaces=nsmap)
     if ead_emph is not None:
@@ -5161,8 +5183,8 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         dom = ET.parse(my_output_file)
         new_dom = my_html(dom)
         new_dom.write(html_file, pretty_print=True)
-    except:
-        window['-OUTPUT-'].update(f"trouble saving processor output and creating html page\n", append=True)
+    except Exception as e:
+        Sg.popup_error_with_traceback(f"trouble saving the xml file, doing a few quick fixes and generating the html page. Good luck", e)
         raise
     window['-status_img-'].update(my_icon2)
     window['-status_img2-'].update(my_icon2)
