@@ -4619,13 +4619,15 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         if len(top_unitdates) > 1:
             try:
                 top_dates = len(top_unitdates)
-                for item in top_unitdates:
-                    if item.attrib['type'] == "bulk":
-                        top_dates = top_dates - 1
                 if top_dates > 1:
                     top_dates = root.xpath(".//ead:archdesc/ead:did/ead:unitdate[@type != 'bulk']", namespaces=nsmap)
                     for item in top_dates[:-1]:
                         item.text = f"{item.text}, "
+                    top_dates = root.xpath(".//ead:archdesc/ead:did/ead:unitdate[@type = 'bulk']", namespaces=nsmap)
+                    if len(top_dates) > 1:
+                        for item in top_dates[:-1]:
+                            item.text = f"{item.text}, "
+                            print(item)
             except Exception as e:
                 Sg.popup_error_with_traceback(f"trouble adding trailing commas to top-level unitdates, fix that later", e)
         for item in top_unitdates:
@@ -4948,10 +4950,17 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                                 did_text = f"{did_text}{unittitle_emph_text}"
                         print(unittitle_text)
                 if len(physdesc) > 0:
-                    if len(unitdate) > 0:
-                        for date in unitdate:
+                    if len(unitdate) > 1:
+                        for date in unitdate[:-1]:
                             date_text = date.text
-                            if not date_text.endswith(",") or not date_text.endswith(", "):
+                            all_my_children = date.getchildren()
+                            if all_my_children is not None and len(all_my_children) > 0:
+                                date_text = all_my_children[-1].tail
+                                if not date_text.endswith(",") or not date_text.endswith(", "):
+                                    date_text = f"{date_text}, "
+                                    all_my_children[-1].tail = date_text
+                                    did_text = f"{did_text}/{date_text}"
+                            elif not date_text.endswith(",") or not date_text.endswith(", "):
                                 date_text += ", "
                                 date.text = date_text
                                 did_text = f"{did_text}/{date_text}"
@@ -4959,17 +4968,33 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                     if len(unitdate) > 1:
                         for date in unitdate[:-1]:
                             date_text = date.text
-                            if not date_text.endswith(",") or not date_text.endswith(", "):
+                            all_my_children = date.getchildren()
+                            if all_my_children is not None and len(all_my_children) > 0:
+                                date_text = all_my_children[-1].tail
+                                if not date_text.endswith(",") or not date_text.endswith(", "):
+                                    date_text = f"{date_text}, "
+                                    all_my_children[-1].tail = date_text
+                                    did_text = f"{did_text}/{date_text}"
+                            elif not date_text.endswith(",") or not date_text.endswith(", "):
                                 date_text += ", "
                                 date.text = date_text
                                 did_text = f"{did_text}/{date_text}"
                 if len(physdesc) > 1:
+                    counter = len(physdesc)
+                    new_counter = 0
                     for phys in physdesc[:-1]:
                         phys_text = phys.text
-                        if not phys_text.endswith(",") or not phys_text.endswith(", "):
-                            phys_text += ","
-                            phys.text = phys_text
-                            did_text = f"{did_text}/{phys_text}"
+                        new_counter += 1
+                        phys_testes = physdesc[new_counter].text
+                        if "electronic file" not in phys_testes:
+                            if not phys_text.endswith(",") or not phys_text.endswith(", "):
+                                phys_text += ","
+                                phys.text = phys_text
+                                did_text = f"{did_text}/{phys_text}"
+                        if "electronic file" in phys_testes:
+                            phys_testes = f"({phys_testes})"
+                            phys_testes = phys_testes.replace("((", "(").replace("))", ")")
+                            physdesc[new_counter].text = phys_testes
                     phys_counter = 0
                     for phys in physdesc:
                         parental = phys.getparent()
@@ -5069,30 +5094,91 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
 
     # change the physdesc/extent to be bracketed and remove the last trailing comma previously added so it doesn't look weird
     for c in c_tags:
-        extents = root.xpath(f'.//ead:{c}/ead:did/ead:physdesc/ead:extent', namespaces=nsmap)
-        if extents is not None:
-            if len(extents) > 0:
-                for extent in extents:
+        extent_tests = root.xpath(f'.//ead:{c}/ead:did', namespaces=nsmap)
+        for extent_test in extent_tests:
+            extents = extent_test.xpath("./ead:physdesc/ead:extent", namespaces=nsmap)
+            if extents is not None:
+                if len(extents) == 1:
+                    for extent in extents:
+                        try:
+                            level_up = extent.getparent().getparent().getparent()
+                            parent_attrib = level_up.attrib['level']
+                            if parent_attrib != None and parent_attrib not in exceptions:
+                                next_phys = extent.getnext()
+                                extent.text = f"[{extent.text}"
+                                # make the core change
+                                if next_phys is not None:
+                                    print(next_phys.text)
+                                    next_phys.text = f", {next_phys.text}"
+                                    next_next_phys = next_phys.getnext()
+                                    if next_next_phys is not None:
+                                        if next_next_phys.tag == "{urn:isbn:1-931666-22-9}physfacet" or next_next_phys.tag == "{urn:isbn:1-931666-22-9}dimensions":
+                                            next_next_phys.text = f", {next_next_phys.text}]"
+                                        else:
+                                            next_phys.text = f"{next_phys.text}]"
+                                    else:
+                                        next_phys.text = f"{next_phys.text}]"
+                                else:
+                                    extent.text = f"{extent.text}]"
+                                # strip unnecessary altrender since it renders in taro weird
+                                if "altrender" in extent.attrib:
+                                    if extent.attrib['altrender'] == "materialtype spaceoccupied":
+                                        del extent.attrib['altrender']
+                                # process for unittitle unittitle/emph and unitdate comma removal; may need unitdate/emph at some point
+                                parent = extent.getparent().getparent()
+                                extent_titles = parent.xpath("./ead:unittitle", namespaces=nsmap)
+                                extent_titles_emph = parent.xpath("./ead:unittitle/ead:emph", namespaces=nsmap)
+                                extent_dates = parent.xpath("./ead:unitdate", namespaces=nsmap)
+                                if extent_dates is not None:
+                                    if len(extent_dates) > 0:
+                                        changer = extent_dates[-1]
+                                        changer_text = changer.text
+                                        while changer_text.endswith(", "):
+                                            changer_text = changer_text[:-2]
+                                            changer.text = changer_text
+                                    elif extent_titles is not None:
+                                        if len(extent_titles) > 0:
+                                            changer = extent_titles[-1]
+                                            changer_text = changer.text
+                                            if changer_text is not None:
+                                                while changer_text.endswith(","):
+                                                    changer_text = changer_text[:-1]
+                                                    changer.text = changer_text
+                                    elif extent_titles_emph is not None:
+                                        if len(extent_titles_emph) > 0:
+                                            changer = extent_titles_emph[-1]
+                                            changer_text = changer.text
+                                            if changer_text is not None:
+                                                while changer_text.endswith(","):
+                                                    changer_text = changer_text[:-1]
+                                                    changer.text = changer_text
+                        except Exception as e:
+                            Sg.popup_error_with_traceback(f"trouble reformatting top-level details/commas where the extent is {extent.text}", e)
+                            raise
+                if len(extents) > 1:
                     try:
-                        level_up = extent.getparent().getparent().getparent()
+                        level_up = extent_test.getparent()
                         parent_attrib = level_up.attrib['level']
                         if parent_attrib != None and parent_attrib not in exceptions:
-                            next_phys = extent.getnext()
-                            extent.text = f"[{extent.text}"
+                            next_phys = extents[0].getnext()
+                            extents[0].text = f"[{extents[0].text}"
                             # make the core change
-                            if next_phys is not None:
+                            if next_phys is not None and "electronic file" not in extents[-1].text:
                                 print(next_phys.text)
                                 next_phys.text = f", {next_phys.text}"
                                 next_next_phys = next_phys.getnext()
                                 if next_next_phys is not None:
                                     if next_next_phys.tag == "{urn:isbn:1-931666-22-9}physfacet" or next_next_phys.tag == "{urn:isbn:1-931666-22-9}dimensions":
-                                        next_next_phys.text = f", {next_next_phys.text}]"
+                                        next_next_phys.text = f", {next_next_phys.text}"
                                     else:
-                                        next_phys.text = f"{next_phys.text}]"
+                                        next_phys.text = f"{next_phys.text}"
                                 else:
-                                    next_phys.text = f"{next_phys.text}]"
+                                    next_phys.text = f"{next_phys.text}"
+                            elif "electronic file" in extents[-1].text:
+                                extents[-1].text = f" ({extents[-1].text})]"
+                                extents[-1].text = extents[-1].text.replace("((", "(").replace("))", ")")
                             else:
-                                extent.text = f"{extent.text}]"
+                                extents[-1].text = f"{extents[-1].text}]"
                             # strip unnecessary altrender since it renders in taro weird
                             if "altrender" in extent.attrib:
                                 if extent.attrib['altrender'] == "materialtype spaceoccupied":
@@ -5175,6 +5261,10 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
             filedata = filedata.replace('",', ',"').replace("[(", "[").replace(",]", "],")
             filedata = filedata.replace('" ,<', ',"<')
             filedata = f"{xml_header}{filedata}"
+            while "\t," in filedata:
+                filedata = filedata.replace("\t,", ",\t")
+            while "\n," in filedata:
+                filedata = filedata.replace("\n,", ",\n")
             with open(my_output_file, "w") as w:
                 w.write(filedata)
             w.close()
