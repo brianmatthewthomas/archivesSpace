@@ -4916,12 +4916,13 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
         for did in dids:
             last_did = did_text
             did_text = ""
+            level = did.getparent().attrib['level']
             try:
                 unittitle = did.find("./ead:unittitle", namespaces=nsmap)
                 unittitle_emph = did.find("./ead:unittitle/ead:emph", namespaces=nsmap)
                 unitdate = did.xpath("./ead:unitdate", namespaces=nsmap)
                 physdesc = did.xpath("./ead:physdesc/ead:extent", namespaces=nsmap)
-                if unittitle is not None and len(unitdate) > 0 or len(physdesc) > 0:
+                if unittitle is not None and len(unitdate) > 0 or len(physdesc) > 0 and level in exceptions:
                     window['-OUTPUT-'].update(f"{unittitle}\n", append=True)
                     if unittitle is not None:
                         unittitle_text = unittitle.text
@@ -4950,6 +4951,15 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                                 did_text = f"{did_text}{unittitle_emph_text}"
                         print(unittitle_text)
                 if len(physdesc) > 0:
+                    # default remove a certain extent attribute with a specific weird value
+                    for phys in physdesc:
+                        if "altrender" in phys.attrib.keys():
+                            if phys.attrib['altrender'] == "material spaceoccupied":
+                                del phys.attrib['altrender']
+                    # default add brackets around extents
+                    if level not in exceptions:
+                        for phys in physdesc:
+                            phys.text = f"[{phys.text}]"
                     if len(unitdate) > 1:
                         for date in unitdate[:-1]:
                             date_text = date.text
@@ -4962,6 +4972,21 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                                     did_text = f"{did_text}/{date_text}"
                             elif not date_text.endswith(",") or not date_text.endswith(", "):
                                 date_text += ", "
+                                date.text = date_text
+                                did_text = f"{did_text}/{date_text}"
+                    if level in exceptions:
+                        if unitdate is not None and len(unitdate) > 0:
+                            date = unitdate[-1]
+                            date_text = date.text
+                            all_my_children = date.getchildren()
+                            if all_my_children is not None and len(all_my_children) > 0:
+                                date_text = all_my_children[-1].tail
+                                if not date_text.endswith(",") or not date_text.endswith(", "):
+                                    date_text = f"{date_text}, "
+                                    all_my_children[-1].tail = date_text
+                                    did_text = f"{did_text}/{date_text}"
+                            elif not date_text.endswith(",") or not date_text.endswith(", "):
+                                date_text = f"{date_text}, "
                                 date.text = date_text
                                 did_text = f"{did_text}/{date_text}"
                 if len(physdesc) == 0:
@@ -4979,32 +5004,259 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                                 date_text += ", "
                                 date.text = date_text
                                 did_text = f"{did_text}/{date_text}"
+                # now deal with the variations of the physdesc problems
+                # fix inner section of a physdesc before moving on the multiples
+                if len(physdesc) > 0:
+                    for phys in physdesc:
+                        if level not in exceptions:
+                            next_phys = phys.getnext()
+                            if next_phys is not None:
+                                phys.text = f"{phys.text}, "
+                                phys.text = phys.text.replace("], ", ", ")
+                                next_next_phys = next_phys.getnext()
+                                if next_next_phys is not None:
+                                    next_phys.text = f"{next_phys.text}, "
+                                    next_next_phys.text = f"{next_next_phys.text}]"
+                                else:
+                                    next_phys.text = f"{next_phys.text}]"
+                        # handle nest dimensions/tech in parenthetical at the highest levels
+                        if level in exceptions:
+                            next_phys = phys.getnext()
+                            if next_phys is not None:
+                                phys.text = f"{phys.text} "
+                                next_next_phys = next_phys.getnext()
+                                if next_next_phys is not None:
+                                    next_phys.text = f"({next_phys.text}"
+                                    next_next_phys.text = f"{next_next_phys.text})"
+                                else:
+                                    next_phys.text = f"({next_phys.text})"
+                    print("something")
+                # moving on to multiples
                 if len(physdesc) > 1:
                     counter = len(physdesc)
                     new_counter = 0
+                    inclusion = ""
                     for phys in physdesc[:-1]:
                         phys_text = phys.text
                         new_counter += 1
                         phys_testes = physdesc[new_counter].text
-                        if "electronic file" not in phys_testes:
-                            if not phys_text.endswith(",") or not phys_text.endswith(", "):
-                                phys_text += ","
-                                phys.text = phys_text
-                                did_text = f"{did_text}/{phys_text}"
-                        if "electronic file" in phys_testes:
-                            phys_testes = f"({phys_testes})"
-                            phys_testes = phys_testes.replace("((", "(").replace("))", ")")
-                            physdesc[new_counter].text = phys_testes
-                    phys_counter = 0
-                    for phys in physdesc:
+                        phys_testes_altrender = "stop"
+                        if "altrender" in physdesc[new_counter].getparent().attrib.keys():
+                            phys_testes_altrender = physdesc[new_counter].getparent().attrib['altrender']
+                            print(phys_testes_altrender)
                         parental = phys.getparent()
+                        altrender = "whole"
                         if "altrender" in parental.attrib.keys():
-                            if parental.attrib["altrender"] == "part":
-                                parental = did.getparent()
-                                if parental.attrib['level'] not in exceptions:
-                                    phys.text = f"(includes {phys.text})"
-                                    physdesc[phys_counter].text = physdesc[phys_counter].text[:-1]
-                                    phys_counter += 1
+                            altrender = parental.attrib["altrender"]
+                        if altrender == 'whole' and "electronic file" not in phys_testes:
+                            if "electronic file" not in phys_text:
+                                if phys_testes_altrender == "whole":
+                                    if level in exceptions:
+                                        next_phys = phys.getnext()
+                                        if next_phys is not None:
+                                            next_next_phys = next_phys.getnext()
+                                            if next_next_phys is not None:
+                                                next_next_phys.text = f"{next_next_phys.text}, "
+                                            else:
+                                                next_phys.text = f"{next_phys.text}, "
+                                        else:
+                                            phys_text = f"{phys_text},"
+                                            phys.text = phys_text
+                                            did_text = f"{did_text}/{phys_text}"
+                                if phys_testes_altrender == "part":
+                                    if level not in exceptions:
+                                        next_phys = phys.getnext()
+                                        if next_phys is not None:
+                                            next_next_phys = next_phys.getnext()
+                                            if next_next_phys is not None:
+                                                next_next_phys.text = f"{next_next_phys.text[:-1]} "
+                                            else:
+                                                next_phys.text = f"{next_phys.text[:-1]} "
+                                        else:
+                                            phys.text = f"{phys.text[:-1]} "
+                                        if physdesc[new_counter] == physdesc[-1]:
+                                            physdesc[new_counter].text = f"(includes {physdesc[new_counter].text[1:]}"
+                                            new_phys = physdesc[new_counter].getnext()
+                                            if new_phys is not None:
+                                                new_new_phys = new_phys.getnext()
+                                                if new_new_phys is not None:
+                                                    new_new_phys.text = f"{new_new_phys.text[:-1]})]"
+                                                else:
+                                                    new_phys.text = f"{new_phys.text[:-1]})]"
+                                            else:
+                                                physdesc[new_counter].text = f"{physdesc[new_counter].text[:-1]})]"
+                                    if level in exceptions:
+                                        next_phys = phys.getnext()
+                                        if next_phys is not None:
+                                            next_next_phys = next_phys.getnext()
+                                            if next_next_phys is not None:
+                                                next_next_phys.text = f"{next_next_phys.text}, "
+                                            else:
+                                                next_phys.text = f"{next_phys.text}, "
+                                        else:
+                                            phys.text = f"{phys.text}, "
+                            inclusion = ""
+                        # deal with the chance that electronic files are part of the mix
+                        if altrender == "whole" and "electronic file" in phys_testes:
+                            if level in exceptions:
+                                phys_testes = f"({phys_testes})"
+                                # if electronic files is the last thing
+                                if physdesc[new_counter] == physdesc[-1]:
+                                    physdesc[new_counter].text = phys_testes
+                                # if electronic files isn't the last thing
+                                else:
+                                    physdesc[new_counter].text = f"{phys_testes}, "
+                            if level not in exceptions:
+                                next_phys = phys.getnext()
+                                if next_phys is not None:
+                                    next_next_phys = next_phys.getnext()
+                                    if next_next_phys is not None:
+                                        next_next_phys.text = f"{next_next_phys.text[:-1]} "
+                                    else:
+                                        next_phys.text = f"{next_phys.text[:-1]} "
+                                else:
+                                    phys.text = f"{phys.text[:-1]} "
+                                phys_testes = f"({phys_testes[1:-1]})]"
+                                physdesc[new_counter].text = phys_testes
+                                print("something")
+                            inclusion = ""
+                        if altrender == "part" and "(includes" in inclusion:
+                            phys_text = phys_text.replace("[", "").replace("(", "").replace("), ", "")
+
+                            print("something")
+                        if altrender == "part" and "(includes" not in inclusion:
+                            inclusion = f"{inclusion}, (includes"
+                            phys_text = phys_text.replace("[", "").replace("(", "").replace("), ", "")
+                            phys_text = f"(includes {phys_text}"
+                            phys.text = phys_text
+                            if "electronic file" in phys_testes:
+                                phys_testes = f"{phys_testes})"
+                                if physdesc[new_counter] == physdesc[-1]:
+                                    physdesc[new_counter].text = phys_testes
+                            if level not in exceptions:
+                                if phys_testes_altrender == "whole":
+                                    next_phys = phys.getnext()
+                                    if next_phys is not None:
+                                        next_next_phys = next_phys.getnext()
+                                        if next_next_phys is not None:
+                                            next_next_phys.text = f"{next_next_phys.text[:-1]})]"
+                                        else:
+                                            next_phys.text = f"{next_phys.text[:-1]})]"
+                                    else:
+                                        phys.text = f"{phys_text[:-1]})]"
+                                if phys_testes_altrender == "part":
+                                    next_phys = phys.getnext()
+                                    if next_phys is not None:
+                                        next_next_phys = next_phys.getnext()
+                                        if next_next_phys is not None:
+                                            next_next_phys.text = f"{next_next_phys.text[:-1]}, "
+                                        else:
+                                            next_phys.text = f"{next_phys.text[:-1]}, "
+                                    else:
+                                        phys.text = f"{phys_text[:-1]}, "
+                                    if physdesc[new_counter] == physdesc[-1]:
+                                        next_phys = physdesc[new_counter].getnext()
+                                        if next_phys is not None:
+                                            next_next_phys = next_phys.getnext()
+                                            if next_next_phys is not None:
+                                                next_next_phys.text = f"{next_next_phys.text[:-1]})]"
+                                            else:
+                                                next_phys.text = f"{next_phys.text[:-1]})]"
+                                        else:
+                                            physdesc[new_counter].text = f"{physdesc[new_counter].text[:-1]})]"
+                                        while physdesc[new_counter].text.startswith("["):
+                                            physdesc[new_counter].text = physdesc[new_counter].text[1:]
+                                if phys_testes_altrender == "stop":
+                                    next_phys = phys.getnext()
+                                    if next_phys is not None:
+                                        next_next_phys = next_phys.getnext()
+                                        if next_next_phys is not None:
+                                            next_next_phys = f"{next_next_phys.text}]"
+                                        else:
+                                            next_phys.text = f"{next_phys.text}]"
+                                    else:
+                                        phys.text = f"{phys_text}]"
+                            if level in exceptions:
+                                if phys_testes_altrender == "whole":
+                                    next_phys = phys.getnext()
+                                    if next_phys is not None:
+                                        next_next_phys = next_phys.getnext()
+                                        if next_next_phys is not None:
+                                            next_next_phys.text = f"{next_next_phys.text}),"
+                                            phys.text = phys_text
+                                        else:
+                                            next_phys.text = f"{next_phys.text}),"
+                                            phys.text = phys_text
+                                    else:
+                                        phys.text = f"{phys_text}),"
+                                if phys_testes_altrender == "part":
+                                    next_phys = phys.getnext()
+                                    if next_phys is not None:
+                                        phys.text = phys_text
+                                        next_next_phys = next_phys.getnext()
+                                        if next_next_phys is not None:
+                                            next_next_phys.text = f"{next_next_phys.text},"
+                                        else:
+                                            next_phys.text = f"{next_phys.text},"
+                                    else:
+                                        phys.text = f"{phys_text},"
+                                    if physdesc[new_counter] == physdesc[-1]:
+                                        next_phys = physdesc[new_counter].getnext()
+                                        if next_phys is not None:
+                                            next_next_phys = next_phys.getnext()
+                                            if next_next_phys is not None:
+                                                next_next_phys.text = f"{next_next_phys.text})"
+                                            else:
+                                                next_phys.text = f"{next_phys.text})"
+                                        else:
+                                            physdesc[new_counter].text = f"{physdesc[new_counter].text})"
+                                if phys_testes_altrender == "stop":
+                                    next_phys = phys.getnext()
+                                    if next_phys is not None:
+                                        phys.text = phys_text
+                                        next_next_phys = next_phys.getnext()
+                                        if next_next_phys is not None:
+                                            next_next_phys.text = f'{next_next_phys.text})'
+                                        else:
+                                            next_phys.text = f"{next_phys.text})"
+                                    else:
+                                        phys.text = f"{phys_text})"
+                            #phys.text = f"{phys_text}"
+                            '''
+                        if level in exceptions:
+                            parent = extent.getparent().getparent()
+                            extent_titles = parent.xpath("./ead:unittitle", namespaces=nsmap)
+                            extent_titles_emph = parent.xpath("./ead:unittitle/ead:emph", namespaces=nsmap)
+                            extent_dates = parent.xpath("./ead:unitdate", namespaces=nsmap)
+                            if extent_dates is not None:
+                                if len(extent_dates) > 0:
+                                    changer = extent_dates[-1]
+                                    changer_text = changer.text
+                                    while changer_text.endswith(", "):
+                                        changer_text = changer_text[:-2]
+                                        changer.text = changer_text
+                                elif extent_titles is not None:
+                                    if len(extent_titles) > 0:
+                                        changer = extent_titles[-1]
+                                        changer_text = changer.text
+                                        if changer_text is not None:
+                                            while changer_text.endswith(","):
+                                                changer_text = changer_text[:-1]
+                                                changer.text = changer_text
+                                elif extent_titles_emph is not None:
+                                    if len(extent_titles_emph) > 0:
+                                        changer = extent_titles_emph[-1]
+                                        changer_text = changer.text
+                                        if changer_text is not None:
+                                            while changer_text.endswith(","):
+                                                changer_text = changer_text[:-1]
+                                                changer.text = changer_text
+                            '''
+                        #if "electronic file" in phys_testes:
+                        #    phys_testes = f"({phys_testes})"
+                        #    phys_testes = phys_testes.replace("((", "(").replace("))", ")")
+                        #    phys_testes = phys_testes.replace("])", ")]")
+                        #    physdesc[new_counter].text = phys_testes
                 window['-OUTPUT-'].update(f"processed {did_text}\n", append=True)
             except Exception as e:
                 Sg.popup_error_with_traceback(f"trouble normalazing the details/commas near in level {c} after {last_did}", e)
@@ -5091,129 +5343,6 @@ def processor(my_input_file=str, singularization_dict=dict, translation_dict=dic
                                 containers = did.xpath("./ead:container", namespaces=nsmap)
                         if len(containers_list) > 0 and len(containers_dict) > 0:
                             container_text = ""'''
-
-    # change the physdesc/extent to be bracketed and remove the last trailing comma previously added so it doesn't look weird
-    for c in c_tags:
-        extent_tests = root.xpath(f'.//ead:{c}/ead:did', namespaces=nsmap)
-        for extent_test in extent_tests:
-            extents = extent_test.xpath("./ead:physdesc/ead:extent", namespaces=nsmap)
-            if extents is not None:
-                if len(extents) == 1:
-                    for extent in extents:
-                        try:
-                            level_up = extent.getparent().getparent().getparent()
-                            parent_attrib = level_up.attrib['level']
-                            if parent_attrib != None and parent_attrib not in exceptions:
-                                next_phys = extent.getnext()
-                                extent.text = f"[{extent.text}"
-                                # make the core change
-                                if next_phys is not None:
-                                    print(next_phys.text)
-                                    next_phys.text = f", {next_phys.text}"
-                                    next_next_phys = next_phys.getnext()
-                                    if next_next_phys is not None:
-                                        if next_next_phys.tag == "{urn:isbn:1-931666-22-9}physfacet" or next_next_phys.tag == "{urn:isbn:1-931666-22-9}dimensions":
-                                            next_next_phys.text = f", {next_next_phys.text}]"
-                                        else:
-                                            next_phys.text = f"{next_phys.text}]"
-                                    else:
-                                        next_phys.text = f"{next_phys.text}]"
-                                else:
-                                    extent.text = f"{extent.text}]"
-                                # strip unnecessary altrender since it renders in taro weird
-                                if "altrender" in extent.attrib:
-                                    if extent.attrib['altrender'] == "materialtype spaceoccupied":
-                                        del extent.attrib['altrender']
-                                # process for unittitle unittitle/emph and unitdate comma removal; may need unitdate/emph at some point
-                                parent = extent.getparent().getparent()
-                                extent_titles = parent.xpath("./ead:unittitle", namespaces=nsmap)
-                                extent_titles_emph = parent.xpath("./ead:unittitle/ead:emph", namespaces=nsmap)
-                                extent_dates = parent.xpath("./ead:unitdate", namespaces=nsmap)
-                                if extent_dates is not None:
-                                    if len(extent_dates) > 0:
-                                        changer = extent_dates[-1]
-                                        changer_text = changer.text
-                                        while changer_text.endswith(", "):
-                                            changer_text = changer_text[:-2]
-                                            changer.text = changer_text
-                                    elif extent_titles is not None:
-                                        if len(extent_titles) > 0:
-                                            changer = extent_titles[-1]
-                                            changer_text = changer.text
-                                            if changer_text is not None:
-                                                while changer_text.endswith(","):
-                                                    changer_text = changer_text[:-1]
-                                                    changer.text = changer_text
-                                    elif extent_titles_emph is not None:
-                                        if len(extent_titles_emph) > 0:
-                                            changer = extent_titles_emph[-1]
-                                            changer_text = changer.text
-                                            if changer_text is not None:
-                                                while changer_text.endswith(","):
-                                                    changer_text = changer_text[:-1]
-                                                    changer.text = changer_text
-                        except Exception as e:
-                            Sg.popup_error_with_traceback(f"trouble reformatting top-level details/commas where the extent is {extent.text}", e)
-                            raise
-                if len(extents) > 1:
-                    try:
-                        level_up = extent_test.getparent()
-                        parent_attrib = level_up.attrib['level']
-                        if parent_attrib != None and parent_attrib not in exceptions:
-                            next_phys = extents[0].getnext()
-                            extents[0].text = f"[{extents[0].text}"
-                            # make the core change
-                            if next_phys is not None and "electronic file" not in extents[-1].text:
-                                print(next_phys.text)
-                                next_phys.text = f", {next_phys.text}"
-                                next_next_phys = next_phys.getnext()
-                                if next_next_phys is not None:
-                                    if next_next_phys.tag == "{urn:isbn:1-931666-22-9}physfacet" or next_next_phys.tag == "{urn:isbn:1-931666-22-9}dimensions":
-                                        next_next_phys.text = f", {next_next_phys.text}"
-                                    else:
-                                        next_phys.text = f"{next_phys.text}"
-                                else:
-                                    next_phys.text = f"{next_phys.text}"
-                            elif "electronic file" in extents[-1].text:
-                                extents[-1].text = f" ({extents[-1].text})]"
-                                extents[-1].text = extents[-1].text.replace("((", "(").replace("))", ")")
-                            else:
-                                extents[-1].text = f"{extents[-1].text}]"
-                            # strip unnecessary altrender since it renders in taro weird
-                            if "altrender" in extent.attrib:
-                                if extent.attrib['altrender'] == "materialtype spaceoccupied":
-                                    del extent.attrib['altrender']
-                            # process for unittitle unittitle/emph and unitdate comma removal; may need unitdate/emph at some point
-                            parent = extent.getparent().getparent()
-                            extent_titles = parent.xpath("./ead:unittitle", namespaces=nsmap)
-                            extent_titles_emph = parent.xpath("./ead:unittitle/ead:emph", namespaces=nsmap)
-                            extent_dates = parent.xpath("./ead:unitdate", namespaces=nsmap)
-                            if extent_dates is not None:
-                                if len(extent_dates) > 0:
-                                    changer = extent_dates[-1]
-                                    changer_text = changer.text
-                                    while changer_text.endswith(", "):
-                                        changer_text = changer_text[:-2]
-                                        changer.text = changer_text
-                                elif extent_titles is not None:
-                                    if len(extent_titles) > 0:
-                                        changer = extent_titles[-1]
-                                        changer_text = changer.text
-                                        if changer_text is not None:
-                                            while changer_text.endswith(","):
-                                                changer_text = changer_text[:-1]
-                                                changer.text = changer_text
-                                elif extent_titles_emph is not None:
-                                    if len(extent_titles_emph) > 0:
-                                        changer = extent_titles_emph[-1]
-                                        changer_text = changer.text
-                                        if changer_text is not None:
-                                            while changer_text.endswith(","):
-                                                changer_text = changer_text[:-1]
-                                                changer.text = changer_text
-                    except Exception as e:
-                        Sg.popup_error_with_traceback(f"trouble reformatting top-level details/commas where the extent is {extent.text}", e)
-                        raise
     # remove head from non-major level scope contents notes
     for c in c_tags:
         scope_heads = root.xpath(f".//ead:{c}/ead:scopecontent/ead:head", namespaces=nsmap)
